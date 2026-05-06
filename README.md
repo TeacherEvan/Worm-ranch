@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Worm Ranch
 
-## Getting Started
+Worm Ranch is a display-aware chase toy built with Next.js. The game keeps separate desktop and mobile rule sets, pushes gameplay rules into `src/game`, and keeps rendering and input concerns in `src/components`.
 
-First, run the development server:
+## Development
+
+Start the local app with:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The main verification path is:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run verify
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+That runs lint and a production build, which is the required validation path for substantive gameplay or UI changes.
 
-## Learn More
+## Architecture
 
-To learn more about Next.js, take a look at the following resources:
+- `src/app`: routing shell only
+- `src/components`: rendering, HUD, and input-facing UI
+- `src/game`: gameplay rules, simulation state, and display profile logic
+- `src/lib`: non-blocking support utilities such as silent analytics logging
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Gameplay Change Guidelines
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Keep desktop and mobile behavior intentionally split.
+- Prefer mechanic legibility improvements before balance rewrites when the mechanic already exists but is hard to read.
+- Keep source files under 500 lines.
+- Silent analytics must remain best-effort and must not block gameplay.
 
-## Deploy on Vercel
+## Custom Agents
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This repo includes a workspace agent at `.github/agents/gameplay-display-mechanics.agent.md` named `Worm Ranch Gameplay`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Use it for Worm Ranch-specific gameplay readability, HUD clarity, input feel, and player-facing mechanics work.
+
+## Next.js Note
+
+This repo targets a newer Next.js version than many default examples. Check the local Next.js docs under `node_modules/next/dist/docs/` before assuming older framework behavior.

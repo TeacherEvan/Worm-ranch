@@ -1,13 +1,15 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --bg: #07111b;
+  --bg-soft: #0d1c2b;
+  --panel: rgba(9, 17, 28, 0.72);
+  --panel-strong: rgba(10, 19, 31, 0.92);
+  --line: rgba(146, 191, 133, 0.2);
+  --text: #f5f4e9;
+  --muted: #bdc8bc;
+  --accent: #c7f36b;
+  --accent-strong: #f07e43;
+  --danger: #ff7f74;
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
 }
 
 html {
@@ -24,11 +26,26 @@ body {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top, rgba(199, 243, 107, 0.12), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(240, 126, 67, 0.2), transparent 24%),
+    linear-gradient(160deg, var(--bg) 0%, #0d1522 48%, #122033 100%);
+  font-family: var(--font-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(rgba(199, 243, 107, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(199, 243, 107, 0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+  opacity: 0.4;
 }
 
 * {
@@ -42,8 +59,22 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+}
+
+html {
+  color-scheme: dark;
+}
+
+@media (max-width: 720px) {
+  body::before {
+    background-size: 36px 36px;
   }
 }
