@@ -1,15 +1,20 @@
 import type { DisplayProfile } from "@/game/detection";
 
-export type EventName =
-  | "app_opened"
-  | "screen_viewed"
-  | "settings_changed"
-  | "gameplay_started"
-  | "worm_collected"
-  | "worm_tagged"
-  | "worm_teleported"
-  | "worm_escaped"
-  | "gameplay_ended";
+export const ANALYTICS_EVENT_NAMES = [
+  "app_opened",
+  "profile_detected",
+  "screen_viewed",
+  "settings_changed",
+  "round_started",
+  "worm_collected",
+  "worm_teleported",
+  "worm_morphed",
+  "first_touch_rush_triggered",
+  "ghost_finale_started",
+  "round_ended",
+] as const;
+
+export type EventName = (typeof ANALYTICS_EVENT_NAMES)[number];
 
 export type AnalyticsEvent = {
   name: EventName;
@@ -28,17 +33,10 @@ type SilentLogger = {
 export function createSilentLogger(endpoint: string): SilentLogger {
   const queue: AnalyticsEvent[] = [];
   let timer: number | null = null;
+  let pageHideAttached = false;
 
-  const flush = () => {
-    if (!queue.length) {
-      return;
-    }
-
-    const payload = JSON.stringify(queue.splice(0));
-
-    if (typeof navigator !== "undefined" && navigator.sendBeacon) {
-      const blob = new Blob([payload], { type: "application/json" });
-      navigator.sendBeacon(endpoint, blob);
+  const flushWithFetch = (payload: string) => {
+    if (typeof fetch !== "function") {
       return;
     }
 
@@ -50,20 +48,53 @@ export function createSilentLogger(endpoint: string): SilentLogger {
     }).catch(() => undefined);
   };
 
+  const flush = () => {
+    if (!queue.length) {
+      return;
+    }
+
+    const payload = JSON.stringify(queue.splice(0));
+
+    if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+      try {
+        const blob = new Blob([payload], { type: "application/json" });
+        if (navigator.sendBeacon(endpoint, blob)) {
+          return;
+        }
+      } catch {
+        // Fall back to fetch when sendBeacon is unavailable or rejects the payload.
+      }
+    }
+
+    flushWithFetch(payload);
+  };
+
   const handlePageHide = () => {
     flush();
   };
 
-  if (typeof window !== "undefined") {
+  const attachPageHideListener = () => {
+    if (pageHideAttached || typeof window === "undefined") {
+      return;
+    }
+
     window.addEventListener("pagehide", handlePageHide);
-  }
+    pageHideAttached = true;
+  };
 
   return {
     log(event) {
+      attachPageHideListener();
+
       queue.push({
         ...event,
         timestamp: new Date().toISOString(),
       });
+
+      if (typeof window === "undefined") {
+        flush();
+        return;
+      }
 
       if (timer) {
         return;
@@ -75,14 +106,16 @@ export function createSilentLogger(endpoint: string): SilentLogger {
       }, 350);
     },
     dispose() {
-      if (timer) {
+      if (typeof window !== "undefined" && timer) {
         window.clearTimeout(timer);
+        timer = null;
       }
 
       flush();
 
-      if (typeof window !== "undefined") {
+      if (pageHideAttached && typeof window !== "undefined") {
         window.removeEventListener("pagehide", handlePageHide);
+        pageHideAttached = false;
       }
     },
   };

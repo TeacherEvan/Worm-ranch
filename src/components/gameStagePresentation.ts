@@ -1,0 +1,374 @@
+import type { DisplayProfile } from "@/game/detection";
+import { createWorld, getSummary } from "@/game/engine";
+import { isWormActive, type GameSummary, type GameWorld, type Worm } from "@/game/types";
+import { getStagePresentation } from "@/components/gameStagePhasePresentation";
+
+export { getPhaseChipLabel, getPhaseLabel, getStagePresentation } from "@/components/gameStagePhasePresentation";
+export type { StagePresentation } from "@/components/gameStagePhasePresentation";
+
+export type StageFeedback = {
+  id: number;
+  x: number;
+  y: number;
+  lifeMs: number;
+  ttlMs: number;
+  label: string;
+  tone: "tag" | "teleport" | "collect" | "final";
+};
+
+export function renderStage(
+  context: CanvasRenderingContext2D,
+  world: GameWorld,
+  reducedMotion: boolean,
+  feedback: StageFeedback[],
+) {
+  context.clearRect(0, 0, world.width, world.height);
+  const frameNow = performance.now();
+
+  const gradient = context.createLinearGradient(0, 0, 0, world.height);
+  gradient.addColorStop(0, "rgba(7, 18, 26, 0.98)");
+  gradient.addColorStop(0.62, "rgba(17, 31, 33, 0.98)");
+  gradient.addColorStop(1, "rgba(36, 28, 23, 0.98)");
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, world.width, world.height);
+
+  drawCorralBackdrop(context, world.width, world.height);
+  drawPointerCorral(context, world, reducedMotion, frameNow);
+
+  if (world.phase === "ghostFinale") {
+    context.save();
+    context.fillStyle = reducedMotion ? "rgba(7, 10, 14, 0.22)" : "rgba(7, 10, 14, 0.28)";
+    context.fillRect(0, 0, world.width, world.height);
+    context.restore();
+  }
+
+  const summary = getSummary(world);
+  const presentation = getStagePresentation(summary, world.profile);
+  const activeWorms = world.worms.filter(isWormActive);
+  const ghostWormId = activeWorms.find((worm) => worm.state === "ghost")?.id ?? null;
+
+  for (const fairy of world.fairies) {
+    drawFairy(context, fairy, reducedMotion);
+  }
+
+  for (const worm of activeWorms) {
+    drawWorm(context, world, worm, reducedMotion, worm.id === ghostWormId, frameNow);
+  }
+
+  if (presentation.countdownOverlay) {
+    context.save();
+    context.fillStyle = `rgba(5, 10, 15, ${0.2 + presentation.countdownOverlay.progress * 0.42})`;
+    context.fillRect(0, 0, world.width, world.height);
+    context.globalAlpha = reducedMotion ? 1 : 0.92 + (Math.sin(frameNow * 0.014) + 1) * 0.04;
+    context.fillStyle = "#f5f4e9";
+    context.font = "600 60px var(--font-sans)";
+    context.textAlign = "center";
+    context.fillText(presentation.countdownOverlay.value, world.width / 2, world.height / 2);
+    context.restore();
+  }
+
+  if (presentation.fieldBanner) {
+    context.save();
+    context.fillStyle = "rgba(240, 126, 67, 0.95)";
+    context.font = "500 18px var(--font-mono)";
+    context.textAlign = "center";
+    context.fillText(presentation.fieldBanner, world.width / 2, 42);
+    context.restore();
+  }
+
+  drawFeedback(context, feedback, reducedMotion);
+}
+
+export function stepFeedback(feedback: StageFeedback[], deltaMs: number) {
+  for (const item of feedback) {
+    item.lifeMs += deltaMs;
+    item.y -= deltaMs * 0.028;
+  }
+
+  let index = feedback.length - 1;
+  while (index >= 0) {
+    if (feedback[index] && feedback[index].lifeMs >= feedback[index].ttlMs) {
+      feedback.splice(index, 1);
+    }
+    index -= 1;
+  }
+}
+
+export function areSummariesEqual(left: GameSummary, right: GameSummary) {
+  return (
+    left.profile === right.profile &&
+    left.phase === right.phase &&
+    left.collected === right.collected &&
+    left.remaining === right.remaining &&
+    left.fairies === right.fairies &&
+    left.timerMs === right.timerMs &&
+    left.speedBonus === right.speedBonus &&
+    left.teleportsUnlocked === right.teleportsUnlocked &&
+    left.countdownMs === right.countdownMs &&
+    left.finalWormActive === right.finalWormActive &&
+    left.rushTriggered === right.rushTriggered
+  );
+}
+
+export function createInitialSummary(profile: DisplayProfile) {
+  return getSummary(createWorld(profile, 800, 540));
+}
+
+function drawCorralBackdrop(context: CanvasRenderingContext2D, width: number, height: number) {
+  context.save();
+  context.fillStyle = "rgba(199, 243, 107, 0.04)";
+  for (let row = 0; row < height; row += 72) {
+    context.fillRect(0, row, width, 18);
+  }
+
+  context.strokeStyle = "rgba(208, 164, 107, 0.18)";
+  context.lineWidth = 2;
+  for (let rail = 0; rail < 3; rail += 1) {
+    const y = height - 34 - rail * 16;
+    context.beginPath();
+    context.moveTo(22, y);
+    context.lineTo(width - 22, y);
+    context.stroke();
+  }
+
+  context.strokeStyle = "rgba(208, 164, 107, 0.22)";
+  for (let x = 26; x < width; x += 96) {
+    context.beginPath();
+    context.moveTo(x, height - 68);
+    context.lineTo(x, height - 6);
+    context.stroke();
+  }
+
+  context.strokeStyle = "rgba(103, 197, 150, 0.12)";
+  context.lineWidth = 1.5;
+  context.beginPath();
+  context.ellipse(width * 0.18, height * 0.24, 82, 48, -0.28, 0, Math.PI * 2);
+  context.stroke();
+  context.beginPath();
+  context.ellipse(width * 0.82, height * 0.18, 118, 68, 0.22, 0, Math.PI * 2);
+  context.stroke();
+  context.restore();
+}
+
+function drawPointerCorral(
+  context: CanvasRenderingContext2D,
+  world: GameWorld,
+  reducedMotion: boolean,
+  frameNow: number,
+) {
+  if (!world.pointer?.active) {
+    return;
+  }
+
+  const ringRadius = world.profile === "mobile" ? 58 : 44;
+  const pulse = reducedMotion ? 1 : 0.88 + (Math.sin(frameNow * 0.009) + 1) * 0.08;
+  const color = world.profile === "mobile" && world.rushTriggered ? "240, 126, 67" : "199, 243, 107";
+
+  context.save();
+  context.translate(world.pointer.x, world.pointer.y);
+  context.strokeStyle = `rgba(${color}, 0.78)`;
+  context.fillStyle = `rgba(${color}, 0.08)`;
+  context.lineWidth = 2;
+  context.setLineDash([10, 7]);
+  context.beginPath();
+  context.arc(0, 0, ringRadius * pulse, 0, Math.PI * 2);
+  context.fill();
+  context.stroke();
+  context.setLineDash([]);
+  context.beginPath();
+  context.moveTo(-ringRadius * 0.55, 0);
+  context.lineTo(ringRadius * 0.55, 0);
+  context.moveTo(0, -ringRadius * 0.55);
+  context.lineTo(0, ringRadius * 0.55);
+  context.stroke();
+  context.restore();
+}
+
+function drawWorm(
+  context: CanvasRenderingContext2D,
+  world: GameWorld,
+  worm: Worm,
+  reducedMotion: boolean,
+  isGhostWorm: boolean,
+  frameNow: number,
+) {
+  const direction = Math.atan2(worm.vy, worm.vx || 0.0001);
+  const bodyLength = worm.radius * 2.8;
+  const squirm = reducedMotion ? 0 : Math.sin(frameNow * 0.012 + worm.wave) * 3.2;
+  const pulse = reducedMotion ? 1 : 0.72 + (Math.sin(frameNow * 0.01 + worm.wave) + 1) * 0.14;
+  const isBlinkCharged = world.profile === "desktop" && worm.state === "blinkCharged";
+  const isTagged = world.profile === "mobile" && worm.state === "tagged";
+
+  context.save();
+  context.translate(worm.x, worm.y);
+  context.rotate(direction);
+
+  if (isGhostWorm) {
+    context.setLineDash([8, 6]);
+    context.strokeStyle = `rgba(240, 126, 67, ${0.52 * pulse})`;
+    context.fillStyle = `rgba(240, 126, 67, ${0.08 * pulse})`;
+    context.lineWidth = 3.5;
+    context.beginPath();
+    context.arc(0, 0, worm.radius * 2.35, 0, Math.PI * 2);
+    context.fill();
+    context.stroke();
+    context.setLineDash([]);
+  } else if (isBlinkCharged) {
+    context.setLineDash([5, 5]);
+    context.strokeStyle = `rgba(199, 243, 107, ${0.5 * pulse})`;
+    context.lineWidth = 2;
+    context.beginPath();
+    context.arc(0, 0, worm.radius * 2.05, 0, Math.PI * 2);
+    context.stroke();
+    context.setLineDash([]);
+    context.fillStyle = `rgba(247, 255, 198, ${0.88 * pulse})`;
+    context.beginPath();
+    context.arc(
+      Math.cos(frameNow * 0.006 + worm.wave) * worm.radius * 2.2,
+      Math.sin(frameNow * 0.006 + worm.wave) * worm.radius * 2.2,
+      2.8,
+      0,
+      Math.PI * 2,
+    );
+    context.fill();
+  } else if (isTagged) {
+    const totalBursts = Math.max(1, world.rules.touchBurstsToCapture);
+    const progress = clamp01(worm.touchBursts / totalBursts);
+    const startAngle = -Math.PI * 0.82;
+    const endAngle = Math.PI * 0.82;
+
+    context.strokeStyle = "rgba(255, 228, 164, 0.26)";
+    context.lineWidth = 3;
+    context.beginPath();
+    context.arc(0, 0, worm.radius * 2.02, startAngle, endAngle);
+    context.stroke();
+    context.strokeStyle = `rgba(255, 228, 164, ${0.68 * pulse})`;
+    context.beginPath();
+    context.arc(0, 0, worm.radius * 2.02, startAngle, startAngle + (endAngle - startAngle) * progress);
+    context.stroke();
+  }
+
+  context.lineCap = "round";
+  context.lineWidth = isGhostWorm ? worm.radius * 1.7 : worm.radius * 1.5;
+  context.strokeStyle = isGhostWorm
+    ? `hsla(${worm.hue}, 84%, 78%, ${0.72 + pulse * 0.08})`
+    : `hsl(${worm.hue}, 72%, 56%)`;
+  context.shadowBlur = isGhostWorm && !reducedMotion ? 18 : 0;
+  context.shadowColor = isGhostWorm ? "rgba(245, 206, 166, 0.58)" : "transparent";
+  context.beginPath();
+  context.moveTo(-bodyLength * 0.55, 0);
+  context.quadraticCurveTo(-worm.radius * 0.2, squirm, bodyLength * 0.45, 0);
+  context.stroke();
+
+  context.shadowBlur = 0;
+  context.fillStyle = isGhostWorm
+    ? `hsla(${worm.hue}, 80%, 84%, ${0.74 + pulse * 0.08})`
+    : `hsl(${worm.hue}, 76%, 64%)`;
+  context.beginPath();
+  context.ellipse(bodyLength * 0.48, 0, worm.radius * 0.92, worm.radius * 0.82, 0, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = "rgba(16, 17, 20, 0.82)";
+  context.beginPath();
+  context.arc(bodyLength * 0.72, -worm.radius * 0.16, worm.radius * 0.12, 0, Math.PI * 2);
+  context.arc(bodyLength * 0.72, worm.radius * 0.16, worm.radius * 0.12, 0, Math.PI * 2);
+  context.fill();
+
+  if (isTagged) {
+    const totalBursts = Math.max(1, world.rules.touchBurstsToCapture);
+    context.fillStyle = "rgba(255, 238, 194, 0.92)";
+    context.font = "600 14px var(--font-mono)";
+    context.textAlign = "center";
+    context.fillText(`${Math.min(worm.touchBursts, totalBursts)}/${totalBursts}`, 0, -worm.radius * 2.75);
+  }
+
+  context.restore();
+}
+
+function drawFairy(context: CanvasRenderingContext2D, fairy: GameWorld["fairies"][number], reducedMotion: boolean) {
+  const alpha = clamp01(1 - fairy.lifeMs / fairy.ttlMs);
+  const morphWindowMs = Math.max(140, fairy.ttlMs * 0.18);
+  const morphProgress = clamp01(fairy.lifeMs / morphWindowMs);
+  const wingPulse = reducedMotion ? 1 : 0.92 + Math.sin(fairy.lifeMs * 0.018 + fairy.hue) * 0.08;
+  const lift = reducedMotion ? 0 : fairy.lifeMs * 0.012;
+  const wingWidth = (2.8 + morphProgress * 3.8) * wingPulse;
+  const wingHeight = 1.8 + morphProgress * 2.8;
+
+  context.save();
+  context.translate(fairy.x, fairy.y - lift);
+  context.globalAlpha = alpha;
+
+  if (morphProgress < 1) {
+    context.strokeStyle = `hsla(${fairy.hue}, 98%, 84%, ${0.5 + (1 - morphProgress) * 0.25})`;
+    context.lineWidth = 1.6;
+    context.beginPath();
+    context.arc(0, 0, 5 + morphProgress * 7, 0, Math.PI * 2);
+    context.stroke();
+  }
+
+  if (fairy.state === "fading") {
+    context.strokeStyle = `hsla(${fairy.hue}, 92%, 82%, ${0.34 + alpha * 0.24})`;
+    context.lineWidth = 1.4;
+    context.setLineDash([4, 4]);
+    context.beginPath();
+    context.arc(0, 0, 10, 0, Math.PI * 2);
+    context.stroke();
+    context.setLineDash([]);
+  }
+
+  context.fillStyle = `hsla(${fairy.hue}, 95%, 75%, 0.95)`;
+  context.beginPath();
+  context.ellipse(-6, 0, wingWidth, wingHeight, -0.45, 0, Math.PI * 2);
+  context.ellipse(6, 0, wingWidth, wingHeight, 0.45, 0, Math.PI * 2);
+  context.fill();
+
+  if (morphProgress > 0.45) {
+    context.strokeStyle = `hsla(${fairy.hue}, 96%, 86%, ${0.26 + alpha * 0.2})`;
+    context.lineWidth = 1.2;
+    context.beginPath();
+    context.moveTo(0, 2);
+    context.quadraticCurveTo(-1.5, 8, 0, 14);
+    context.stroke();
+  }
+
+  context.fillStyle = "rgba(255, 255, 255, 0.95)";
+  context.beginPath();
+  context.arc(0, 0, 3.4 - morphProgress * 0.6, 0, Math.PI * 2);
+  context.fill();
+  context.restore();
+}
+
+function clamp01(value: number) {
+  return Math.max(0, Math.min(1, value));
+}
+
+function drawFeedback(context: CanvasRenderingContext2D, feedback: StageFeedback[], reducedMotion: boolean) {
+  for (const item of feedback) {
+    const progress = item.lifeMs / item.ttlMs;
+    const alpha = 1 - progress;
+    if (alpha <= 0) {
+      continue;
+    }
+
+    const color =
+      item.tone === "collect"
+        ? "199, 243, 107"
+        : item.tone === "tag"
+          ? "255, 228, 164"
+          : item.tone === "final"
+            ? "240, 126, 67"
+            : "154, 225, 255";
+
+    context.save();
+    context.globalAlpha = alpha;
+    context.translate(item.x, item.y - (reducedMotion ? progress * 12 : (1 - Math.pow(1 - progress, 4)) * 18));
+    context.scale(reducedMotion ? 1 : 0.92 + alpha * 0.12, reducedMotion ? 1 : 0.92 + alpha * 0.12);
+    context.fillStyle = `rgba(${color}, 0.96)`;
+    context.shadowBlur = reducedMotion ? 0 : 16 * alpha;
+    context.shadowColor = `rgba(${color}, ${alpha})`;
+    context.font = "700 14px var(--font-mono)";
+    context.textAlign = "center";
+    context.fillText(item.label, 0, 0);
+    context.restore();
+  }
+}

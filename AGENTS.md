@@ -1,7 +1,11 @@
 <!-- BEGIN:nextjs-agent-rules -->
 # This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+This repo targets a newer Next.js release than many default examples. APIs, conventions, and file structure may differ from older assumptions. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code and heed deprecation notices.
 
-For Worm Ranch gameplay readability, HUD, input-feel, or player-facing mechanics work, prefer the `Worm Ranch Gameplay` workspace agent.
+Start with [`.github/copilot-instructions.md`](.github/copilot-instructions.md) for repo-wide boundaries and validation.
+
+For active implementation context, use [docs/plans/worm-ranch-plan.md](docs/plans/worm-ranch-plan.md) and [docs/jobcard.md](docs/jobcard.md) instead of copying plan details into chat customizations.
+
+For Worm Ranch gameplay readability, HUD clarity, input feel, or player-facing mechanics work, prefer the `Worm Ranch Gameplay` workspace agent.
 <!-- END:nextjs-agent-rules -->

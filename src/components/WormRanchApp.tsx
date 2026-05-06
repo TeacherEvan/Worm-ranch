@@ -3,31 +3,29 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import styles from "./WormRanchApp.module.css";
 import { GameStage } from "@/components/GameStage";
-import { detectDisplayProfile, type DisplayMode, type DisplayProfile, type DisplaySnapshot } from "@/game/detection";
-import { PROFILE_RULES, type GameSummary, type RoundResult } from "@/game/engine";
+import { getPhaseChipLabel } from "@/components/gameStagePresentation";
+import { areDisplaySnapshotsEqual, getProfileDetectedDetails } from "@/lib/analytics";
+import { detectDisplayProfile, type DisplayProfile, type DisplaySnapshot } from "@/game/detection";
+import { PROFILE_RULES } from "@/game/rules";
+import {
+  areSettingsEqual,
+  getSettingsDetails,
+  getStoredSettingsSnapshot,
+  subscribeToSettings,
+  type SettingsState,
+  writeStoredSettings,
+} from "@/lib/wormRanchSettings";
+import type { GameSummary, RoundResult } from "@/game/types";
 import { createSilentLogger, type EventName } from "@/lib/logger";
 
-type Screen = "welcome" | "home" | "settings" | "game" | "results";
+type AppScreen = "welcome" | "home" | "settings" | "game" | "results";
 
-type SettingsState = {
-  analyticsEnabled: boolean;
-  reducedMotion: boolean;
-  hapticsEnabled: boolean;
-  displayMode: DisplayMode;
-};
-
-const SETTINGS_KEY = "worm-ranch-settings";
-const SETTINGS_EVENT = "worm-ranch-settings-change";
-
-const defaultSettings: SettingsState = {
-  analyticsEnabled: true,
-  reducedMotion: false,
-  hapticsEnabled: true,
-  displayMode: "auto",
-};
+const MOBILE_ROUNDUP_COPY = "Tap once to tag a worm, then tap that same worm again to bag it.";
+const FAIRY_LIFT_COPY = "Clean catches still lift into fairies and drift out of the ranch glow.";
 
 const emptySummary: GameSummary = {
   profile: "desktop",
+  phase: "introCountdown",
   collected: 0,
   remaining: 100,
   fairies: 0,
@@ -40,13 +38,16 @@ const emptySummary: GameSummary = {
 };
 
 export function WormRanchApp() {
-  const [screen, setScreen] = useState<Screen>("welcome");
+  const [screen, setScreen] = useState<AppScreen>("welcome");
   const [detectedDisplay, setDetectedDisplay] = useState<DisplaySnapshot | null>(null);
+  const [runProfile, setRunProfile] = useState<DisplayProfile | null>(null);
   const [summary, setSummary] = useState<GameSummary>(emptySummary);
   const [result, setResult] = useState<RoundResult | null>(null);
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
-  const loggerRef = useRef(createSilentLogger("/api/events"));
+  const [logger] = useState(() => createSilentLogger("/api/events"));
+  const hasLoggedOpenRef = useRef(false);
   const settings = useSyncExternalStore(subscribeToSettings, getStoredSettingsSnapshot, getStoredSettingsSnapshot);
+  const settingsBaselineRef = useRef<SettingsState | null>(settings);
 
   const effectiveProfile = useMemo<DisplayProfile>(() => {
     if (settings.displayMode !== "auto") {
@@ -56,62 +57,163 @@ export function WormRanchApp() {
     return detectedDisplay?.profile ?? "desktop";
   }, [detectedDisplay?.profile, settings.displayMode]);
 
+  const sessionIdRef = useRef(sessionId);
+  const screenRef = useRef<AppScreen>(screen);
+  const settingsRef = useRef(settings);
+  const effectiveProfileRef = useRef<DisplayProfile>(effectiveProfile);
+  const runProfileRef = useRef<DisplayProfile | null>(runProfile);
+  const detectedDisplayRef = useRef<DisplaySnapshot | null>(null);
+
   const logEvent = useCallback(
-    (name: EventName, details: Record<string, unknown> | undefined, activeScreen: string, enabled: boolean) => {
+    (
+      name: EventName,
+      details: Record<string, unknown> | undefined,
+      activeScreen: string,
+      enabled: boolean,
+      profile: DisplayProfile,
+    ) => {
       if (!enabled) {
         return;
       }
 
-      loggerRef.current.log({
+      logger.log({
         name,
         details,
-        sessionId,
-        profile: effectiveProfile,
+        sessionId: sessionIdRef.current,
+        profile,
         screen: activeScreen,
       });
     },
-    [effectiveProfile, sessionId],
+    [logger],
   );
 
-  useEffect(() => {
-    const logger = loggerRef.current;
+  const handleStageEvent = useCallback(
+    (name: EventName, details?: Record<string, unknown>) => {
+      logEvent(
+        name,
+        details,
+        "game",
+        settingsRef.current.analyticsEnabled,
+        runProfileRef.current ?? effectiveProfileRef.current,
+      );
+    },
+    [logEvent],
+  );
 
+  const handleRoundEnd = useCallback((roundResult: RoundResult) => {
+    setResult(roundResult);
+    setScreen("results");
+  }, []);
+
+  useEffect(() => {
+    sessionIdRef.current = sessionId;
+  }, [sessionId]);
+
+  useEffect(() => {
+    screenRef.current = screen;
+  }, [screen]);
+
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
+
+  useEffect(() => {
+    effectiveProfileRef.current = effectiveProfile;
+  }, [effectiveProfile]);
+
+  useEffect(() => {
+    runProfileRef.current = runProfile;
+  }, [runProfile]);
+
+  useEffect(() => {
     const updateProfile = () => setDetectedDisplay(detectDisplayProfile(window));
 
     updateProfile();
     window.addEventListener("resize", updateProfile);
-    logEvent("app_opened", { firstScreen: screen }, "welcome", settings.analyticsEnabled);
 
     return () => {
       window.removeEventListener("resize", updateProfile);
       logger.dispose();
     };
-  }, [logEvent, screen, settings.analyticsEnabled]);
+  }, [logger]);
+
+  useEffect(() => {
+    if (hasLoggedOpenRef.current) {
+      return;
+    }
+
+    hasLoggedOpenRef.current = true;
+    logEvent(
+      "app_opened",
+      { firstScreen: "welcome" },
+      "welcome",
+      settingsRef.current.analyticsEnabled,
+      effectiveProfileRef.current,
+    );
+  }, [logEvent]);
+
+  useEffect(() => {
+    const previousSettings = settingsBaselineRef.current;
+    settingsBaselineRef.current = settings;
+
+    if (!previousSettings || areSettingsEqual(previousSettings, settings)) {
+      return;
+    }
+
+    const activeScreen = screenRef.current;
+    const profile =
+      activeScreen === "game" || activeScreen === "results"
+        ? runProfileRef.current ?? effectiveProfileRef.current
+        : effectiveProfileRef.current;
+
+    logEvent("settings_changed", getSettingsDetails(settings), activeScreen, settings.analyticsEnabled, profile);
+  }, [logEvent, settings]);
 
   useEffect(() => {
     if (!detectedDisplay) {
       return;
     }
 
-    logEvent("settings_changed", settings, screen, settings.analyticsEnabled);
-  }, [detectedDisplay, logEvent, screen, settings]);
-
-  useEffect(() => {
-    if (!detectedDisplay) {
+    if (areDisplaySnapshotsEqual(detectedDisplayRef.current, detectedDisplay)) {
       return;
     }
 
-    logEvent("screen_viewed", { screen, effectiveProfile }, screen, settings.analyticsEnabled);
-  }, [detectedDisplay, effectiveProfile, logEvent, screen, settings.analyticsEnabled]);
+    detectedDisplayRef.current = detectedDisplay;
+    logEvent(
+      "profile_detected",
+      getProfileDetectedDetails(detectedDisplay),
+      screenRef.current,
+      settingsRef.current.analyticsEnabled,
+      detectedDisplay.profile,
+    );
+  }, [detectedDisplay, logEvent]);
+
+  useEffect(() => {
+    const profile =
+      screen === "game" || screen === "results"
+        ? runProfileRef.current ?? effectiveProfileRef.current
+        : effectiveProfileRef.current;
+
+    logEvent("screen_viewed", undefined, screen, settingsRef.current.analyticsEnabled, profile);
+  }, [logEvent, screen]);
 
   const beginRun = () => {
-    setSessionId(crypto.randomUUID());
+    const nextRunProfile = effectiveProfileRef.current;
+    const nextSessionId = crypto.randomUUID();
+    const nextRules = PROFILE_RULES[nextRunProfile];
+
+    sessionIdRef.current = nextSessionId;
+    runProfileRef.current = nextRunProfile;
+
+    setSessionId(nextSessionId);
+    setRunProfile(nextRunProfile);
     setResult(null);
     setSummary({
       ...emptySummary,
-      profile: effectiveProfile,
-      remaining: PROFILE_RULES[effectiveProfile].totalWorms,
-      timerMs: PROFILE_RULES[effectiveProfile].timeLimitMs,
+      profile: nextRunProfile,
+      remaining: nextRules.totalWorms,
+      timerMs: nextRules.timeLimitMs,
+      countdownMs: nextRules.introCountdownMs,
     });
     setScreen("game");
   };
@@ -123,83 +225,97 @@ export function WormRanchApp() {
   const profileRules = PROFILE_RULES[effectiveProfile];
 
   return (
-    <main className={styles.page}>
+    <main
+      className={styles.page}
+      data-motion={settings.reducedMotion ? "reduced" : "full"}
+      data-phase={screen === "game" ? summary.phase : undefined}
+      data-screen={screen}
+    >
       <header className={styles.header}>
         <div className={styles.brand}>
-          <span className={styles.eyebrow}>Display-aware chase toy</span>
+          <span className={styles.eyebrow}>Orbit corral panic</span>
           <h1 className={styles.title}>Worm Ranch</h1>
           <p className={styles.subtle}>
-            A cursor panic toy with escalating speed, one-shot teleports, and a final worm that was never built
-            to lose.
+            A neon pasture scramble where every bagged worm spooks the herd, the blink fence wakes late, and the
+            last outlaw was never bred to lose.
           </p>
         </div>
         <div className={styles.chips}>
-          <span className={styles.chip}>Auto display: {detectedDisplay?.profile ?? "scanning"}</span>
-          <span className={styles.chip}>Active rules: {effectiveProfile}</span>
-          <span className={styles.chip}>Target count: {profileRules.totalWorms}</span>
+          <span className={styles.chip}>Pasture scan: {detectedDisplay?.profile ?? "scanning"}</span>
+          <span className={styles.chip}>Loaded tack: {effectiveProfile}</span>
+          <span className={styles.chip}>Loose herd: {profileRules.totalWorms}</span>
         </div>
       </header>
 
       {screen === "welcome" && (
-        <section className={styles.screen}>
-          <div className={styles.hero}>
+        <section className={`${styles.screen} ${styles.welcomeScreen}`}>
+          <div className={`${styles.hero} ${styles.heroWelcome}`}>
             <div className={styles.welcomeVisual} aria-hidden="true">
+              <div className={styles.orbitMoon} />
               <div className={styles.wormTrail} />
               <div className={styles.wormTrailAlt} />
+              <div className={styles.corralFence} />
+              <div className={styles.signalDish} />
               <div className={styles.fairyGlow} />
             </div>
-            <div>
+            <div className={styles.heroCopy}>
+              <p className={styles.heroDeck}>
+                Big-screen runs open the whole pasture. Touch runs compress the chase into thumb reach without easing
+                the panic.
+              </p>
               <div className={styles.actions}>
                 <button className={styles.primary} onClick={() => setScreen("home")}>
-                  Enter the ranch
+                  Open the gate
                 </button>
                 <button className={styles.secondary} onClick={() => setScreen("settings")}>
-                  Tune settings
+                  Rig the tack
                 </button>
               </div>
             </div>
           </div>
           <div className={styles.dashboard}>
-            <Metric label="Desktop rule" value="100 worms" />
-            <Metric label="Mobile rule" value="10 worms" />
-            <Metric label="Fairy morph" value="enabled" />
-            <Metric label="Telemetry" value={settings.analyticsEnabled ? "silent" : "off"} />
+            <Metric label="Big corral" value="100 worms" />
+            <Metric label="Pocket corral" value="10 worms" />
+            <Metric label="Fairy lift" value="enabled" />
+            <Metric label="Trail log" value={settings.analyticsEnabled ? "silent" : "off"} />
           </div>
         </section>
       )}
 
       {screen === "home" && (
-        <section className={styles.screen}>
-          <div className={styles.hero}>
-            <p className={styles.subtle}>
-              Desktop starts with 100 worms and every catch makes the rest faster by 0.1. Mobile starts with 10
-              worms and each one needs two double-taps. From catch 50 onward, desktop worms blink away once when you
-              line up a perfect hit.
-            </p>
-            <div className={styles.actions}>
-              <button className={styles.primary} onClick={beginRun}>
-                Start hunt
-              </button>
-              <button className={styles.secondary} onClick={() => setScreen("settings")}>
-                Settings
-              </button>
+        <section className={`${styles.screen} ${styles.homeScreen}`}>
+          <div className={`${styles.hero} ${styles.heroHome}`}>
+            <div className={styles.heroCopy}>
+              <p className={`${styles.subtle} ${styles.heroLead}`}>
+                Desktop opens a full pasture of 100 worms and every bagged one whips 0.1 more speed into the herd.
+                {" "}Mobile opens with 10 worms: {MOBILE_ROUNDUP_COPY}{" "}
+                After catch 50, desktop worms get one blink through the fence before they can be penned.
+              </p>
+              <div className={styles.actions}>
+                <button className={styles.primary} onClick={beginRun}>
+                  Start roundup
+                </button>
+                <button className={styles.secondary} onClick={() => setScreen("settings")}>
+                  Ranch settings
+                </button>
+              </div>
             </div>
           </div>
           <div className={styles.dashboard}>
-            <Metric label="Display mode" value={settings.displayMode} />
-            <Metric label="Pointer" value={detectedDisplay?.pointer ?? "unknown"} />
-            <Metric label="Orientation" value={detectedDisplay?.orientation ?? "unknown"} />
-            <Metric label="Viewport" value={`${detectedDisplay?.width ?? 0} x ${detectedDisplay?.height ?? 0}`} />
+            <Metric label="Tack mode" value={settings.displayMode} />
+            <Metric label="Reins" value={detectedDisplay?.pointer ?? "unknown"} />
+            <Metric label="Horizon" value={detectedDisplay?.orientation ?? "unknown"} />
+            <Metric label="Pasture glass" value={`${detectedDisplay?.width ?? 0} x ${detectedDisplay?.height ?? 0}`} />
           </div>
         </section>
       )}
 
       {screen === "settings" && (
         <section className={styles.panel}>
-          <h2>Settings</h2>
+          <h2>Ranch settings</h2>
           <div className={styles.settingsGrid}>
             <div className={styles.toggleRow}>
-              <strong>Display profile</strong>
+              <strong>Display mode</strong>
               <label>
                 <input
                   type="radio"
@@ -207,7 +323,7 @@ export function WormRanchApp() {
                   checked={settings.displayMode === "auto"}
                   onChange={() => updateSetting("displayMode", "auto")}
                 />
-                Auto detect
+                Auto scout
               </label>
               <label>
                 <input
@@ -216,7 +332,7 @@ export function WormRanchApp() {
                   checked={settings.displayMode === "desktop"}
                   onChange={() => updateSetting("displayMode", "desktop")}
                 />
-                Force desktop
+                Force desktop corral
               </label>
               <label>
                 <input
@@ -225,20 +341,12 @@ export function WormRanchApp() {
                   checked={settings.displayMode === "mobile"}
                   onChange={() => updateSetting("displayMode", "mobile")}
                 />
-                Force mobile
+                Force pocket corral
               </label>
             </div>
 
             <div className={styles.toggleRow}>
-              <strong>Comfort and logging</strong>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={settings.analyticsEnabled}
-                  onChange={(event) => updateSetting("analyticsEnabled", event.target.checked)}
-                />
-                Silent analytics
-              </label>
+              <strong>Preferences</strong>
               <label>
                 <input
                   type="checkbox"
@@ -250,19 +358,19 @@ export function WormRanchApp() {
               <label>
                 <input
                   type="checkbox"
-                  checked={settings.hapticsEnabled}
-                  onChange={(event) => updateSetting("hapticsEnabled", event.target.checked)}
+                  checked={settings.analyticsEnabled}
+                  onChange={(event) => updateSetting("analyticsEnabled", event.target.checked)}
                 />
-                Haptics ready
+                Silent analytics
               </label>
             </div>
           </div>
           <div className={styles.actions}>
             <button className={styles.primary} onClick={() => setScreen("home")}>
-              Back home
+              Back to yard
             </button>
             <button className={styles.secondary} onClick={beginRun}>
-              Start with these rules
+              Ride this setup
             </button>
           </div>
         </section>
@@ -271,32 +379,22 @@ export function WormRanchApp() {
       {screen === "game" && (
         <section className={styles.screen}>
           <div className={styles.hud}>
-            <Metric label="Collected worms" value={String(summary.collected)} />
+            <Metric label="Bagged" value={String(summary.collected)} />
             <Metric label="Remaining" value={String(summary.remaining)} />
-            <Metric label="Speed bonus" value={`+${summary.speedBonus.toFixed(1)}`} />
-            <Metric label="Fairies drifting" value={String(summary.fairies)} />
+            <Metric label="Time" value={`${Math.ceil(summary.timerMs / 1000)}s`} />
+            <Metric label="Phase" value={getPhaseChipLabel(summary.profile, summary)} />
           </div>
           <GameStage
             key={sessionId}
-            profile={effectiveProfile}
+            profile={runProfile ?? effectiveProfile}
             reducedMotion={settings.reducedMotion}
-            sessionId={sessionId}
             onSummaryChange={setSummary}
-            onEvent={(name, details) => logEvent(name, details, "game", settings.analyticsEnabled)}
-            onRoundEnd={(roundResult) => {
-              setResult(roundResult);
-              setScreen("results");
-            }}
+            onEvent={handleStageEvent}
+            onRoundEnd={handleRoundEnd}
           />
-          <div className={styles.dashboard}>
-            <Metric label="Countdown" value={summary.countdownMs > 0 ? `${Math.ceil(summary.countdownMs / 1000)}` : "live"} />
-            <Metric label="Timer" value={`${Math.ceil(summary.timerMs / 1000)}s`} />
-            <Metric label="Teleport band" value={summary.teleportsUnlocked ? "armed" : "locked"} />
-            <Metric label="Rush status" value={summary.rushTriggered ? "full panic" : "steady"} />
-          </div>
           <div className={styles.actions}>
             <button className={styles.secondary} onClick={() => setScreen("home")}>
-              Leave round
+              Leave corral
             </button>
           </div>
         </section>
@@ -304,22 +402,21 @@ export function WormRanchApp() {
 
       {screen === "results" && result && (
         <section className={styles.results}>
-          <h2>Round results</h2>
+          <h2>Round tally</h2>
           <div className={styles.resultsGrid}>
             <Metric label="Outcome" value={formatReason(result.reason)} />
-            <Metric label="Collected" value={String(result.collected)} />
-            <Metric label="Left alive" value={String(result.remaining)} />
+            <Metric label="Bagged" value={String(result.collected)} />
+            <Metric label="Left loose" value={String(result.remaining)} />
           </div>
           <p className={styles.note}>
-            Successful catches morph into fairies and float away. On desktop, the last worm is designed to escape.
-            On mobile, each worm still expects two deliberate double-taps.
+            {FAIRY_LIFT_COPY} On desktop, the last outlaw is designed to escape. On mobile, {MOBILE_ROUNDUP_COPY.toLowerCase()}
           </p>
           <div className={styles.actions}>
             <button className={styles.primary} onClick={beginRun}>
-              Run it again
+              Ride again
             </button>
             <button className={styles.secondary} onClick={() => setScreen("home")}>
-              Home
+              Yard
             </button>
           </div>
         </section>
@@ -339,56 +436,12 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 function formatReason(reason: RoundResult["reason"]) {
   if (reason === "captured") {
-    return "Field cleared";
+    return "Corral cleared";
   }
 
-  if (reason === "escaped") {
-    return "Final worm escaped";
+  if (reason === "ghostEscape") {
+    return "Outlaw escaped";
   }
 
-  return "Timer expired";
-}
-
-function subscribeToSettings(onStoreChange: () => void) {
-  if (typeof window === "undefined") {
-    return () => undefined;
-  }
-
-  const handleChange = () => onStoreChange();
-  window.addEventListener("storage", handleChange);
-  window.addEventListener(SETTINGS_EVENT, handleChange);
-
-  return () => {
-    window.removeEventListener("storage", handleChange);
-    window.removeEventListener(SETTINGS_EVENT, handleChange);
-  };
-}
-
-function getStoredSettingsSnapshot() {
-  if (typeof window === "undefined") {
-    return defaultSettings;
-  }
-
-  return readStoredSettings(window.localStorage.getItem(SETTINGS_KEY));
-}
-
-function readStoredSettings(rawSettings: string | null): SettingsState {
-  if (!rawSettings) {
-    return defaultSettings;
-  }
-
-  try {
-    return { ...defaultSettings, ...(JSON.parse(rawSettings) as Partial<SettingsState>) };
-  } catch {
-    return defaultSettings;
-  }
-}
-
-function writeStoredSettings(settings: SettingsState) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  window.dispatchEvent(new Event(SETTINGS_EVENT));
+  return "Clock ran dry";
 }

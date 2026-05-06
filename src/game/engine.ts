@@ -1,139 +1,75 @@
-import type { DisplayProfile } from "@/game/detection";
+import type { DisplayProfile } from "./detection";
+import { getProfileRules, type ProfileRules } from "./rules";
+import { isFairyVisible, isWormActive, type ActionResult, type EngineRuntime, type Fairy, type GameSummary, type GameWorld, type Point, type RoundResult, type Worm } from "./types";
 
-export type Point = {
-  x: number;
-  y: number;
+const BLINK_RECOVER_MS = 220;
+
+export { PROFILE_RULES } from "./rules";
+export type {
+  ActionResult,
+  EngineRuntime,
+  Fairy,
+  FairyState,
+  GameSummary,
+  GameWorld,
+  MobileWormState,
+  Point,
+  RoundPhase,
+  RoundResult,
+  Worm,
+  WormState,
+} from "./types";
+
+export type CreateWorldOptions = {
+  runtime?: Partial<EngineRuntime>;
+  rules?: Partial<ProfileRules>;
 };
 
-export type Worm = {
-  id: string;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  radius: number;
-  hue: number;
-  wave: number;
-  teleportsRemaining: number;
-  touchBursts: number;
-  active: boolean;
-  escaped: boolean;
-};
-
-export type Fairy = {
-  id: string;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  lifeMs: number;
-  ttlMs: number;
-  hue: number;
-};
-
-export type GameSummary = {
-  profile: DisplayProfile;
-  collected: number;
-  remaining: number;
-  fairies: number;
-  timerMs: number;
-  speedBonus: number;
-  teleportsUnlocked: boolean;
-  countdownMs: number;
-  finalWormActive: boolean;
-  rushTriggered: boolean;
-};
-
-export type RoundResult = {
-  reason: "escaped" | "time" | "captured";
-  collected: number;
-  remaining: number;
-};
-
-export type ActionResult =
-  | { kind: "ignored" }
-  | { kind: "miss" }
-  | { kind: "tag"; wormId: string; bursts: number }
-  | { kind: "teleport"; wormId: string; immortal: boolean }
-  | { kind: "collect"; wormId: string; collected: number };
-
-export type GameWorld = {
-  profile: DisplayProfile;
-  width: number;
-  height: number;
-  worms: Worm[];
-  fairies: Fairy[];
-  pointer: (Point & { active: boolean }) | null;
-  collected: number;
-  elapsedMs: number;
-  timerMs: number;
-  countdownMs: number;
-  rushTriggered: boolean;
-  teleportsUnlocked: boolean;
-  finaleStartedAt: number | null;
-  roundResult: RoundResult | null;
-};
-
-type ProfileRules = {
-  totalWorms: number;
-  baseRadius: number;
-  baseMaxSpeed: number;
-  rushSpeed: number;
-  timeLimitMs: number;
-  influenceRadius: number;
-  teleportDistance: number;
-  mobileTapForgiveness: number;
-  finaleDurationMs: number;
-};
-
-export const PROFILE_RULES: Record<DisplayProfile, ProfileRules> = {
-  desktop: {
-    totalWorms: 100,
-    baseRadius: 10,
-    baseMaxSpeed: 0.95,
-    rushSpeed: 4.4,
-    timeLimitMs: 95_000,
-    influenceRadius: 180,
-    teleportDistance: 110,
-    mobileTapForgiveness: 0,
-    finaleDurationMs: 9_000,
-  },
-  mobile: {
-    totalWorms: 10,
-    baseRadius: 18,
-    baseMaxSpeed: 1.15,
-    rushSpeed: 5.4,
-    timeLimitMs: 70_000,
-    influenceRadius: 220,
-    teleportDistance: 0,
-    mobileTapForgiveness: 12,
-    finaleDurationMs: 0,
-  },
-};
+export function createEngineRuntime(overrides: Partial<EngineRuntime> = {}): EngineRuntime {
+  return {
+    random: Math.random,
+    now: Date.now,
+    ...overrides,
+  };
+}
 
 export function createWorld(
   profile: DisplayProfile,
   width: number,
   height: number,
+  options: CreateWorldOptions = {},
 ): GameWorld {
-  const rules = PROFILE_RULES[profile];
+  const rules = createProfileRules(profile, options.rules);
+  const runtime = createEngineRuntime(options.runtime);
 
   return {
     profile,
+    rules,
+    phase: "introCountdown",
     width,
     height,
-    worms: Array.from({ length: rules.totalWorms }, (_, index) => createWorm(index, rules, width, height)),
+    worms: Array.from({ length: rules.totalWorms }, (_, index) => createWorm(index, rules, width, height, runtime)),
     fairies: [],
     pointer: null,
     collected: 0,
     elapsedMs: 0,
     timerMs: rules.timeLimitMs,
-    countdownMs: 2_400,
+    countdownMs: rules.introCountdownMs,
     rushTriggered: false,
+    pendingRushTrigger: false,
     teleportsUnlocked: false,
     finaleStartedAt: null,
     roundResult: null,
+    runtime,
   };
+}
+
+export function startRound(world: GameWorld) {
+  if (world.roundResult || world.countdownMs <= 0) {
+    return;
+  }
+
+  stepWorld(world, world.countdownMs);
 }
 
 export function resizeWorld(world: GameWorld, width: number, height: number) {
@@ -146,8 +82,13 @@ export function setPointer(world: GameWorld, point: Point | null) {
 }
 
 export function triggerTouchRush(world: GameWorld, point: Point) {
-  world.rushTriggered = true;
   setPointer(world, point);
+
+  if (world.profile !== "mobile" || world.roundResult || world.countdownMs > 0 || world.rushTriggered) {
+    return;
+  }
+
+  world.pendingRushTrigger = true;
 }
 
 export function stepWorld(world: GameWorld, deltaMs: number) {
@@ -156,10 +97,17 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
   }
 
   world.elapsedMs += deltaMs;
+  advanceWormTimers(world, deltaMs);
 
   if (world.countdownMs > 0) {
     world.countdownMs = Math.max(0, world.countdownMs - deltaMs);
+    updateRoundPhase(world);
     return;
+  }
+
+  if (world.profile === "mobile" && world.pendingRushTrigger) {
+    world.rushTriggered = true;
+    world.pendingRushTrigger = false;
   }
 
   world.timerMs = Math.max(0, world.timerMs - deltaMs);
@@ -170,7 +118,7 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
   }
 
   for (const worm of world.worms) {
-    if (!worm.active) {
+    if (!isWormActive(worm)) {
       continue;
     }
 
@@ -187,7 +135,7 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
 
     const speed = Math.hypot(worm.vx, worm.vy) || 1;
     const targetSpeed =
-      world.profile === "mobile" && world.rushTriggered ? PROFILE_RULES.mobile.rushSpeed : maxSpeed;
+      world.profile === "mobile" && world.rushTriggered ? world.rules.rushSpeed : maxSpeed;
 
     if (speed > targetSpeed) {
       const scale = targetSpeed / speed;
@@ -209,39 +157,39 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
     }
   }
 
-  world.fairies = world.fairies.filter((fairy) => {
-    fairy.lifeMs += deltaMs;
-    fairy.x += fairy.vx * deltaMs * 0.05;
-    fairy.y += fairy.vy * deltaMs * 0.05;
-    fairy.vy -= 0.0009 * deltaMs;
+  advanceFairies(world, deltaMs);
+  syncWormStates(world);
 
-    return fairy.lifeMs < fairy.ttlMs && fairy.y > -80;
-  });
+  const remaining = getRemainingWorms(world);
 
-  const remaining = getRemainingWorms(world).length;
-
-  if (world.profile === "desktop" && remaining === 1) {
+  if (world.profile === "desktop" && remaining.length === 1) {
     if (world.finaleStartedAt === null) {
       world.finaleStartedAt = world.elapsedMs;
     }
 
-    if (world.elapsedMs - world.finaleStartedAt >= PROFILE_RULES.desktop.finaleDurationMs) {
-      finishWorld(world, "escaped");
+    if (world.elapsedMs - world.finaleStartedAt >= world.rules.ghostFinaleDurationMs) {
+      finishWorld(world, "ghostEscape");
+      return;
     }
+  } else {
+    world.finaleStartedAt = null;
   }
 
-  if (world.profile === "mobile" && remaining === 0) {
+  if (world.profile === "mobile" && remaining.length === 0) {
     finishWorld(world, "captured");
+    return;
   }
+
+  updateRoundPhase(world);
 }
 
 export function findWormIdAtPoint(world: GameWorld, point: Point): string | null {
-  const hitPadding = world.profile === "mobile" ? PROFILE_RULES.mobile.mobileTapForgiveness : 0;
+  const hitPadding = world.profile === "mobile" ? world.rules.mobileTapForgiveness : 0;
 
   for (let index = world.worms.length - 1; index >= 0; index -= 1) {
     const worm = world.worms[index];
 
-    if (!worm.active) {
+    if (!worm || !isWormActive(worm)) {
       continue;
     }
 
@@ -259,94 +207,136 @@ export function applyAccuratePress(world: GameWorld, wormId: string): ActionResu
     return { kind: "ignored" };
   }
 
-  const worm = world.worms.find((candidate) => candidate.id === wormId && candidate.active);
+  const worm = world.worms.find((candidate) => candidate.id === wormId && isWormActive(candidate));
 
   if (!worm) {
     return { kind: "miss" };
   }
 
+  const rules = world.rules;
   const remaining = getRemainingWorms(world);
   const isFinalWorm = world.profile === "desktop" && remaining.length === 1 && remaining[0]?.id === worm.id;
 
   if (isFinalWorm) {
+    worm.state = "ghost";
     teleportWorm(world, worm, true);
+    world.finaleStartedAt ??= world.elapsedMs;
+    updateRoundPhase(world);
     return { kind: "teleport", wormId, immortal: true };
   }
 
   if (world.profile === "desktop" && worm.teleportsRemaining > 0) {
     worm.teleportsRemaining -= 1;
+    worm.state = "blinkRecover";
+    worm.stateTimerMs = BLINK_RECOVER_MS;
     teleportWorm(world, worm, false);
+    updateRoundPhase(world);
     return { kind: "teleport", wormId, immortal: false };
   }
 
   if (world.profile === "mobile") {
     worm.touchBursts += 1;
-    if (worm.touchBursts < 2) {
+    if (worm.touchBursts < rules.touchBurstsToCapture) {
+      worm.state = "tagged";
+      updateRoundPhase(world);
       return { kind: "tag", wormId, bursts: worm.touchBursts };
     }
   }
 
-  worm.active = false;
-  world.collected += 1;
-  world.fairies.push(createFairy(worm));
+  captureWorm(world, worm);
 
-  if (world.profile === "desktop" && !world.teleportsUnlocked && world.collected >= 50) {
+  if (world.profile === "desktop" && !world.teleportsUnlocked && world.collected >= rules.teleportUnlockCount) {
     world.teleportsUnlocked = true;
     for (const survivor of world.worms) {
-      if (survivor.active) {
+      if (isWormActive(survivor)) {
         survivor.teleportsRemaining = Math.max(survivor.teleportsRemaining, 1);
       }
     }
   }
 
+  syncWormStates(world);
+  updateRoundPhase(world);
   return { kind: "collect", wormId, collected: world.collected };
 }
 
 export function getSummary(world: GameWorld): GameSummary {
+  const rules = world.rules;
+  const remaining = getRemainingWorms(world).length;
+
   return {
     profile: world.profile,
+    phase: world.phase,
     collected: world.collected,
-    remaining: getRemainingWorms(world).length,
-    fairies: world.fairies.length,
+    remaining,
+    fairies: world.fairies.filter(isFairyVisible).length,
     timerMs: world.timerMs,
-    speedBonus: world.collected * 0.1,
+    speedBonus: world.collected * rules.speedBonusPerCollect,
     teleportsUnlocked: world.teleportsUnlocked,
     countdownMs: world.countdownMs,
-    finalWormActive: world.profile === "desktop" && getRemainingWorms(world).length === 1,
+    finalWormActive: world.profile === "desktop" && remaining === 1,
     rushTriggered: world.rushTriggered,
   };
 }
 
-function createWorm(index: number, rules: ProfileRules, width: number, height: number): Worm {
+function createWorm(
+  index: number,
+  rules: ReturnType<typeof getProfileRules>,
+  width: number,
+  height: number,
+  runtime: EngineRuntime,
+): Worm {
   const hue = (index * 17) % 360;
 
   return {
     id: `worm-${index + 1}`,
-    x: randomBetween(rules.baseRadius + 20, width - rules.baseRadius - 20),
-    y: randomBetween(rules.baseRadius + 20, height - rules.baseRadius - 20),
-    vx: randomBetween(-rules.baseMaxSpeed, rules.baseMaxSpeed),
-    vy: randomBetween(-rules.baseMaxSpeed, rules.baseMaxSpeed),
+    x: randomBetween(runtime, rules.baseRadius + 20, width - rules.baseRadius - 20),
+    y: randomBetween(runtime, rules.baseRadius + 20, height - rules.baseRadius - 20),
+    vx: randomBetween(runtime, -rules.baseMaxSpeed, rules.baseMaxSpeed),
+    vy: randomBetween(runtime, -rules.baseMaxSpeed, rules.baseMaxSpeed),
     radius: rules.baseRadius + (index % 3),
     hue,
-    wave: randomBetween(0, Math.PI * 2),
+    wave: randomBetween(runtime, 0, Math.PI * 2),
     teleportsRemaining: 0,
     touchBursts: 0,
-    active: true,
-    escaped: false,
+    state: "roaming",
+    stateTimerMs: 0,
   };
 }
 
-function createFairy(worm: Worm): Fairy {
+function createFairy(world: GameWorld, worm: Worm): Fairy {
+  const rules = world.rules;
   return {
-    id: `fairy-${worm.id}-${Date.now()}`,
+    id: `fairy-${worm.id}-${world.runtime.now()}`,
     x: worm.x,
     y: worm.y,
-    vx: randomBetween(-0.9, 0.9),
-    vy: randomBetween(-2.3, -1.4),
+    vx: randomBetween(world.runtime, -0.9, 0.9),
+    vy: randomBetween(world.runtime, -2.3, -1.4),
     lifeMs: 0,
-    ttlMs: 1_500,
+    ttlMs: rules.fairyTtlMs,
     hue: (worm.hue + 120) % 360,
+    state: "rising",
   };
+}
+
+function advanceFairies(world: GameWorld, deltaMs: number) {
+  const rules = world.rules;
+
+  world.fairies = world.fairies.filter((fairy) => {
+    fairy.lifeMs += deltaMs;
+    fairy.x += fairy.vx * deltaMs * 0.05;
+    fairy.y += fairy.vy * deltaMs * 0.05;
+    fairy.vy -= 0.0009 * deltaMs;
+
+    if (fairy.lifeMs >= rules.fairyFadeAtMs) {
+      fairy.state = "fading";
+    }
+
+    if (fairy.lifeMs >= fairy.ttlMs || fairy.y <= -80) {
+      fairy.state = "gone";
+    }
+
+    return isFairyVisible(fairy);
+  });
 }
 
 function getPointerForce(world: GameWorld, worm: Worm) {
@@ -357,7 +347,7 @@ function getPointerForce(world: GameWorld, worm: Worm) {
   const dx = worm.x - world.pointer.x;
   const dy = worm.y - world.pointer.y;
   const distance = Math.hypot(dx, dy) || 1;
-  const influenceRadius = PROFILE_RULES[world.profile].influenceRadius;
+  const influenceRadius = world.rules.influenceRadius;
 
   if (distance > influenceRadius) {
     return { x: 0, y: 0 };
@@ -371,22 +361,103 @@ function getPointerForce(world: GameWorld, worm: Worm) {
 }
 
 function getRemainingWorms(world: GameWorld) {
-  return world.worms.filter((worm) => worm.active);
+  return world.worms.filter(isWormActive);
 }
 
 function getWormSpeed(world: GameWorld) {
-  const base = PROFILE_RULES[world.profile].baseMaxSpeed + world.collected * 0.1;
-  return clamp(base, 0, PROFILE_RULES[world.profile].rushSpeed);
+  const rules = world.rules;
+  const base = rules.baseMaxSpeed + world.collected * rules.speedBonusPerCollect;
+  return clamp(base, 0, rules.rushSpeed);
 }
 
 function teleportWorm(world: GameWorld, worm: Worm, immortal: boolean) {
-  const distance = PROFILE_RULES.desktop.teleportDistance;
-  const angle = randomBetween(0, Math.PI * 2);
+  const distance = world.rules.teleportDistance;
+  const angle = randomBetween(world.runtime, 0, Math.PI * 2);
   const step = immortal ? distance * 1.15 : distance;
   worm.x = clamp(worm.x + Math.cos(angle) * step, worm.radius, world.width - worm.radius);
   worm.y = clamp(worm.y + Math.sin(angle) * step, worm.radius, world.height - worm.radius);
   worm.vx += Math.cos(angle) * 1.4;
   worm.vy += Math.sin(angle) * 1.4;
+}
+
+function captureWorm(world: GameWorld, worm: Worm) {
+  worm.state = "captured";
+  worm.stateTimerMs = 0;
+  world.collected += 1;
+  world.fairies.push(createFairy(world, worm));
+}
+
+function advanceWormTimers(world: GameWorld, deltaMs: number) {
+  for (const worm of world.worms) {
+    if (!isWormActive(worm) || worm.stateTimerMs <= 0) {
+      continue;
+    }
+
+    worm.stateTimerMs = Math.max(0, worm.stateTimerMs - deltaMs);
+  }
+}
+
+function syncWormStates(world: GameWorld) {
+  const remaining = getRemainingWorms(world);
+  const finalWormId = world.profile === "desktop" && remaining.length === 1 ? remaining[0]?.id ?? null : null;
+
+  for (const worm of world.worms) {
+    if (!isWormActive(worm)) {
+      continue;
+    }
+
+    if (world.profile === "desktop") {
+      if (worm.id === finalWormId) {
+        worm.state = "ghost";
+        worm.stateTimerMs = 0;
+        continue;
+      }
+
+      if (worm.state === "blinkRecover" && worm.stateTimerMs > 0) {
+        continue;
+      }
+
+      worm.state = worm.teleportsRemaining > 0 ? "blinkCharged" : "roaming";
+      worm.stateTimerMs = 0;
+      continue;
+    }
+
+    worm.state = worm.touchBursts > 0 ? "tagged" : "roaming";
+    worm.stateTimerMs = 0;
+  }
+}
+
+function updateRoundPhase(world: GameWorld) {
+  if (world.roundResult) {
+    world.phase = "resolved";
+    return;
+  }
+
+  if (world.countdownMs > 0) {
+    world.phase = "introCountdown";
+    return;
+  }
+
+  if (world.profile === "desktop") {
+    const remaining = getRemainingWorms(world).length;
+    if (remaining === 1) {
+      world.phase = "ghostFinale";
+      return;
+    }
+
+    world.phase = world.teleportsUnlocked ? "blinkBand" : "activeChase";
+    return;
+  }
+
+  world.phase = "activeChase";
+}
+
+function createProfileRules(profile: DisplayProfile, overrides: Partial<ProfileRules> = {}): ProfileRules {
+  return {
+    ...getProfileRules(profile),
+    ...overrides,
+    profile,
+  } as ProfileRules;
 }
 
 function finishWorld(world: GameWorld, reason: RoundResult["reason"]) {
@@ -395,16 +466,18 @@ function finishWorld(world: GameWorld, reason: RoundResult["reason"]) {
     collected: world.collected,
     remaining: getRemainingWorms(world).length,
   };
+  world.phase = "resolved";
 
   for (const worm of world.worms) {
-    if (worm.active) {
-      worm.escaped = true;
+    if (isWormActive(worm)) {
+      worm.state = "escaped";
+      worm.stateTimerMs = 0;
     }
   }
 }
 
-function randomBetween(min: number, max: number) {
-  return min + Math.random() * (max - min);
+function randomBetween(runtime: EngineRuntime, min: number, max: number) {
+  return min + runtime.random() * (max - min);
 }
 
 function clamp(value: number, min: number, max: number) {
