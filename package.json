@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:engine": "vitest run src/game/engine.test.ts",
-    "verify": "npm run lint && npm run build"
+    "test:engine": "vitest run src/game/engine.test.ts src/components/gameStagePhasePresentation.test.ts",
+    "verify": "npm run test:engine && npm run lint && npm run build"
   },
   "dependencies": {
     "next": "16.2.4",

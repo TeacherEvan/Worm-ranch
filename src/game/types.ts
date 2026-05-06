@@ -14,7 +14,7 @@ export type MobileWormState = "roaming" | "tagged" | "captured" | "escaped";
 
 export type WormState = DesktopWormState | MobileWormState;
 
-export type FairyState = "rising" | "fading" | "gone";
+export type FairyState = "morphing" | "flying" | "trailFading" | "gone";
 
 export type Point = {
   x: number;
@@ -27,6 +27,8 @@ export type Worm = {
   y: number;
   vx: number;
   vy: number;
+  direction: number;
+  crawlPhase: number;
   radius: number;
   hue: number;
   wave: number;
@@ -38,12 +40,19 @@ export type Worm = {
 
 export type Fairy = {
   id: string;
+  wormId: string;
   x: number;
   y: number;
-  vx: number;
-  vy: number;
+  targetX: number;
+  targetY: number;
+  controlX: number;
+  controlY: number;
+  createdAt: number;
   lifeMs: number;
   ttlMs: number;
+  morphDurationMs: number;
+  flyDurationMs: number;
+  trailFadeDurationMs: number;
   hue: number;
   state: FairyState;
 };
@@ -94,7 +103,6 @@ export type GameWorld = {
   timerMs: number;
   countdownMs: number;
   rushTriggered: boolean;
-  pendingRushTrigger: boolean;
   teleportsUnlocked: boolean;
   finaleStartedAt: number | null;
   roundResult: RoundResult | null;

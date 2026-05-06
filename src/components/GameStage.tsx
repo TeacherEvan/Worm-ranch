@@ -5,11 +5,11 @@ import styles from "./GameStage.module.css";
 import {
   areSummariesEqual,
   createInitialSummary,
-  getStagePresentation,
   renderStage,
   stepFeedback,
   type StageFeedback,
 } from "@/components/gameStagePresentation";
+import { getStagePresentation } from "@/components/gameStagePhasePresentation";
 import { getRoundEndedDetails, getRoundTransitionEvents } from "@/lib/analytics";
 import {
   applyAccuratePress,
@@ -22,7 +22,7 @@ import {
   triggerTouchRush,
 } from "@/game/engine";
 import type { DisplayProfile } from "@/game/detection";
-import type { ActionResult, GameSummary, RoundResult } from "@/game/types";
+import type { ActionResult, FairyState, GameSummary, RoundResult } from "@/game/types";
 import type { EventName } from "@/lib/logger";
 
 type GameStageProps = {
@@ -52,9 +52,30 @@ export function GameStage({
   const lastTimestampRef = useRef<number | null>(null);
   const canvasBoundsRef = useRef<{ left: number; top: number; width: number; height: number } | null>(null);
   const summaryAnalyticsRef = useRef<GameSummary | null>(null);
+  const fairyStatesRef = useRef<Map<string, FairyState>>(new Map());
+  const reducedMotionRef = useRef(reducedMotion);
+  const onSummaryChangeRef = useRef(onSummaryChange);
+  const onRoundEndRef = useRef(onRoundEnd);
+  const onEventRef = useRef(onEvent);
   const [stageSummary, setStageSummary] = useState<GameSummary>(() => createInitialSummary(profile));
   const stagePresentation = getStagePresentation(stageSummary, profile);
   const copyKey = stagePresentation.overlayKey;
+
+  useEffect(() => {
+    reducedMotionRef.current = reducedMotion;
+  }, [reducedMotion]);
+
+  useEffect(() => {
+    onSummaryChangeRef.current = onSummaryChange;
+  }, [onSummaryChange]);
+
+  useEffect(() => {
+    onRoundEndRef.current = onRoundEnd;
+  }, [onRoundEnd]);
+
+  useEffect(() => {
+    onEventRef.current = onEvent;
+  }, [onEvent]);
 
   useEffect(() => {
     worldRef.current = createWorld(profile, 800, 540);
@@ -63,11 +84,12 @@ export function GameStage({
     lastTimestampRef.current = null;
     summaryRef.current = 0;
     canvasBoundsRef.current = null;
+    fairyStatesRef.current = new Map();
 
     const initialSummary = getSummary(worldRef.current);
     summaryAnalyticsRef.current = initialSummary;
     setStageSummary(initialSummary);
-    onSummaryChange(initialSummary);
+    onSummaryChangeRef.current(initialSummary);
 
     const canvas = canvasRef.current;
     if (!canvas) {
@@ -104,7 +126,7 @@ export function GameStage({
       summaryAnalyticsRef.current = nextSummary;
 
       for (const pendingEvent of pendingEvents) {
-        onEvent(pendingEvent.name, pendingEvent.details);
+        onEventRef.current(pendingEvent.name, pendingEvent.details);
       }
     };
 
@@ -120,7 +142,26 @@ export function GameStage({
       setStageSummary((currentSummary) =>
         areSummariesEqual(currentSummary, nextSummary) ? currentSummary : nextSummary,
       );
-      onSummaryChange(nextSummary);
+      onSummaryChangeRef.current(nextSummary);
+    };
+
+    const emitFairyLifecycleEvents = () => {
+      const nextStates = new Map<string, FairyState>();
+
+      for (const fairy of worldRef.current.fairies) {
+        const previousState = fairyStatesRef.current.get(fairy.id);
+
+        if (previousState === "morphing" && fairy.state !== "morphing") {
+          onEventRef.current("worm_morphed", {
+            wormId: fairy.wormId,
+            fairies: worldRef.current.fairies.length,
+          });
+        }
+
+        nextStates.set(fairy.id, fairy.state);
+      }
+
+      fairyStatesRef.current = nextStates;
     };
 
     const pushFeedback = (result: Exclude<ActionResult, { kind: "ignored" } | { kind: "miss" }>) => {
@@ -166,8 +207,9 @@ export function GameStage({
       lastTimestampRef.current = timestamp;
 
       stepWorld(worldRef.current, delta);
+      emitFairyLifecycleEvents();
       stepFeedback(feedbackRef.current, delta);
-      renderStage(context, worldRef.current, reducedMotion, feedbackRef.current);
+      renderStage(context, worldRef.current, reducedMotionRef.current, feedbackRef.current);
       updateSummary();
 
       const roundResult = worldRef.current.roundResult;
@@ -176,9 +218,9 @@ export function GameStage({
         const finalSummary = getSummary(worldRef.current);
         emitSummaryTransitionEvents(finalSummary);
         setStageSummary(finalSummary);
-        onSummaryChange(finalSummary);
-        onEvent("round_ended", getRoundEndedDetails(roundResult));
-        onRoundEnd(roundResult);
+        onSummaryChangeRef.current(finalSummary);
+        onEventRef.current("round_ended", getRoundEndedDetails(roundResult));
+        onRoundEndRef.current(roundResult);
         return;
       }
 
@@ -196,8 +238,7 @@ export function GameStage({
     const handleAction = (result: ActionResult) => {
       if (result.kind === "collect") {
         pushFeedback(result);
-        onEvent("worm_collected", { wormId: result.wormId, collected: result.collected });
-        onEvent("worm_morphed", { wormId: result.wormId, fairies: worldRef.current.fairies.length });
+        onEventRef.current("worm_collected", { wormId: result.wormId, collected: result.collected });
       }
 
       if (result.kind === "tag") {
@@ -206,7 +247,7 @@ export function GameStage({
 
       if (result.kind === "teleport") {
         pushFeedback(result);
-        onEvent("worm_teleported", {
+        onEventRef.current("worm_teleported", {
           wormId: result.wormId,
           immortal: result.immortal,
         });
@@ -256,7 +297,7 @@ export function GameStage({
     };
 
     resize();
-    renderStage(context, worldRef.current, reducedMotion, feedbackRef.current);
+    renderStage(context, worldRef.current, reducedMotionRef.current, feedbackRef.current);
     frameRef.current = window.requestAnimationFrame(loop);
 
     window.addEventListener("resize", resize);
@@ -279,7 +320,7 @@ export function GameStage({
         window.cancelAnimationFrame(frameRef.current);
       }
     };
-  }, [onEvent, onRoundEnd, onSummaryChange, profile, reducedMotion]);
+  }, [profile]);
 
   return (
     <div
@@ -302,7 +343,6 @@ export function GameStage({
       </div>
       <div className={styles.overlay}>
         <div key={copyKey} className={styles.copyCluster}>
-          <div className={styles.phaseBadge}>{stagePresentation.phaseLabel}</div>
           <div className={styles.message}>
             <strong>{stagePresentation.copy.title}</strong>
             {stagePresentation.copy.body}

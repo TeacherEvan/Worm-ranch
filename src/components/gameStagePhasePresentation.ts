@@ -107,7 +107,7 @@ function getPhaseChipText(summary: GameSummary, rules: ReturnType<typeof getProf
     return "Final escape";
   }
 
-  return summary.rushTriggered ? "Rush live" : "Tap twice to bag";
+  return summary.rushTriggered ? "Rush live" : "Touch wakes rush";
 }
 
 function buildStatusItemsForSummary(
@@ -212,15 +212,15 @@ function getStageCopyData(summary: GameSummary, phaseLabel: string): StageCopy {
   if (summary.rushTriggered) {
     return {
       title: phaseLabel,
-      body: "The chase is fully live. A branded worm keeps a visible 1/2 marker until the second clean tap bags it.",
-      hint: "Tap once to brand, then stay on that same worm for the finishing tap.",
+      body: "The chase is fully live. A branded worm keeps a visible 1/2 marker until the next clean tap bags it.",
+      hint: "Stay on the same worm after the first clean tag and finish it with the next tap.",
     };
   }
 
   return {
     title: phaseLabel,
-    body: "The chase opens on the first clean touch. Tagged worms keep a visible 1/2 marker until the finishing tap.",
-    hint: "Pick one worm, brand it, then finish the second tap before switching lanes.",
+    body: "The first touch wakes the herd immediately, even on a miss. Accurate taps add the visible 1/2 marker, and the next accurate tap on that same worm bags it.",
+    hint: "Use the first touch to wake the herd and, if you land on target, tag that worm. Then stay on it for the finishing tap.",
   };
 }
 

@@ -1,4 +1,5 @@
 import type { DisplayProfile } from "./detection";
+import { stepWormMovement } from "./movement";
 import { getProfileRules, type ProfileRules } from "./rules";
 import { isFairyVisible, isWormActive, type ActionResult, type EngineRuntime, type Fairy, type GameSummary, type GameWorld, type Point, type RoundResult, type Worm } from "./types";
 
@@ -56,7 +57,6 @@ export function createWorld(
     timerMs: rules.timeLimitMs,
     countdownMs: rules.introCountdownMs,
     rushTriggered: false,
-    pendingRushTrigger: false,
     teleportsUnlocked: false,
     finaleStartedAt: null,
     roundResult: null,
@@ -88,7 +88,7 @@ export function triggerTouchRush(world: GameWorld, point: Point) {
     return;
   }
 
-  world.pendingRushTrigger = true;
+  world.rushTriggered = true;
 }
 
 export function stepWorld(world: GameWorld, deltaMs: number) {
@@ -105,11 +105,6 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
     return;
   }
 
-  if (world.profile === "mobile" && world.pendingRushTrigger) {
-    world.rushTriggered = true;
-    world.pendingRushTrigger = false;
-  }
-
   world.timerMs = Math.max(0, world.timerMs - deltaMs);
 
   if (world.timerMs === 0) {
@@ -122,39 +117,9 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
       continue;
     }
 
-    const maxSpeed = getWormSpeed(world);
-    const pointerForce = getPointerForce(world, worm);
-    const phase = world.elapsedMs * 0.0012 + worm.wave;
-    const wanderX = Math.cos(phase * 0.9 + worm.hue);
-    const wanderY = Math.sin(phase * 1.1 + worm.hue);
-    const accelerationX = wanderX * 0.03 + pointerForce.x * 0.15;
-    const accelerationY = wanderY * 0.03 + pointerForce.y * 0.15;
-
-    worm.vx = clamp(worm.vx + accelerationX, -maxSpeed, maxSpeed);
-    worm.vy = clamp(worm.vy + accelerationY, -maxSpeed, maxSpeed);
-
-    const speed = Math.hypot(worm.vx, worm.vy) || 1;
-    const targetSpeed =
-      world.profile === "mobile" && world.rushTriggered ? world.rules.rushSpeed : maxSpeed;
-
-    if (speed > targetSpeed) {
-      const scale = targetSpeed / speed;
-      worm.vx *= scale;
-      worm.vy *= scale;
-    }
-
-    worm.x += worm.vx * deltaMs * 0.05;
-    worm.y += worm.vy * deltaMs * 0.05;
-
-    if (worm.x < worm.radius || worm.x > world.width - worm.radius) {
-      worm.vx *= -1;
-      worm.x = clamp(worm.x, worm.radius, world.width - worm.radius);
-    }
-
-    if (worm.y < worm.radius || worm.y > world.height - worm.radius) {
-      worm.vy *= -1;
-      worm.y = clamp(worm.y, worm.radius, world.height - worm.radius);
-    }
+    const roamSpeed = getWormSpeed(world);
+    const activeSpeed = world.profile === "mobile" && world.rushTriggered ? world.rules.rushSpeed : roamSpeed;
+    stepWormMovement(world, worm, deltaMs, activeSpeed);
   }
 
   advanceFairies(world, deltaMs);
@@ -286,16 +251,22 @@ function createWorm(
   runtime: EngineRuntime,
 ): Worm {
   const hue = (index * 17) % 360;
+  const initialVx = randomBetween(runtime, -rules.baseMaxSpeed, rules.baseMaxSpeed);
+  const initialVy = randomBetween(runtime, -rules.baseMaxSpeed, rules.baseMaxSpeed);
+  const direction = Math.atan2(initialVy, initialVx || 0.0001);
+  const crawlPhase = randomBetween(runtime, 0, Math.PI * 2);
 
   return {
     id: `worm-${index + 1}`,
     x: randomBetween(runtime, rules.baseRadius + 20, width - rules.baseRadius - 20),
     y: randomBetween(runtime, rules.baseRadius + 20, height - rules.baseRadius - 20),
-    vx: randomBetween(runtime, -rules.baseMaxSpeed, rules.baseMaxSpeed),
-    vy: randomBetween(runtime, -rules.baseMaxSpeed, rules.baseMaxSpeed),
+    vx: initialVx,
+    vy: initialVy,
+    direction,
+    crawlPhase,
     radius: rules.baseRadius + (index % 3),
     hue,
-    wave: randomBetween(runtime, 0, Math.PI * 2),
+    wave: crawlPhase,
     teleportsRemaining: 0,
     touchBursts: 0,
     state: "roaming",
@@ -305,59 +276,39 @@ function createWorm(
 
 function createFairy(world: GameWorld, worm: Worm): Fairy {
   const rules = world.rules;
+  const morphDurationMs = 2_000;
+  const flyDurationMs = Math.max(0, rules.fairyFadeAtMs - morphDurationMs);
+  const trailFadeDurationMs = Math.max(0, rules.fairyTtlMs - rules.fairyFadeAtMs);
+  const target = generateFairyTarget(world, worm);
+  const control = generateFairyControlPoint(world, worm, target);
+
   return {
     id: `fairy-${worm.id}-${world.runtime.now()}`,
+    wormId: worm.id,
     x: worm.x,
     y: worm.y,
-    vx: randomBetween(world.runtime, -0.9, 0.9),
-    vy: randomBetween(world.runtime, -2.3, -1.4),
+    targetX: target.x,
+    targetY: target.y,
+    controlX: control.x,
+    controlY: control.y,
+    createdAt: world.runtime.now(),
     lifeMs: 0,
     ttlMs: rules.fairyTtlMs,
+    morphDurationMs,
+    flyDurationMs,
+    trailFadeDurationMs,
     hue: (worm.hue + 120) % 360,
-    state: "rising",
+    state: "morphing",
   };
 }
 
 function advanceFairies(world: GameWorld, deltaMs: number) {
-  const rules = world.rules;
-
   world.fairies = world.fairies.filter((fairy) => {
     fairy.lifeMs += deltaMs;
-    fairy.x += fairy.vx * deltaMs * 0.05;
-    fairy.y += fairy.vy * deltaMs * 0.05;
-    fairy.vy -= 0.0009 * deltaMs;
-
-    if (fairy.lifeMs >= rules.fairyFadeAtMs) {
-      fairy.state = "fading";
-    }
-
-    if (fairy.lifeMs >= fairy.ttlMs || fairy.y <= -80) {
-      fairy.state = "gone";
-    }
+    fairy.state = getFairyState(fairy);
 
     return isFairyVisible(fairy);
   });
-}
-
-function getPointerForce(world: GameWorld, worm: Worm) {
-  if (!world.pointer?.active) {
-    return { x: 0, y: 0 };
-  }
-
-  const dx = worm.x - world.pointer.x;
-  const dy = worm.y - world.pointer.y;
-  const distance = Math.hypot(dx, dy) || 1;
-  const influenceRadius = world.rules.influenceRadius;
-
-  if (distance > influenceRadius) {
-    return { x: 0, y: 0 };
-  }
-
-  const force = 1 - distance / influenceRadius;
-  return {
-    x: (dx / distance) * force,
-    y: (dy / distance) * force,
-  };
 }
 
 function getRemainingWorms(world: GameWorld) {
@@ -378,6 +329,7 @@ function teleportWorm(world: GameWorld, worm: Worm, immortal: boolean) {
   worm.y = clamp(worm.y + Math.sin(angle) * step, worm.radius, world.height - worm.radius);
   worm.vx += Math.cos(angle) * 1.4;
   worm.vy += Math.sin(angle) * 1.4;
+  worm.direction = Math.atan2(worm.vy, worm.vx || 0.0001);
 }
 
 function captureWorm(world: GameWorld, worm: Worm) {
@@ -385,6 +337,22 @@ function captureWorm(world: GameWorld, worm: Worm) {
   worm.stateTimerMs = 0;
   world.collected += 1;
   world.fairies.push(createFairy(world, worm));
+}
+
+function getFairyState(fairy: Fairy) {
+  if (fairy.lifeMs < fairy.morphDurationMs) {
+    return "morphing" as const;
+  }
+
+  if (fairy.lifeMs < fairy.morphDurationMs + fairy.flyDurationMs) {
+    return "flying" as const;
+  }
+
+  if (fairy.lifeMs < fairy.ttlMs) {
+    return "trailFading" as const;
+  }
+
+  return "gone" as const;
 }
 
 function advanceWormTimers(world: GameWorld, deltaMs: number) {
@@ -478,6 +446,43 @@ function finishWorld(world: GameWorld, reason: RoundResult["reason"]) {
 
 function randomBetween(runtime: EngineRuntime, min: number, max: number) {
   return min + runtime.random() * (max - min);
+}
+
+function generateFairyTarget(world: GameWorld, worm: Worm) {
+  const offScreenDistance = 100;
+  const edgeVariationX = 40;
+  const edgeVariationY = 200;
+  const edge = Math.floor(world.runtime.random() * 4);
+
+  switch (edge) {
+    case 0:
+      return {
+        x: worm.x + (world.runtime.random() - 0.5) * edgeVariationX,
+        y: -offScreenDistance,
+      };
+    case 1:
+      return {
+        x: world.width + offScreenDistance,
+        y: worm.y + (world.runtime.random() - 0.5) * edgeVariationY,
+      };
+    case 2:
+      return {
+        x: worm.x + (world.runtime.random() - 0.5) * edgeVariationX,
+        y: world.height + offScreenDistance,
+      };
+    default:
+      return {
+        x: -offScreenDistance,
+        y: worm.y + (world.runtime.random() - 0.5) * edgeVariationY,
+      };
+  }
+}
+
+function generateFairyControlPoint(world: GameWorld, worm: Worm, target: { x: number; y: number }) {
+  return {
+    x: worm.x + (target.x - worm.x) * 0.5 + (world.runtime.random() - 0.5) * 20,
+    y: Math.min(worm.y, target.y) - 50 - world.runtime.random() * 50,
+  };
 }
 
 function clamp(value: number, min: number, max: number) {

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import styles from "./WormRanchApp.module.css";
 import { GameStage } from "@/components/GameStage";
-import { getPhaseChipLabel } from "@/components/gameStagePresentation";
+import { getStagePresentation } from "@/components/gameStagePhasePresentation";
 import { areDisplaySnapshotsEqual, getProfileDetectedDetails } from "@/lib/analytics";
 import { detectDisplayProfile, type DisplayProfile, type DisplaySnapshot } from "@/game/detection";
 import { PROFILE_RULES } from "@/game/rules";
@@ -20,7 +20,7 @@ import { createSilentLogger, type EventName } from "@/lib/logger";
 
 type AppScreen = "welcome" | "home" | "settings" | "game" | "results";
 
-const MOBILE_ROUNDUP_COPY = "Tap once to tag a worm, then tap that same worm again to bag it.";
+const MOBILE_ROUNDUP_COPY = "The first touch wakes the herd. Land one clean tap to tag a worm, then another on that same worm to bag it.";
 const FAIRY_LIFT_COPY = "Clean catches still lift into fairies and drift out of the ranch glow.";
 
 const emptySummary: GameSummary = {
@@ -198,7 +198,7 @@ export function WormRanchApp() {
   }, [logEvent, screen]);
 
   const beginRun = () => {
-    const nextRunProfile = effectiveProfileRef.current;
+    const nextRunProfile = effectiveProfile;
     const nextSessionId = crypto.randomUUID();
     const nextRules = PROFILE_RULES[nextRunProfile];
 
@@ -222,13 +222,15 @@ export function WormRanchApp() {
     writeStoredSettings({ ...settings, [key]: value });
   };
 
-  const profileRules = PROFILE_RULES[effectiveProfile];
+  const shellProfile = screen === "game" || screen === "results" ? runProfile ?? effectiveProfile : effectiveProfile;
+  const shellScanProfile = screen === "game" || screen === "results" ? shellProfile : detectedDisplay?.profile ?? "scanning";
+  const profileRules = PROFILE_RULES[shellProfile];
+  const gamePresentation = getStagePresentation(summary, shellProfile);
 
   return (
     <main
       className={styles.page}
       data-motion={settings.reducedMotion ? "reduced" : "full"}
-      data-phase={screen === "game" ? summary.phase : undefined}
       data-screen={screen}
     >
       <header className={styles.header}>
@@ -241,8 +243,8 @@ export function WormRanchApp() {
           </p>
         </div>
         <div className={styles.chips}>
-          <span className={styles.chip}>Pasture scan: {detectedDisplay?.profile ?? "scanning"}</span>
-          <span className={styles.chip}>Loaded tack: {effectiveProfile}</span>
+          <span className={styles.chip}>Pasture scan: {shellScanProfile}</span>
+          <span className={styles.chip}>Loaded tack: {shellProfile}</span>
           <span className={styles.chip}>Loose herd: {profileRules.totalWorms}</span>
         </div>
       </header>
@@ -382,7 +384,7 @@ export function WormRanchApp() {
             <Metric label="Bagged" value={String(summary.collected)} />
             <Metric label="Remaining" value={String(summary.remaining)} />
             <Metric label="Time" value={`${Math.ceil(summary.timerMs / 1000)}s`} />
-            <Metric label="Phase" value={getPhaseChipLabel(summary.profile, summary)} />
+            <Metric label="Phase" value={gamePresentation.phaseChipLabel} />
           </div>
           <GameStage
             key={sessionId}

@@ -1,10 +1,8 @@
 import type { DisplayProfile } from "@/game/detection";
+import { drawFairyMorph } from "@/components/gameStageFairyPresentation";
+import { getStagePresentation } from "@/components/gameStagePhasePresentation";
 import { createWorld, getSummary } from "@/game/engine";
 import { isWormActive, type GameSummary, type GameWorld, type Worm } from "@/game/types";
-import { getStagePresentation } from "@/components/gameStagePhasePresentation";
-
-export { getPhaseChipLabel, getPhaseLabel, getStagePresentation } from "@/components/gameStagePhasePresentation";
-export type { StagePresentation } from "@/components/gameStagePhasePresentation";
 
 export type StageFeedback = {
   id: number;
@@ -14,6 +12,19 @@ export type StageFeedback = {
   ttlMs: number;
   label: string;
   tone: "tag" | "teleport" | "collect" | "final";
+};
+
+export type StatusItem = {
+  id: string;
+  label: string;
+  value: string;
+  active: boolean;
+};
+
+export type StageCopy = {
+  title: string;
+  body: string;
+  hint: string;
 };
 
 export function renderStage(
@@ -43,36 +54,36 @@ export function renderStage(
   }
 
   const summary = getSummary(world);
-  const presentation = getStagePresentation(summary, world.profile);
   const activeWorms = world.worms.filter(isWormActive);
   const ghostWormId = activeWorms.find((worm) => worm.state === "ghost")?.id ?? null;
 
   for (const fairy of world.fairies) {
-    drawFairy(context, fairy, reducedMotion);
+    drawFairyMorph(context, fairy, reducedMotion);
   }
 
   for (const worm of activeWorms) {
     drawWorm(context, world, worm, reducedMotion, worm.id === ghostWormId, frameNow);
   }
 
-  if (presentation.countdownOverlay) {
+  if (summary.countdownMs > 0) {
     context.save();
-    context.fillStyle = `rgba(5, 10, 15, ${0.2 + presentation.countdownOverlay.progress * 0.42})`;
+    const countdownProgress = world.rules.introCountdownMs > 0 ? summary.countdownMs / world.rules.introCountdownMs : 0;
+    context.fillStyle = `rgba(5, 10, 15, ${0.2 + countdownProgress * 0.42})`;
     context.fillRect(0, 0, world.width, world.height);
     context.globalAlpha = reducedMotion ? 1 : 0.92 + (Math.sin(frameNow * 0.014) + 1) * 0.04;
     context.fillStyle = "#f5f4e9";
     context.font = "600 60px var(--font-sans)";
     context.textAlign = "center";
-    context.fillText(presentation.countdownOverlay.value, world.width / 2, world.height / 2);
+    context.fillText(String(Math.max(1, Math.ceil(summary.countdownMs / 1000))), world.width / 2, world.height / 2);
     context.restore();
   }
 
-  if (presentation.fieldBanner) {
+  if (summary.finalWormActive) {
     context.save();
     context.fillStyle = "rgba(240, 126, 67, 0.95)";
     context.font = "500 18px var(--font-mono)";
     context.textAlign = "center";
-    context.fillText(presentation.fieldBanner, world.width / 2, 42);
+    context.fillText("Last outlaw loose: the pen will not hold", world.width / 2, 42);
     context.restore();
   }
 
@@ -112,6 +123,14 @@ export function areSummariesEqual(left: GameSummary, right: GameSummary) {
 
 export function createInitialSummary(profile: DisplayProfile) {
   return getSummary(createWorld(profile, 800, 540));
+}
+
+export function buildStatusItems(profile: DisplayProfile, summary: GameSummary): StatusItem[] {
+  return getStagePresentation(summary, profile).statusItems;
+}
+
+export function getStageCopy(profile: DisplayProfile, summary: GameSummary): StageCopy {
+  return getStagePresentation(summary, profile).copy;
 }
 
 function drawCorralBackdrop(context: CanvasRenderingContext2D, width: number, height: number) {
@@ -282,59 +301,6 @@ function drawWorm(
     context.fillText(`${Math.min(worm.touchBursts, totalBursts)}/${totalBursts}`, 0, -worm.radius * 2.75);
   }
 
-  context.restore();
-}
-
-function drawFairy(context: CanvasRenderingContext2D, fairy: GameWorld["fairies"][number], reducedMotion: boolean) {
-  const alpha = clamp01(1 - fairy.lifeMs / fairy.ttlMs);
-  const morphWindowMs = Math.max(140, fairy.ttlMs * 0.18);
-  const morphProgress = clamp01(fairy.lifeMs / morphWindowMs);
-  const wingPulse = reducedMotion ? 1 : 0.92 + Math.sin(fairy.lifeMs * 0.018 + fairy.hue) * 0.08;
-  const lift = reducedMotion ? 0 : fairy.lifeMs * 0.012;
-  const wingWidth = (2.8 + morphProgress * 3.8) * wingPulse;
-  const wingHeight = 1.8 + morphProgress * 2.8;
-
-  context.save();
-  context.translate(fairy.x, fairy.y - lift);
-  context.globalAlpha = alpha;
-
-  if (morphProgress < 1) {
-    context.strokeStyle = `hsla(${fairy.hue}, 98%, 84%, ${0.5 + (1 - morphProgress) * 0.25})`;
-    context.lineWidth = 1.6;
-    context.beginPath();
-    context.arc(0, 0, 5 + morphProgress * 7, 0, Math.PI * 2);
-    context.stroke();
-  }
-
-  if (fairy.state === "fading") {
-    context.strokeStyle = `hsla(${fairy.hue}, 92%, 82%, ${0.34 + alpha * 0.24})`;
-    context.lineWidth = 1.4;
-    context.setLineDash([4, 4]);
-    context.beginPath();
-    context.arc(0, 0, 10, 0, Math.PI * 2);
-    context.stroke();
-    context.setLineDash([]);
-  }
-
-  context.fillStyle = `hsla(${fairy.hue}, 95%, 75%, 0.95)`;
-  context.beginPath();
-  context.ellipse(-6, 0, wingWidth, wingHeight, -0.45, 0, Math.PI * 2);
-  context.ellipse(6, 0, wingWidth, wingHeight, 0.45, 0, Math.PI * 2);
-  context.fill();
-
-  if (morphProgress > 0.45) {
-    context.strokeStyle = `hsla(${fairy.hue}, 96%, 86%, ${0.26 + alpha * 0.2})`;
-    context.lineWidth = 1.2;
-    context.beginPath();
-    context.moveTo(0, 2);
-    context.quadraticCurveTo(-1.5, 8, 0, 14);
-    context.stroke();
-  }
-
-  context.fillStyle = "rgba(255, 255, 255, 0.95)";
-  context.beginPath();
-  context.arc(0, 0, 3.4 - morphProgress * 0.6, 0, Math.PI * 2);
-  context.fill();
   context.restore();
 }
 

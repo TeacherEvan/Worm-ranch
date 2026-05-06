@@ -77,19 +77,13 @@ describe("engine", () => {
     expect(snapshot).toEqual(getSnapshot("mobile", 29));
   });
 
-  it("mobile first touch anywhere arms rush and starts panic on the next live simulation step", () => {
+  it("mobile first touch anywhere starts rush immediately", () => {
     const world = createWorld("mobile", 800, 540, createDeterministicOptions(41));
     startRound(world);
 
     triggerTouchRush(world, { x: 120, y: 140 });
 
-    expect(world.rushTriggered).toBe(false);
-    expect(world.pendingRushTrigger).toBe(true);
-
-    stepWorld(world, 16);
-
     expect(world.rushTriggered).toBe(true);
-    expect(world.pendingRushTrigger).toBe(false);
   });
 
   it("mobile first accurate tap tags a worm without capturing it", () => {
@@ -128,19 +122,59 @@ describe("engine", () => {
     expect(worm.state).toBe("captured");
   });
 
+  it("captures create a fairy morph that phases from morphing to flight to trail fade", () => {
+    const world = createWorld("desktop", 800, 540, createDeterministicOptions(91));
+    const worm = world.worms[0];
+
+    if (!worm) {
+      throw new Error("expected a worm");
+    }
+
+    startRound(world);
+    expect(applyAccuratePress(world, worm.id)).toEqual({
+      kind: "collect",
+      wormId: worm.id,
+      collected: 1,
+    });
+
+    const fairy = world.fairies[0];
+
+    if (!fairy) {
+      throw new Error("expected a fairy morph");
+    }
+
+    expect(fairy.state).toBe("morphing");
+
+    stepWorld(world, 1_999);
+    expect(world.fairies[0]?.state).toBe("morphing");
+
+    stepWorld(world, 1);
+    expect(world.fairies[0]?.state).toBe("flying");
+
+    stepWorld(world, 1_499);
+    expect(world.fairies[0]?.state).toBe("flying");
+
+    stepWorld(world, 1);
+    expect(world.fairies[0]?.state).toBe("trailFading");
+
+    stepWorld(world, 3_499);
+    expect(world.fairies[0]?.state).toBe("trailFading");
+
+    stepWorld(world, 1);
+    expect(world.fairies).toHaveLength(0);
+  });
+
   it("countdown blocks mobile rush arming", () => {
     const world = createWorld("mobile", 800, 540, createDeterministicOptions(53));
 
     triggerTouchRush(world, { x: 180, y: 210 });
 
     expect(world.rushTriggered).toBe(false);
-    expect(world.pendingRushTrigger).toBe(false);
 
     stepWorld(world, MOBILE_RULES.introCountdownMs);
 
     expect(world.countdownMs).toBe(0);
     expect(world.rushTriggered).toBe(false);
-    expect(world.pendingRushTrigger).toBe(false);
   });
 
   it("getSummary exposes the engine-owned round phase", () => {
@@ -201,6 +235,75 @@ describe("engine", () => {
     expect(worm.y).toBe(220);
     expect(worm.vx).toBe(0);
     expect(worm.vy).toBe(0);
+  });
+
+  it("worms within the pointer threat radius take a direct escape vector", () => {
+    const world = createWorld("desktop", 800, 540, {
+      ...createDeterministicOptions(151),
+      rules: {
+        baseMaxSpeed: 1,
+        speedBonusPerCollect: 0,
+        directionChangeRate: 0,
+        crawlAmplitude: 0.5,
+        crawlPhaseIncrement: 0.05,
+        cursorThreatRadius: 140,
+        cursorEscapeMultiplier: 2.2,
+      },
+    });
+    const worm = world.worms[0];
+
+    if (!worm) {
+      throw new Error("expected a worm");
+    }
+
+    startRound(world);
+
+    worm.x = 400;
+    worm.y = 200;
+    worm.direction = 0;
+    worm.crawlPhase = Math.PI / 2;
+
+    setPointer(world, { x: 390, y: 200 });
+    stepWorld(world, 16);
+
+    expect(worm.vx).toBeCloseTo(2.2, 4);
+    expect(worm.vy).toBeCloseTo(0, 4);
+    expect(worm.x).toBeCloseTo(402.2, 4);
+    expect(worm.y).toBeCloseTo(200, 4);
+  });
+
+  it("worms outside the threat radius keep the crawl motion", () => {
+    const world = createWorld("desktop", 800, 540, {
+      ...createDeterministicOptions(157),
+      rules: {
+        baseMaxSpeed: 1,
+        speedBonusPerCollect: 0,
+        directionChangeRate: 0,
+        crawlAmplitude: 0.5,
+        crawlPhaseIncrement: 0,
+        cursorThreatRadius: 140,
+      },
+    });
+    const worm = world.worms[0];
+
+    if (!worm) {
+      throw new Error("expected a worm");
+    }
+
+    startRound(world);
+
+    worm.x = 400;
+    worm.y = 200;
+    worm.direction = 0;
+    worm.crawlPhase = Math.PI / 2;
+    setPointer(world, { x: 620, y: 200 });
+
+    stepWorld(world, 16);
+
+    expect(worm.vx).toBeCloseTo(1, 4);
+    expect(worm.vy).toBeCloseTo(0.5, 4);
+    expect(worm.x).toBeCloseTo(401, 4);
+    expect(worm.y).toBeCloseTo(200.5, 4);
   });
 
   it("desktop captures add 0.1 speed and unlock exactly one blink charge at 50 captures", () => {

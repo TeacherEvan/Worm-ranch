@@ -19,9 +19,7 @@ export function areDisplaySnapshotsEqual(left: DisplaySnapshot | null, right: Di
   return (
     left.profile === right.profile &&
     left.pointer === right.pointer &&
-    left.orientation === right.orientation &&
-    left.width === right.width &&
-    left.height === right.height
+    left.orientation === right.orientation
   );
 }
 
