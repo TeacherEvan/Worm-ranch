@@ -1,5 +1,5 @@
 import type { DisplaySnapshot } from "@/game/detection";
-import type { GameSummary, RoundResult } from "@/game/types";
+import type { Fairy, FairyState, GameSummary, RoundResult } from "@/game/types";
 import type { AnalyticsEvent, EventName } from "@/lib/logger";
 
 export type PendingAnalyticsEvent = {
@@ -19,7 +19,9 @@ export function areDisplaySnapshotsEqual(left: DisplaySnapshot | null, right: Di
   return (
     left.profile === right.profile &&
     left.pointer === right.pointer &&
-    left.orientation === right.orientation
+    left.orientation === right.orientation &&
+    left.width === right.width &&
+    left.height === right.height
   );
 }
 
@@ -78,4 +80,42 @@ export function getRoundEndedDetails(result: RoundResult): AnalyticsEvent["detai
     collected: result.collected,
     remaining: result.remaining,
   };
+}
+
+export function getFairyLifecycleEvents(
+  previousStates: ReadonlyMap<string, FairyState>,
+  fairies: Fairy[],
+  options?: { flushMorphing?: boolean },
+): { events: PendingAnalyticsEvent[]; nextStates: Map<string, FairyState> } {
+  const flushMorphing = options?.flushMorphing ?? false;
+  const events: PendingAnalyticsEvent[] = [];
+  const nextStates = new Map<string, FairyState>();
+
+  for (const fairy of fairies) {
+    const previousState = previousStates.get(fairy.id);
+
+    if (previousState === "morphing" && fairy.state !== "morphing") {
+      events.push({
+        name: "worm_morphed",
+        details: {
+          wormId: fairy.wormId,
+          fairies: fairies.length,
+        },
+      });
+    }
+
+    if (flushMorphing && !previousState && fairy.state === "morphing") {
+      events.push({
+        name: "worm_morphed",
+        details: {
+          wormId: fairy.wormId,
+          fairies: fairies.length,
+        },
+      });
+    }
+
+    nextStates.set(fairy.id, fairy.state);
+  }
+
+  return { events, nextStates };
 }

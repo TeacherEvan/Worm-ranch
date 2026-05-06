@@ -11,6 +11,7 @@ import {
   areSettingsEqual,
   getSettingsDetails,
   getStoredSettingsSnapshot,
+  getStoredSettingsServerSnapshot,
   subscribeToSettings,
   type SettingsState,
   writeStoredSettings,
@@ -46,7 +47,11 @@ export function WormRanchApp() {
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
   const [logger] = useState(() => createSilentLogger("/api/events"));
   const hasLoggedOpenRef = useRef(false);
-  const settings = useSyncExternalStore(subscribeToSettings, getStoredSettingsSnapshot, getStoredSettingsSnapshot);
+  const settings = useSyncExternalStore(
+    subscribeToSettings,
+    getStoredSettingsSnapshot,
+    getStoredSettingsServerSnapshot,
+  );
   const settingsBaselineRef = useRef<SettingsState | null>(settings);
 
   const effectiveProfile = useMemo<DisplayProfile>(() => {

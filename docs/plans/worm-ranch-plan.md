@@ -1,6 +1,6 @@
 # Worm Ranch Plan
 
-Status: active, approved for execution
+Status: active, implementation complete, awaiting user verification
 
 ## Goal
 
@@ -67,7 +67,7 @@ Dependency: none
    - round phases: `introCountdown`, `activeChase`, `blinkBand`, `ghostFinale`, `resolved`
    - desktop worm states: `roaming`, `blinkCharged`, `blinkRecover`, `ghost`, `captured`, `escaped`
    - mobile worm states: `roaming`, `tagged`, `captured`, `escaped`
-   - fairy states: `rising`, `fading`, `gone`
+  - fairy states: `morphing`, `flying`, `trailFading`, `gone`
 2. Create `src/game/rules.ts` with separate desktop and mobile rule objects.
 3. Refactor `src/game/engine.ts` to depend on those modules instead of keeping all state inline.
 4. Add deterministic seams for randomness and ID generation without changing current gameplay rules, input semantics, or player-facing copy.
@@ -129,7 +129,7 @@ Expected outcome: no lint errors after the engine refactor.
 Dependency: Task 1
 
 1. Use the approved interpretation: each worm requires exactly two accurate taps, not literal browser double-clicks.
-2. First touch anywhere must start global panic on the next simulation step.
+2. First touch anywhere must start global panic immediately.
 3. First accurate tap on a worm moves it to `tagged` and shows visible `1/2` progress.
 4. Second accurate tap captures the worm.
 5. Tag state must be readable and must not be confused with desktop blink state.
@@ -268,13 +268,10 @@ Expected outcome: lint and production build pass.
 
 Current commands:
 
+- `npm run test:engine`
 - `npm run lint`
 - `npm run build`
 - `npm run verify`
-
-Planned command addition:
-
-- add an engine-focused test script to `package.json`
 
 Recommended final command sequence per completed task:
 
@@ -282,6 +279,12 @@ Recommended final command sequence per completed task:
 2. `npm run lint`
 3. `npm run build` when render or routing changes are touched
 4. `npm run verify` before calling the redesign complete
+
+Implementation status:
+
+- `npm run test:engine` passes.
+- `npm run verify` passes.
+- Keep this plan active until the user verifies the finished implementation.
 
 ## Review Checklist
 

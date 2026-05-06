@@ -10,7 +10,7 @@ import {
   type StageFeedback,
 } from "@/components/gameStagePresentation";
 import { getStagePresentation } from "@/components/gameStagePhasePresentation";
-import { getRoundEndedDetails, getRoundTransitionEvents } from "@/lib/analytics";
+import { getFairyLifecycleEvents, getRoundEndedDetails, getRoundTransitionEvents } from "@/lib/analytics";
 import {
   applyAccuratePress,
   createWorld,
@@ -145,20 +145,13 @@ export function GameStage({
       onSummaryChangeRef.current(nextSummary);
     };
 
-    const emitFairyLifecycleEvents = () => {
-      const nextStates = new Map<string, FairyState>();
+    const emitFairyLifecycleEvents = (flushMorphing = false) => {
+      const { events, nextStates } = getFairyLifecycleEvents(fairyStatesRef.current, worldRef.current.fairies, {
+        flushMorphing,
+      });
 
-      for (const fairy of worldRef.current.fairies) {
-        const previousState = fairyStatesRef.current.get(fairy.id);
-
-        if (previousState === "morphing" && fairy.state !== "morphing") {
-          onEventRef.current("worm_morphed", {
-            wormId: fairy.wormId,
-            fairies: worldRef.current.fairies.length,
-          });
-        }
-
-        nextStates.set(fairy.id, fairy.state);
+      for (const pendingEvent of events) {
+        onEventRef.current(pendingEvent.name, pendingEvent.details);
       }
 
       fairyStatesRef.current = nextStates;
@@ -215,6 +208,7 @@ export function GameStage({
       const roundResult = worldRef.current.roundResult;
       if (roundResult && !finishedRef.current) {
         finishedRef.current = true;
+        emitFairyLifecycleEvents(true);
         const finalSummary = getSummary(worldRef.current);
         emitSummaryTransitionEvents(finalSummary);
         setStageSummary(finalSummary);

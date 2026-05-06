@@ -16,6 +16,9 @@ export const defaultSettings: SettingsState = {
   displayMode: "auto",
 };
 
+let cachedRawSettings: string | null | undefined;
+let cachedSettingsSnapshot: SettingsState = defaultSettings;
+
 export function subscribeToSettings(onStoreChange: () => void) {
   if (typeof window === "undefined") {
     return () => undefined;
@@ -36,7 +39,19 @@ export function getStoredSettingsSnapshot() {
     return defaultSettings;
   }
 
-  return readStoredSettings(window.localStorage.getItem(SETTINGS_KEY));
+  const rawSettings = window.localStorage.getItem(SETTINGS_KEY);
+
+  if (rawSettings === cachedRawSettings) {
+    return cachedSettingsSnapshot;
+  }
+
+  cachedRawSettings = rawSettings;
+  cachedSettingsSnapshot = readStoredSettings(rawSettings);
+  return cachedSettingsSnapshot;
+}
+
+export function getStoredSettingsServerSnapshot() {
+  return defaultSettings;
 }
 
 export function writeStoredSettings(settings: SettingsState) {
