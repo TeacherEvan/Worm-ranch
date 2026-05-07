@@ -18,6 +18,9 @@ describe("WelcomeScreen", () => {
     expect(html).toContain('src="/art/worm-ranch-launch-intro.mp4"');
     expect(html).toContain('poster="/art/worm-ranch-launch-poster.png"');
     expect(html).toContain('data-launch-media="video"');
+    expect(html).toContain('data-launch-loader-state="loading"');
+    expect(html).toContain("Booting the reclamation rig");
+    expect(html).toContain("18%");
   });
 
   it("skips the intro video and settles directly on the poster when reduced motion is on", () => {
@@ -33,5 +36,7 @@ describe("WelcomeScreen", () => {
     expect(html).not.toContain("<video");
     expect(html).toContain('data-launch-media="image"');
     expect(html).toContain("worm-ranch-launch-poster.png");
+    expect(html).toContain('data-launch-loader-state="loading"');
+    expect(html).toContain("Ranch glass coming online");
   });
 });

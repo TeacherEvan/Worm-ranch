@@ -318,6 +318,7 @@ export function WormRanchApp() {
               onDismiss={() => setInstallPromptDismissed(true)}
             />
           }
+          onBack={() => setScreen("welcome")}
           onOpenSettings={() => setScreen("settings")}
           onStart={beginRun}
         />

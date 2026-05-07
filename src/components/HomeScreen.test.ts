@@ -9,6 +9,7 @@ describe("HomeScreen", () => {
       createElement(HomeScreen, {
         installPrompt: createElement("span", null, "Install utility"),
         leadCopy: "Desktop runs stretch the whole pasture.",
+        onBack: vi.fn(),
         onOpenSettings: vi.fn(),
         onStart: vi.fn(),
         scanItems: [
@@ -23,6 +24,7 @@ describe("HomeScreen", () => {
     expect(html).toContain('data-layout="compact-launch"');
     expect(html).toContain('data-role="scan-strip"');
     expect(html).toContain("Install utility");
+    expect(html).toContain("Back to launch");
     expect(html.indexOf("Start roundup")).toBeLessThan(html.indexOf("Tack mode"));
   });
 });

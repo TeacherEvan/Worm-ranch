@@ -215,22 +215,6 @@
   filter: saturate(1.02) contrast(1.03);
 }
 
-.heroCard[data-safe-zone="right-copy-column"] .heroImage {
-  object-position: 34% 46%;
-}
-
-.heroCard[data-safe-zone="right-copy-column"] .heroVideo {
-  object-position: 34% 46%;
-}
-
-.heroCard[data-crop-intent="preserve-rider-silhouette-and-copy-safe-zone"][data-safe-zone="lower-copy-band"] .heroImage {
-  object-position: center 18%;
-}
-
-.heroCard[data-crop-intent="preserve-rider-silhouette-and-copy-safe-zone"][data-safe-zone="lower-copy-band"] .heroVideo {
-  object-position: center 18%;
-}
-
 @keyframes screenEnter {
   from {
     opacity: 0;
@@ -370,10 +354,6 @@
 
   .welcomeVisual {
     margin: -22px;
-  }
-
-  .heroCard[data-crop-intent="preserve-rider-silhouette-and-copy-safe-zone"][data-safe-zone="lower-copy-band"] .heroImage {
-    object-position: center 22%;
   }
 }
 

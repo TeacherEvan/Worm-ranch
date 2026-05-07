@@ -139,6 +139,27 @@ describe("engine", () => {
     expect(findWormIdAtPoint(world, point)).toBe(worm.id);
   });
 
+  it("gives the default touch target a little more reach beyond the visible body", () => {
+    const world = createWorld("desktop", 800, 540, createDeterministicOptions(98));
+    const worm = world.worms[0];
+
+    if (!worm) {
+      throw new Error("expected a worm");
+    }
+
+    const point = {
+      x: worm.x + worm.radius * 3,
+      y: worm.y,
+    };
+
+    expect(findWormIdAtPoint(world, point)).toBe(worm.id);
+  });
+
+  it("cuts the default opening pace in half for both desktop and mobile profiles", () => {
+    expect(DESKTOP_RULES.baseMaxSpeed).toBe(0.5);
+    expect(MOBILE_RULES.baseMaxSpeed).toBe(0.5);
+  });
+
   it("captures create a fairy morph that phases from morphing to flight to trail fade", () => {
     const world = createWorld("desktop", 800, 540, createDeterministicOptions(91));
     const worm = world.worms[0];

@@ -9,6 +9,8 @@ export type WelcomeHeroVariant = {
   layout: WelcomeHeroLayout;
   src: string;
   introVideoSrc: string | null;
+  imageObjectPosition: string;
+  videoObjectPosition: string;
   cropIntent: WelcomeHeroCropIntent;
   overlayStrength: WelcomeHeroOverlayStrength;
   textSafeZone: WelcomeHeroTextSafeZone;
@@ -28,6 +30,8 @@ const HERO_VARIANTS: Record<WelcomeHeroLayout, WelcomeHeroVariant> = {
     layout: "desktop",
     src: "/art/worm-ranch-launch-poster.png",
     introVideoSrc: "/art/worm-ranch-launch-intro.mp4",
+    imageObjectPosition: "34% 46%",
+    videoObjectPosition: "34% 46%",
     cropIntent: "preserve-rider-silhouette-and-copy-safe-zone",
     overlayStrength: "strong",
     textSafeZone: "right-copy-column",
@@ -36,6 +40,8 @@ const HERO_VARIANTS: Record<WelcomeHeroLayout, WelcomeHeroVariant> = {
     layout: "mobile",
     src: "/art/worm-ranch-launch-poster.png",
     introVideoSrc: "/art/worm-ranch-launch-intro.mp4",
+    imageObjectPosition: "58% 22%",
+    videoObjectPosition: "56% 20%",
     cropIntent: "preserve-rider-silhouette-and-copy-safe-zone",
     overlayStrength: "strong",
     textSafeZone: "lower-copy-band",

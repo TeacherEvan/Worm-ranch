@@ -2,11 +2,16 @@ import { useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 
 import styles from "./WelcomeScreen.module.css";
+import { WelcomeLaunchLoader } from "./WelcomeLaunchLoader";
 import {
   MOBILE_LAYOUT_MAX_WIDTH,
   getWelcomeHeroPresentation,
   getWelcomeHeroVariant,
 } from "./welcomeHeroPresentation";
+import {
+  shouldShowWelcomeLaunchLoader,
+  type WelcomeLaunchLoaderSnapshot,
+} from "./welcomeLaunchLoader";
 import {
   getInitialWelcomeLaunchMediaState,
   getNextWelcomeLaunchMediaState,
@@ -94,21 +99,36 @@ function WelcomeHeroMedia({ heroVariant, reducedMotion }: WelcomeHeroMediaProps)
   const [launchMediaState, setLaunchMediaState] = useState(() =>
     getInitialWelcomeLaunchMediaState({ reducedMotion, introVideoSrc: heroVariant.introVideoSrc }),
   );
+  const [posterLoaded, setPosterLoaded] = useState(false);
+  const [introVideoMetadataLoaded, setIntroVideoMetadataLoaded] = useState(false);
+  const [introVideoCanPlay, setIntroVideoCanPlay] = useState(false);
   const showIntroVideo = launchMediaState !== "image" && Boolean(heroVariant.introVideoSrc);
+  const loaderSnapshot: WelcomeLaunchLoaderSnapshot = {
+    reducedMotion,
+    posterLoaded,
+    introVideoExpected: Boolean(heroVariant.introVideoSrc) && !reducedMotion && launchMediaState !== "image",
+    introVideoMetadataLoaded,
+    introVideoCanPlay,
+    launchMediaState,
+  };
+  const showLaunchLoader = shouldShowWelcomeLaunchLoader(loaderSnapshot);
 
   return (
-    <div className={styles.welcomeVisual} aria-hidden="true" data-launch-media={launchMediaState}>
+    <div className={styles.welcomeVisual} data-launch-media={launchMediaState} data-launch-loader-state={showLaunchLoader ? "loading" : "ready"}>
       <div className={styles.heroImageLayer}>
         <Image
           alt=""
           aria-hidden="true"
           className={styles.heroImage}
           fill
+          onLoad={() => setPosterLoaded(true)}
           preload
           sizes={HERO_IMAGE_SIZES}
+          style={{ objectPosition: heroVariant.imageObjectPosition }}
           src={heroVariant.src}
         />
       </div>
+      <WelcomeLaunchLoader snapshot={loaderSnapshot} />
       {showIntroVideo && heroVariant.introVideoSrc ? (
         <div
           className={styles.heroVideoLayer}
@@ -124,12 +144,15 @@ function WelcomeHeroMedia({ heroVariant, reducedMotion }: WelcomeHeroMediaProps)
             autoPlay
             className={styles.heroVideo}
             muted
+            onCanPlay={() => setIntroVideoCanPlay(true)}
             onEnded={() => setLaunchMediaState((currentState) => getNextWelcomeLaunchMediaState(currentState, "video-ended"))}
             onError={() => setLaunchMediaState((currentState) => getNextWelcomeLaunchMediaState(currentState, "video-error"))}
+            onLoadedMetadata={() => setIntroVideoMetadataLoaded(true)}
             playsInline
             poster={heroVariant.src}
             preload="metadata"
             src={heroVariant.introVideoSrc}
+            style={{ objectPosition: heroVariant.videoObjectPosition }}
           />
         </div>
       ) : null}

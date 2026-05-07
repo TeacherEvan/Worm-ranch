@@ -10,17 +10,21 @@ type HomeScreenProps = {
   leadCopy: string;
   scanItems: HomeScanItem[];
   installPrompt?: ReactNode;
+  onBack: () => void;
   onStart: () => void;
   onOpenSettings: () => void;
 };
 
-export function HomeScreen({ leadCopy, scanItems, installPrompt, onStart, onOpenSettings }: HomeScreenProps) {
+export function HomeScreen({ leadCopy, scanItems, installPrompt, onBack, onStart, onOpenSettings }: HomeScreenProps) {
   return (
     <section className={styles.shell} data-layout="compact-launch">
       <div className={styles.launchPanel}>
         <div className={styles.copyCluster}>
           <p className={styles.lead}>{leadCopy}</p>
           <div className={styles.actions}>
+            <button className={styles.secondary} onClick={onBack}>
+              Back to launch
+            </button>
             <button className={styles.primary} onClick={onStart}>
               Start roundup
             </button>

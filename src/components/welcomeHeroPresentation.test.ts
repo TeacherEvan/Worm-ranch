@@ -18,6 +18,8 @@ describe("welcomeHeroPresentation", () => {
     expect(presentation.variants.desktop.introVideoSrc).toBe("/art/worm-ranch-launch-intro.mp4");
     expect(presentation.variants.mobile.src).toBe("/art/worm-ranch-launch-poster.png");
     expect(presentation.variants.mobile.introVideoSrc).toBe("/art/worm-ranch-launch-intro.mp4");
+    expect(variant.imageObjectPosition).toBe("34% 46%");
+    expect(variant.videoObjectPosition).toBe("34% 46%");
     expect(variant.overlayStrength).toBe("strong");
     expect(presentation.ambientMotionLayersEnabled).toBe(true);
   });
@@ -28,6 +30,8 @@ describe("welcomeHeroPresentation", () => {
     expect(getWelcomeHeroLayout(390)).toBe("mobile");
     expect(variant.src).toBe("/art/worm-ranch-launch-poster.png");
     expect(variant.introVideoSrc).toBe("/art/worm-ranch-launch-intro.mp4");
+    expect(variant.imageObjectPosition).toBe("58% 22%");
+    expect(variant.videoObjectPosition).toBe("56% 20%");
     expect(variant.cropIntent).toBe("preserve-rider-silhouette-and-copy-safe-zone");
   });
 
