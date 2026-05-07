@@ -32,16 +32,12 @@ export function renderStage(
   world: GameWorld,
   reducedMotion: boolean,
   feedback: StageFeedback[],
+  selectedWormId: string | null,
 ) {
   context.clearRect(0, 0, world.width, world.height);
   const frameNow = performance.now();
 
-  const gradient = context.createLinearGradient(0, 0, 0, world.height);
-  gradient.addColorStop(0, "rgba(7, 18, 26, 0.98)");
-  gradient.addColorStop(0.62, "rgba(17, 31, 33, 0.98)");
-  gradient.addColorStop(1, "rgba(36, 28, 23, 0.98)");
-  context.fillStyle = gradient;
-  context.fillRect(0, 0, world.width, world.height);
+  drawStageBaseFill(context, world.width, world.height);
 
   drawCorralBackdrop(context, world.width, world.height);
   drawPointerCorral(context, world, reducedMotion, frameNow);
@@ -63,7 +59,7 @@ export function renderStage(
   }
 
   for (const worm of activeWorms) {
-    drawWorm(context, world, worm, reducedMotion, worm.id === ghostWormId, frameNow);
+    drawWorm(context, world, worm, reducedMotion, worm.id === ghostWormId, worm.id === selectedWormId, frameNow);
   }
 
   if (stagePresentation.countdownOverlay) {
@@ -169,6 +165,15 @@ function drawCorralBackdrop(context: CanvasRenderingContext2D, width: number, he
   context.restore();
 }
 
+function drawStageBaseFill(context: CanvasRenderingContext2D, width: number, height: number) {
+  const gradient = context.createLinearGradient(0, 0, 0, height);
+  gradient.addColorStop(0, "rgba(7, 18, 26, 0.98)");
+  gradient.addColorStop(0.62, "rgba(17, 31, 33, 0.98)");
+  gradient.addColorStop(1, "rgba(36, 28, 23, 0.98)");
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, width, height);
+}
+
 function drawPointerCorral(
   context: CanvasRenderingContext2D,
   world: GameWorld,
@@ -209,6 +214,7 @@ function drawWorm(
   worm: Worm,
   reducedMotion: boolean,
   isGhostWorm: boolean,
+  isSelected: boolean,
   frameNow: number,
 ) {
   const direction = Math.atan2(worm.vy, worm.vx || 0.0001);
@@ -221,6 +227,18 @@ function drawWorm(
   context.save();
   context.translate(worm.x, worm.y);
   context.rotate(direction);
+
+  if (isSelected) {
+    context.save();
+    context.strokeStyle = isGhostWorm ? "rgba(240, 126, 67, 0.88)" : "rgba(245, 244, 233, 0.88)";
+    context.lineWidth = 2.5;
+    context.setLineDash([6, 5]);
+    context.beginPath();
+    context.arc(0, 0, worm.radius * 2.55, 0, Math.PI * 2);
+    context.stroke();
+    context.setLineDash([]);
+    context.restore();
+  }
 
   if (isGhostWorm) {
     context.setLineDash([8, 6]);

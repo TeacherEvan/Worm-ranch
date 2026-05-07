@@ -13,6 +13,7 @@ Core repo rules:
 - Treat `src/app` as the routing shell and API surface; keep simulation logic out of route files.
 - Keep gameplay rules, deterministic transitions, and profile-specific behavior in `src/game`.
 - Keep rendering, HUD wiring, and input-facing UI in `src/components`.
+- Prefer title-first launch surfaces; explain rules through live HUD and state feedback before adding home-screen copy blocks.
 - Keep support utilities such as silent analytics in `src/lib`.
 - Preserve the desktop and mobile rule split; do not collapse them into vague shared behavior.
 - Silent analytics must remain best-effort and never block gameplay.

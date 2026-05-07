@@ -12,6 +12,17 @@
   container-type: inline-size;
 }
 
+.backdropLayer {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.34;
+  filter: saturate(0.88) contrast(0.94);
+  pointer-events: none;
+}
+
 .shell::before {
   content: "";
   position: absolute;
@@ -98,11 +109,29 @@
 }
 
 .canvas {
+  position: relative;
   display: block;
   width: 100%;
   height: 100svh;
   touch-action: none;
   cursor: crosshair;
+}
+
+.canvas:focus-visible {
+  outline: 2px solid rgba(244, 199, 108, 0.92);
+  outline-offset: -4px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .statusStrip {

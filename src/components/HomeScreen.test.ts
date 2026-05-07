@@ -4,27 +4,21 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { HomeScreen } from "./HomeScreen";
 
 describe("HomeScreen", () => {
-  it("renders the launch controls ahead of a compact scan strip instead of a second full dashboard block", () => {
+  it("keeps the home surface down to a catchy title and the essential launch actions", () => {
     const html = renderToStaticMarkup(
       createElement(HomeScreen, {
         installPrompt: createElement("span", null, "Install utility"),
-        leadCopy: "Desktop runs stretch the whole pasture.",
         onBack: vi.fn(),
         onOpenSettings: vi.fn(),
         onStart: vi.fn(),
-        scanItems: [
-          { label: "Tack mode", value: "auto" },
-          { label: "Reins", value: "fine" },
-          { label: "Horizon", value: "landscape" },
-          { label: "Pasture glass", value: "1440 x 900" },
-        ],
       }),
     );
 
     expect(html).toContain('data-layout="compact-launch"');
-    expect(html).toContain('data-role="scan-strip"');
+    expect(html).toContain("Moonlit roundup");
     expect(html).toContain("Install utility");
     expect(html).toContain("Back to launch");
-    expect(html.indexOf("Start roundup")).toBeLessThan(html.indexOf("Tack mode"));
+    expect(html).not.toContain("Tack mode");
+    expect(html).not.toContain("Desktop runs stretch the whole pasture.");
   });
 });

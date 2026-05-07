@@ -2,9 +2,9 @@
 
 Project: Worm Ranch
 
-- Current focus: replace the provisional welcome hero art with the approved high-fidelity Hugging Face moonlit-outlaw image pair
+- Current focus: keep the launch flow punchy with title-first home copy, an always-visible mobile timer cue, and current docs that match the shipped experience
 - Deployment target: Vercel
 - Verification target: `npm run verify`
-- Completed slice: welcome, home, settings, gameplay, results, silent events, desktop/mobile rule split, explicit phase model, impossible ghost finale, mobile two-hit touch flow, fairy lifecycle, frozen run-profile shell
-- Next slice: generate and stage the approved desktop/mobile hero assets, adjust helper metadata only if the crop contract changes, and run desktop/mobile visual smoke checks
-- Archive condition: move the plan to an archive only after the new art pass is implemented, verified, and approved in desktop and mobile captures
+- Completed slice: welcome intro video and poster handoff, themed launch loader, home back action, larger worm touch radius, slower starting speed, fallback-port launcher, title-first home screen, and mobile `Beat bell` timer cue
+- Next slice: run a manual mobile playthrough and capture pass to confirm the lighter home screen still feels clear and the timer pressure reads cleanly in-hand
+- Archive condition: move the plan to an archive only after the launch-flow clarity pass and mobile cue pass are manually smoke-checked alongside `npm run verify`

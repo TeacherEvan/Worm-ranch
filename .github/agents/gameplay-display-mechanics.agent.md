@@ -30,8 +30,10 @@ Do not use this agent for unrelated routing, API, analytics, or generic styling 
 - Treat `src/app` as routing only.
 - Keep gameplay rules in `src/game` and rendering or input concerns in `src/components`.
 - Start from the owning gameplay path in `src/game` or `src/components`, not the route shell.
+- On launch and home surfaces, prefer title-first copy and avoid diagnostic scan strips unless the player must make a choice there.
 - Preserve the desktop and mobile rule split unless the task explicitly requires changing it.
 - Prefer a readability pass before a balance pass when the mechanic already exists but is hard to read.
+- On mobile, reuse existing HUD status items for urgency cues before adding new chrome.
 - Keep edits focused and keep each touched source file below 500 lines.
 - Validate with `npm run verify` after substantive changes.
 - Keep silent analytics best-effort and non-blocking.

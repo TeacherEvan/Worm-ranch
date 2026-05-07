@@ -7,6 +7,12 @@ import { HomeScreen } from "@/components/HomeScreen";
 import { ResultsScreen } from "@/components/ResultsScreen";
 import { WormRanchInstallPrompt } from "@/components/WormRanchInstallPrompt";
 import { WormRanchGameExit } from "@/components/WormRanchGameExit";
+import {
+  GAMEPLAY_BACKDROP_URLS,
+  getNextGameplayBackdropRotation,
+  type GameplayBackdropRotation,
+} from "@/components/gameStageBackdropRotation";
+import { SettingsScreen } from "@/components/SettingsScreen";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { WormRanchShellHeader } from "@/components/WormRanchShellHeader";
 import { areDisplaySnapshotsEqual, getProfileDetectedDetails } from "@/lib/analytics";
@@ -40,6 +46,7 @@ export function WormRanchApp() {
   const [result, setResult] = useState<RoundResult | null>(null);
   const [installPromptEvent, setInstallPromptEvent] = useState<DeferredInstallPromptEvent | null>(null);
   const [installPromptDismissed, setInstallPromptDismissed] = useState(false);
+  const [gameplayBackdropRotation, setGameplayBackdropRotation] = useState<GameplayBackdropRotation | null>(null);
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
   const [logger] = useState(() => createSilentLogger("/api/events"));
   const hasLoggedOpenRef = useRef(false);
@@ -131,6 +138,13 @@ export function WormRanchApp() {
       return;
     }
 
+    const warmedBackdropImages = GAMEPLAY_BACKDROP_URLS.map((backdropUrl) => {
+      const image = new window.Image();
+      image.decoding = "async";
+      image.src = backdropUrl;
+      return image;
+    });
+
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => undefined);
     }
@@ -154,6 +168,10 @@ export function WormRanchApp() {
     window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
+      for (const image of warmedBackdropImages) {
+        image.src = "";
+      }
+
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt as EventListener);
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
@@ -243,13 +261,49 @@ export function WormRanchApp() {
     setInstallPromptDismissed(true);
   }, [installPromptEvent]);
 
-  const beginRun = () => {
+  const beginRun = async () => {
     const nextRunProfile = effectiveProfile;
     const nextSessionId = crypto.randomUUID();
+    const nextGameplayBackdropRotation = getNextGameplayBackdropRotation(gameplayBackdropRotation);
+
+    await preloadGameplayBackdrop(nextGameplayBackdropRotation.activeBackdropUrl);
 
     sessionIdRef.current = nextSessionId;
     runProfileRef.current = nextRunProfile;
 
+
+function preloadGameplayBackdrop(backdropUrl: string) {
+  if (typeof window === "undefined") {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve) => {
+    const image = new window.Image();
+    let settled = false;
+
+    const finish = () => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      resolve();
+    };
+
+    image.decoding = "async";
+    image.onload = finish;
+    image.onerror = finish;
+    image.src = backdropUrl;
+
+    if (image.complete) {
+      finish();
+      return;
+    }
+
+    image.decode?.().then(finish, finish);
+  });
+}
+    setGameplayBackdropRotation(nextGameplayBackdropRotation);
     setSessionId(nextSessionId);
     setRunProfile(nextRunProfile);
     setResult(null);
@@ -299,17 +353,6 @@ export function WormRanchApp() {
 
       {screen === "home" && (
         <HomeScreen
-          leadCopy={
-            "Desktop opens a full pasture of 100 worms and every bagged one whips 0.1 more speed into the herd. " +
-            `Mobile opens with 10 worms: ${MOBILE_ROUNDUP_COPY} ` +
-            "After catch 50, desktop worms get one blink through the fence before they can be penned."
-          }
-          scanItems={[
-            { label: "Tack mode", value: settings.displayMode },
-            { label: "Reins", value: detectedDisplay?.pointer ?? "unknown" },
-            { label: "Horizon", value: detectedDisplay?.orientation ?? "unknown" },
-            { label: "Pasture glass", value: `${detectedDisplay?.width ?? 0} x ${detectedDisplay?.height ?? 0}` },
-          ]}
           installPrompt={
             <WormRanchInstallPrompt
               visible={installPromptVisible}
@@ -325,74 +368,22 @@ export function WormRanchApp() {
       )}
 
       {screen === "settings" && (
-        <section className={styles.panel}>
-          <h2>Ranch settings</h2>
-          <div className={styles.settingsGrid}>
-            <div className={styles.toggleRow}>
-              <strong>Display mode</strong>
-              <label>
-                <input
-                  type="radio"
-                  name="displayMode"
-                  checked={settings.displayMode === "auto"}
-                  onChange={() => updateSetting("displayMode", "auto")}
-                />
-                Auto scout
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="displayMode"
-                  checked={settings.displayMode === "desktop"}
-                  onChange={() => updateSetting("displayMode", "desktop")}
-                />
-                Force desktop corral
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="displayMode"
-                  checked={settings.displayMode === "mobile"}
-                  onChange={() => updateSetting("displayMode", "mobile")}
-                />
-                Force pocket corral
-              </label>
-            </div>
-
-            <div className={styles.toggleRow}>
-              <strong>Preferences</strong>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={settings.reducedMotion}
-                  onChange={(event) => updateSetting("reducedMotion", event.target.checked)}
-                />
-                Reduced motion
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={settings.analyticsEnabled}
-                  onChange={(event) => updateSetting("analyticsEnabled", event.target.checked)}
-                />
-                Silent analytics
-              </label>
-            </div>
-          </div>
-          <div className={styles.actions}>
-            <button className={styles.primary} onClick={() => setScreen("home")}>
-              Back to yard
-            </button>
-            <button className={styles.secondary} onClick={beginRun}>
-              Ride this setup
-            </button>
-          </div>
-        </section>
+        <SettingsScreen
+          analyticsEnabled={settings.analyticsEnabled}
+          displayMode={settings.displayMode}
+          onAnalyticsEnabledChange={(value) => updateSetting("analyticsEnabled", value)}
+          onBack={() => setScreen("home")}
+          onDisplayModeChange={(value) => updateSetting("displayMode", value)}
+          onReducedMotionChange={(value) => updateSetting("reducedMotion", value)}
+          onStart={beginRun}
+          reducedMotion={settings.reducedMotion}
+        />
       )}
 
       {screen === "game" && (
         <section className={`${styles.screen} ${styles.gameScreen}`}>
           <GameStage
+            backdropUrl={gameplayBackdropRotation?.activeBackdropUrl ?? null}
             key={sessionId}
             profile={runProfile ?? effectiveProfile}
             reducedMotion={settings.reducedMotion}

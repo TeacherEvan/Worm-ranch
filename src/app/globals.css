@@ -69,6 +69,11 @@ button {
   border: 0;
 }
 
+:where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid rgba(244, 199, 108, 0.92);
+  outline-offset: 3px;
+}
+
 html {
   color-scheme: dark;
 }

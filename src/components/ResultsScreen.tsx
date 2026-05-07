@@ -18,7 +18,7 @@ export function ResultsScreen({ outcome, bagged, leftLoose, note, onReplay, onRe
           <h2 className={styles.title}>{outcome}</h2>
         </div>
         <div className={styles.actions}>
-          <button className={styles.primary} onClick={onReplay}>
+          <button autoFocus className={styles.primary} onClick={onReplay}>
             Ride again
           </button>
           <button className={styles.secondary} onClick={onReturnHome}>

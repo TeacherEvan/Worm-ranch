@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/run-next-with-fallback.mjs dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node scripts/run-next-with-fallback.mjs start",
     "lint": "eslint",
-    "test:engine": "vitest run src/game/engine.test.ts src/components/GameStage.test.ts src/components/WelcomeScreen.test.ts src/components/gameStagePhasePresentation.test.ts src/components/gameStageFairyPresentation.test.ts src/components/welcomeHeroPresentation.test.ts src/components/welcomeLaunchLoader.test.ts src/components/welcomeLaunchMedia.test.ts src/components/WormRanchInstallPrompt.test.ts src/components/WormRanchGameExit.test.ts src/components/HomeScreen.test.ts src/components/ResultsScreen.test.ts src/lib/analytics.test.ts",
+    "test:engine": "vitest run src/game/engine.test.ts src/components/GameStage.test.ts src/components/WelcomeScreen.test.ts src/components/gameStageBackdropRotation.test.ts src/components/gameStagePhasePresentation.test.ts src/components/gameStageFairyPresentation.test.ts src/components/welcomeHeroPresentation.test.ts src/components/welcomeLaunchLoader.test.ts src/components/welcomeLaunchMedia.test.ts src/components/WormRanchInstallPrompt.test.ts src/components/WormRanchGameExit.test.ts src/components/HomeScreen.test.ts src/components/ResultsScreen.test.ts src/lib/analytics.test.ts",
     "verify": "npm run test:engine && npm run lint && npm run build"
   },
   "dependencies": {

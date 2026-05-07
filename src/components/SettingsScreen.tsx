@@ -44,6 +44,7 @@ export function SettingsScreen({
           <legend className={styles.optionTitle}>Display mode</legend>
           <label className={styles.optionRow}>
             <input
+              autoFocus
               type="radio"
               name="displayMode"
               checked={displayMode === "auto"}

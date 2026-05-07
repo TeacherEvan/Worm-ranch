@@ -39,6 +39,12 @@ describe("gameStagePhasePresentation", () => {
 
     expect(presentation.phaseChipLabel).toBe("Touch wakes rush");
     expect(presentation.overlayDensity).toBe("compact");
+    expect(presentation.statusItems[1]).toMatchObject({
+      id: "clock",
+      label: "Beat bell",
+      value: "70s left",
+      active: true,
+    });
     expect(presentation.copy.body).toBe("First touch wakes the herd. Tap once to brand, again to bag.");
     expect(presentation.copy.hint).toBe("Wake one worm, stay on it, and finish fast.");
   });

@@ -1,8 +1,9 @@
 "use client";
 
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useId, useRef, useState } from "react";
 import styles from "./GameStage.module.css";
 import badgeStyles from "./GameStagePhaseBadge.module.css";
+import { getKeyboardStatus, getKeyboardTargetId, type KeyboardTargetMode } from "@/components/gameStageKeyboard";
 import {
   areSummariesEqual,
   createInitialSummary,
@@ -28,6 +29,7 @@ import type { ActionResult, FairyState, GameSummary, RoundResult } from "@/game/
 import type { EventName } from "@/lib/logger";
 
 type GameStageProps = {
+  backdropUrl?: string | null;
   profile: DisplayProfile;
   reducedMotion: boolean;
   onSummaryChange: (summary: GameSummary) => void;
@@ -38,6 +40,7 @@ type GameStageProps = {
 const SUMMARY_INTERVAL_MS = 120;
 
 export function GameStage({
+  backdropUrl = null,
   profile,
   reducedMotion,
   onSummaryChange,
@@ -58,17 +61,29 @@ export function GameStage({
   const fairyStatesRef = useRef<Map<string, FairyState>>(new Map());
   const cueTimerRef = useRef<number | null>(null);
   const reducedMotionRef = useRef(reducedMotion);
+  const keyboardTargetRef = useRef<string | null>(null);
   const onSummaryChangeRef = useRef(onSummaryChange);
   const onRoundEndRef = useRef(onRoundEnd);
   const onEventRef = useRef(onEvent);
+  const keyboardHelpId = useId();
+  const keyboardStatusId = useId();
   const [stageSummary, setStageSummary] = useState<GameSummary>(() => createInitialSummary(profile));
+  const [keyboardTargetId, setKeyboardTargetId] = useState<string | null>(() => {
+    const initialWorld = createWorld(profile, 800, 540);
+    return getKeyboardTargetId(initialWorld, null, "first");
+  });
   const [motionCue, setMotionCue] = useState<StageMotionCue>("none");
   const stagePresentation = getStagePresentation(stageSummary, profile);
   const copyKey = stagePresentation.overlayKey;
+  const keyboardStatus = getKeyboardStatus(stagePresentation.copy.title, stageSummary, keyboardTargetId);
 
   useEffect(() => {
     reducedMotionRef.current = reducedMotion;
   }, [reducedMotion]);
+
+  useEffect(() => {
+    keyboardTargetRef.current = keyboardTargetId;
+  }, [keyboardTargetId]);
 
   useEffect(() => {
     onSummaryChangeRef.current = onSummaryChange;
@@ -122,12 +137,15 @@ export function GameStage({
     summaryAnalyticsRef.current = initialSummary;
     previousSummaryRef.current = initialSummary;
     setStageSummary(initialSummary);
+    setKeyboardTargetId(getKeyboardTargetId(worldRef.current, null, "first"));
     onSummaryChangeRef.current(initialSummary);
 
     const canvas = canvasRef.current;
     if (!canvas) {
       return undefined;
     }
+
+    canvas.focus({ preventScroll: true });
 
     const context = canvas.getContext("2d");
     if (!context) {
@@ -175,6 +193,7 @@ export function GameStage({
       setStageSummary((currentSummary) =>
         areSummariesEqual(currentSummary, nextSummary) ? currentSummary : nextSummary,
       );
+      setKeyboardTargetId((currentTargetId) => getKeyboardTargetId(worldRef.current, currentTargetId, "preserve"));
       onSummaryChangeRef.current(nextSummary);
     };
 
@@ -235,7 +254,13 @@ export function GameStage({
       stepWorld(worldRef.current, delta);
       emitFairyLifecycleEvents();
       stepFeedback(feedbackRef.current, delta);
-      renderStage(context, worldRef.current, reducedMotionRef.current, feedbackRef.current);
+      renderStage(
+        context,
+        worldRef.current,
+        reducedMotionRef.current,
+        feedbackRef.current,
+        keyboardTargetRef.current,
+      );
       updateSummary();
 
       const roundResult = worldRef.current.roundResult;
@@ -279,6 +304,12 @@ export function GameStage({
           immortal: result.immortal,
         });
       }
+
+      setKeyboardTargetId((currentTargetId) => getKeyboardTargetId(worldRef.current, currentTargetId, "preserve"));
+    };
+
+    const moveKeyboardTarget = (mode: Exclude<KeyboardTargetMode, "preserve">) => {
+      setKeyboardTargetId((currentTargetId) => getKeyboardTargetId(worldRef.current, currentTargetId, mode));
     };
 
     const handlePointerMove = (event: PointerEvent) => {
@@ -320,11 +351,55 @@ export function GameStage({
         return;
       }
 
+      setKeyboardTargetId(wormId);
       handleAction(applyAccuratePress(worldRef.current, wormId));
     };
 
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+        event.preventDefault();
+        moveKeyboardTarget("next");
+        return;
+      }
+
+      if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+        event.preventDefault();
+        moveKeyboardTarget("previous");
+        return;
+      }
+
+      if (event.key === "Home") {
+        event.preventDefault();
+        moveKeyboardTarget("first");
+        return;
+      }
+
+      if (event.key === "End") {
+        event.preventDefault();
+        moveKeyboardTarget("last");
+        return;
+      }
+
+      if ((event.key === "Enter" || event.key === " ") && !event.repeat) {
+        event.preventDefault();
+        const targetId = getKeyboardTargetId(worldRef.current, keyboardTargetRef.current, "preserve");
+        if (!targetId) {
+          return;
+        }
+
+        setKeyboardTargetId(targetId);
+        handleAction(applyAccuratePress(worldRef.current, targetId));
+      }
+    };
+
     resize();
-    renderStage(context, worldRef.current, reducedMotionRef.current, feedbackRef.current);
+    renderStage(
+      context,
+      worldRef.current,
+      reducedMotionRef.current,
+      feedbackRef.current,
+      keyboardTargetRef.current,
+    );
     frameRef.current = window.requestAnimationFrame(loop);
 
     window.addEventListener("resize", resize);
@@ -334,6 +409,7 @@ export function GameStage({
     canvas.addEventListener("pointerdown", handlePointerDown);
     canvas.addEventListener("pointerup", clearTouchPointer);
     canvas.addEventListener("pointercancel", clearTouchPointer);
+    canvas.addEventListener("keydown", handleKeyDown);
 
     return () => {
       window.removeEventListener("resize", resize);
@@ -343,6 +419,7 @@ export function GameStage({
       canvas.removeEventListener("pointerdown", handlePointerDown);
       canvas.removeEventListener("pointerup", clearTouchPointer);
       canvas.removeEventListener("pointercancel", clearTouchPointer);
+      canvas.removeEventListener("keydown", handleKeyDown);
       if (frameRef.current !== null) {
         window.cancelAnimationFrame(frameRef.current);
       }
@@ -357,7 +434,20 @@ export function GameStage({
       data-feedback-cue={motionCue}
       data-overlay-density={stagePresentation.overlayDensity}
     >
-      <canvas ref={canvasRef} className={styles.canvas} aria-label="Worm Ranch game field" />
+      <div className={styles.backdropLayer} style={{ backgroundImage: backdropUrl ? `url("${backdropUrl}")` : "none" }} />
+      <p id={keyboardHelpId} className={styles.srOnly}>
+        Use arrow keys to move the target between worms. Press Enter or Space to act on the selected worm.
+      </p>
+      <p id={keyboardStatusId} className={styles.srOnly} aria-live="polite" aria-atomic="true">
+        {keyboardStatus}
+      </p>
+      <canvas
+        ref={canvasRef}
+        className={styles.canvas}
+        aria-describedby={`${keyboardHelpId} ${keyboardStatusId}`}
+        aria-label="Worm Ranch game field"
+        tabIndex={0}
+      />
       <div className={styles.statusStrip} aria-live="off">
         {stagePresentation.statusItems.map((item, index) => (
           <div

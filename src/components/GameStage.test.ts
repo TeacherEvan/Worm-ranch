@@ -50,4 +50,20 @@ describe("GameStage", () => {
     expect(html).toContain('data-phase-cue="none"');
     expect(html).toContain('data-phase-motion="reduced"');
   });
+
+  it("renders a keyboard-focusable canvas with hidden keyboard help and live status text", () => {
+    const html = renderToStaticMarkup(
+      createElement(GameStage, {
+        profile: "desktop",
+        reducedMotion: false,
+        onSummaryChange: vi.fn(),
+        onRoundEnd: vi.fn(),
+        onEvent: vi.fn(),
+      }),
+    );
+
+    expect(html).toContain('tabindex="0"');
+    expect(html).toContain("Use arrow keys to move the target between worms.");
+    expect(html).toContain('aria-live="polite"');
+  });
 });

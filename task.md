@@ -6,6 +6,8 @@
 
 Casual players using Worm Ranch as a replayable score chase. The game is for quick repeat runs rather than long-form progression, so the interface should help players re-enter fast, read the field instantly, and feel pushed toward one more round.
 
+Mobile players should always be able to feel the countdown pressure without reading a dense rules block first. Time pressure should read as motivation, not dashboard clutter.
+
 The player sits in a god-view perspective over a strange hybrid setting: part hillbilly farm, part space ranch. The interface should support that top-down, player-as-overseer fantasy rather than feeling like a generic menu wrapped around a toy.
 
 ### Brand Personality
@@ -29,3 +31,4 @@ The current dark arcade baseline is acceptable only if it keeps evolving into so
 3. Make motion earn its place. Animation should heighten tension, mischief, and field readability, not just decorate the screen.
 4. Favor interactive stimulation over static polish. Feedback, state shifts, and responsive surfaces matter more than ornamental chrome.
 5. Reject childish sweetness and generic AI-looking UI. The interface should feel rowdy, odd, and competitive instead of cute, glossy, or templated.
+6. Keep launch surfaces title-first. Teach rules in motion, HUD cues, and play-state feedback instead of long explanatory copy.

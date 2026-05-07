@@ -55,7 +55,7 @@
 
 .install,
 .dismiss {
-  min-height: 42px;
+  min-height: 44px;
   padding: 0 14px;
   border-radius: 999px;
   font-weight: 600;
@@ -64,7 +64,7 @@
 
 .promptInline .install,
 .promptInline .dismiss {
-  min-height: 36px;
+  min-height: 44px;
   padding: 0 12px;
   font-size: 0.9rem;
 }

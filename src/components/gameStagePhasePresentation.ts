@@ -157,9 +157,9 @@ function buildStatusItemsForSummary(
     },
     {
       id: "clock",
-      label: "Clock",
-      value: `${Math.ceil(summary.timerMs / 1000)}s`,
-      active: !isCountdown && !isResolved && summary.timerMs <= 15_000,
+      label: "Beat bell",
+      value: `${Math.ceil(summary.timerMs / 1000)}s left`,
+      active: !isCountdown && !isResolved,
     },
     {
       id: "mechanic",

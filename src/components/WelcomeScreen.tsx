@@ -69,7 +69,7 @@ export function WelcomeScreen({ metrics, onOpenGate, onRigTack, reducedMotion }:
             rig the tack first and set the ride your way.
           </p>
           <div className={styles.actions}>
-            <button className={`${styles.actionButton} ${styles.primaryButton}`} onClick={onOpenGate}>
+            <button autoFocus className={`${styles.actionButton} ${styles.primaryButton}`} onClick={onOpenGate}>
               Open the gate
             </button>
             <button className={`${styles.actionButton} ${styles.secondaryButton}`} onClick={onRigTack}>

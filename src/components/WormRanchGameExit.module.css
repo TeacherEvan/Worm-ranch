@@ -22,7 +22,7 @@
 }
 
 .leave {
-  min-height: 36px;
+  min-height: 44px;
   padding: 0 14px;
   border-radius: 999px;
   color: var(--text);
@@ -44,7 +44,7 @@
 }
 
 .shell[data-density="compact"] .leave {
-  min-height: 32px;
+  min-height: 44px;
   padding: 0 12px;
   font-size: 0.84rem;
 }
