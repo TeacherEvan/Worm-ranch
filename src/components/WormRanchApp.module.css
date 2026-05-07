@@ -21,6 +21,13 @@
   animation: screenEnter 560ms var(--ease-out-expo) both;
 }
 
+.gameScreen {
+  position: relative;
+  min-height: 100svh;
+  gap: 0;
+  animation: none;
+}
+
 .hero,
 .panel,
 .hud,
@@ -88,6 +95,10 @@
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
+}
+
+.inlineUtility {
+  width: min(100%, 29rem);
 }
 
 .primary,
@@ -249,6 +260,12 @@
   }
 }
 
+.page[data-screen="game"] {
+  width: 100vw;
+  min-height: 100svh;
+  padding: 0;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .primary:hover,
   .secondary:hover,
@@ -281,6 +298,10 @@
   .actions > * {
     width: 100%;
   }
+
+  .inlineUtility {
+    width: 100%;
+  }
 }
 
 @container (max-width: 32rem) {
@@ -310,6 +331,16 @@
   .resultsGrid,
   .settingsGrid {
     grid-template-columns: 1fr;
+  }
+
+  .gameActions {
+    inset: auto 12px 12px 12px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .gameActions .secondary {
+    grid-column: 1 / -1;
   }
 }
 

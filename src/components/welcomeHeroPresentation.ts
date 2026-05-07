@@ -1,40 +1,59 @@
-const MOBILE_LAYOUT_MAX_WIDTH = 767;
-
-const DESKTOP_ASSET_PATH = "/art/welcome-memory-desktop.webp";
-const MOBILE_ASSET_PATH = "/art/welcome-memory-mobile.webp";
+export const MOBILE_LAYOUT_MAX_WIDTH = 767;
 
 export type WelcomeHeroLayout = "desktop" | "mobile";
 export type WelcomeHeroCropIntent = "preserve-rider-silhouette-and-copy-safe-zone";
 export type WelcomeHeroOverlayStrength = "strong";
+export type WelcomeHeroTextSafeZone = "right-copy-column" | "lower-copy-band";
 
-export type WelcomeHeroPresentation = {
+export type WelcomeHeroVariant = {
   layout: WelcomeHeroLayout;
-  assetPath: string;
-  desktopAssetPath: string;
-  mobileAssetPath: string;
+  src: string;
   cropIntent: WelcomeHeroCropIntent;
   overlayStrength: WelcomeHeroOverlayStrength;
+  textSafeZone: WelcomeHeroTextSafeZone;
+};
+
+export type WelcomeHeroPresentation = {
+  variants: Record<WelcomeHeroLayout, WelcomeHeroVariant>;
   ambientMotionLayersEnabled: boolean;
 };
 
 export type WelcomeHeroPresentationOptions = {
-  viewportWidth: number;
   reducedMotion: boolean;
 };
 
-export function getWelcomeHeroPresentation({
-  viewportWidth,
-  reducedMotion,
-}: WelcomeHeroPresentationOptions): WelcomeHeroPresentation {
-  const layout: WelcomeHeroLayout = viewportWidth <= MOBILE_LAYOUT_MAX_WIDTH ? "mobile" : "desktop";
-
-  return {
-    layout,
-    assetPath: layout === "mobile" ? MOBILE_ASSET_PATH : DESKTOP_ASSET_PATH,
-    desktopAssetPath: DESKTOP_ASSET_PATH,
-    mobileAssetPath: MOBILE_ASSET_PATH,
+const HERO_VARIANTS: Record<WelcomeHeroLayout, WelcomeHeroVariant> = {
+  desktop: {
+    layout: "desktop",
+    src: "/art/welcome-memory-desktop.webp",
     cropIntent: "preserve-rider-silhouette-and-copy-safe-zone",
     overlayStrength: "strong",
+    textSafeZone: "right-copy-column",
+  },
+  mobile: {
+    layout: "mobile",
+    src: "/art/welcome-memory-mobile.webp",
+    cropIntent: "preserve-rider-silhouette-and-copy-safe-zone",
+    overlayStrength: "strong",
+    textSafeZone: "lower-copy-band",
+  },
+};
+
+export function getWelcomeHeroLayout(viewportWidth: number | undefined): WelcomeHeroLayout {
+  if (viewportWidth === undefined) {
+    return "desktop";
+  }
+
+  return viewportWidth <= MOBILE_LAYOUT_MAX_WIDTH ? "mobile" : "desktop";
+}
+
+export function getWelcomeHeroPresentation({ reducedMotion }: WelcomeHeroPresentationOptions): WelcomeHeroPresentation {
+  return {
+    variants: HERO_VARIANTS,
     ambientMotionLayersEnabled: !reducedMotion,
   };
+}
+
+export function getWelcomeHeroVariant(viewportWidth: number | undefined): WelcomeHeroVariant {
+  return HERO_VARIANTS[getWelcomeHeroLayout(viewportWidth)];
 }

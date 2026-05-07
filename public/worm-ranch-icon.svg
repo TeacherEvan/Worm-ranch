@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Worm Ranch icon">
+  <rect width="512" height="512" rx="120" fill="#07111b"/>
+  <path d="M72 340c0-96 86-168 194-168 64 0 118 22 154 54" fill="none" stroke="#c7f36b" stroke-width="34" stroke-linecap="round"/>
+  <path d="M130 392c18 22 52 36 92 36 78 0 142-52 142-116 0-34-20-64-52-86" fill="none" stroke="#f07e43" stroke-width="30" stroke-linecap="round"/>
+  <circle cx="388" cy="154" r="44" fill="#f6e6a7" fill-opacity="0.9"/>
+  <circle cx="396" cy="146" r="6" fill="#07111b"/>
+  <circle cx="396" cy="162" r="6" fill="#07111b"/>
+</svg>

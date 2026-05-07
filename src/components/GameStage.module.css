@@ -3,12 +3,12 @@
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
-  min-height: clamp(360px, 60vh, 720px);
-  border-radius: 30px;
+  min-height: 100svh;
+  border-radius: 0;
   overflow: hidden;
   background: linear-gradient(180deg, rgba(5, 13, 20, 0.96), rgba(9, 22, 31, 0.92));
-  border: 1px solid rgba(199, 243, 107, 0.18);
-  box-shadow: var(--shadow);
+  border: 0;
+  box-shadow: none;
   container-type: inline-size;
 }
 
@@ -100,29 +100,29 @@
 .canvas {
   display: block;
   width: 100%;
-  height: clamp(360px, 66vh, 760px);
+  height: 100svh;
   touch-action: none;
   cursor: crosshair;
 }
 
 .statusStrip {
   position: absolute;
-  inset: clamp(12px, 2vw, 18px) clamp(12px, 2vw, 18px) auto;
+  inset: clamp(12px, 2vw, 18px) auto auto clamp(12px, 2vw, 18px);
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(3, max-content);
+  gap: 8px;
   pointer-events: none;
 }
 
 .statusPill {
   display: grid;
-  gap: 6px;
-  padding: clamp(10px, 1.4vw, 14px) clamp(12px, 1.8vw, 16px);
-  border-radius: 18px;
-  background: rgba(8, 15, 24, 0.74);
-  border: 1px solid rgba(199, 243, 107, 0.12);
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: rgba(8, 15, 24, 0.62);
+  border: 1px solid rgba(199, 243, 107, 0.1);
   color: var(--muted);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(10px);
   transform: translate3d(0, 0, 0);
   transition:
     transform 220ms var(--ease-out-quart),
@@ -151,14 +151,37 @@
 }
 
 .statusLabel {
-  font-size: 0.72rem;
+  font-size: 0.64rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .statusValue {
   color: var(--text);
-  font-size: clamp(0.92rem, 1.3vw, 1.08rem);
+  font-size: clamp(0.82rem, 1vw, 0.98rem);
+}
+
+.shell[data-overlay-density="compact"] .statusStrip {
+  inset: 10px 10px auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: calc(100% - 20px);
+}
+
+.shell[data-overlay-density="compact"] .statusPill {
+  gap: 2px;
+  padding: 6px 8px;
+  border-radius: 12px;
+}
+
+.shell[data-overlay-density="compact"] .statusLabel {
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+}
+
+.shell[data-overlay-density="compact"] .statusValue {
+  font-size: 0.78rem;
 }
 
 .overlay {
@@ -167,16 +190,27 @@
   display: flex;
   align-items: flex-end;
   justify-content: flex-start;
-  gap: 16px;
-  padding: clamp(16px, 2vw, 22px);
+  gap: 12px;
+  padding: clamp(12px, 1.6vw, 18px);
   pointer-events: none;
+}
+
+.shell[data-overlay-density="compact"] .overlay {
+  padding: 10px;
+  gap: 8px;
+  align-items: stretch;
 }
 
 .copyCluster {
   display: grid;
-  gap: 10px;
-  max-width: min(36ch, 48%);
+  gap: 8px;
+  max-width: min(28ch, 34vw);
   animation: copyReveal 340ms var(--ease-out-quart) both;
+}
+
+.shell[data-overlay-density="compact"] .copyCluster {
+  gap: 6px;
+  max-width: min(24rem, calc(100vw - 20px));
 }
 
 .shell[data-feedback-cue="rush-start"] .copyCluster,
@@ -200,36 +234,54 @@
 
 .message {
   max-width: none;
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: rgba(8, 15, 24, 0.78);
-  border: 1px solid rgba(199, 243, 107, 0.16);
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(8, 15, 24, 0.68);
+  border: 1px solid rgba(199, 243, 107, 0.12);
   color: var(--muted);
-  line-height: 1.45;
-  backdrop-filter: blur(12px);
+  font-size: 0.9rem;
+  line-height: 1.35;
+  backdrop-filter: blur(10px);
+}
+
+.shell[data-overlay-density="compact"] .message {
+  padding: 8px 10px;
+  font-size: 0.84rem;
+  line-height: 1.28;
 }
 
 .message strong {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   color: var(--text);
-  font-size: 1.02rem;
+  font-size: 0.96rem;
+}
+
+.shell[data-overlay-density="compact"] .message strong {
+  margin-bottom: 1px;
+  font-size: 0.88rem;
 }
 
 .hint {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   width: fit-content;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border-radius: 999px;
-  background: rgba(8, 15, 24, 0.7);
-  border: 1px solid rgba(199, 243, 107, 0.18);
+  background: rgba(8, 15, 24, 0.58);
+  border: 1px solid rgba(199, 243, 107, 0.12);
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 0.8rem;
   align-self: flex-start;
   max-width: none;
   text-align: left;
+}
+
+.shell[data-overlay-density="compact"] .hint {
+  padding: 6px 9px;
+  font-size: 0.76rem;
+  max-width: min(24rem, calc(100vw - 20px));
 }
 
 .shell[data-phase="ghostFinale"] .phaseBadge,
@@ -371,7 +423,7 @@
 
 @container (max-width: 44rem) {
   .statusStrip {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, max-content);
   }
 
   .overlay {
@@ -399,7 +451,7 @@
 
 @media (max-height: 700px) {
   .canvas {
-    height: clamp(320px, 58vh, 540px);
+    height: 100svh;
   }
 }
 

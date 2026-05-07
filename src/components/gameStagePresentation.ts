@@ -328,11 +328,39 @@ function drawFeedback(context: CanvasRenderingContext2D, feedback: StageFeedback
     context.save();
     context.globalAlpha = alpha;
     context.translate(item.x, item.y - (reducedMotion ? progress * 12 : (1 - Math.pow(1 - progress, 4)) * 18));
-    context.scale(reducedMotion ? 1 : 0.92 + alpha * 0.12, reducedMotion ? 1 : 0.92 + alpha * 0.12);
+    context.scale(reducedMotion ? 1 : 0.9 + alpha * 0.18, reducedMotion ? 1 : 0.9 + alpha * 0.18);
+
+    const burstProgress = reducedMotion ? progress : 1 - Math.pow(1 - progress, 3);
+    const burstRadius =
+      item.tone === "collect"
+        ? 30 + burstProgress * 34
+        : item.tone === "tag"
+          ? 22 + burstProgress * 22
+          : 26 + burstProgress * 28;
+
+    context.fillStyle = `rgba(${color}, ${alpha * 0.12})`;
+    context.beginPath();
+    context.arc(0, 0, Math.max(10, burstRadius * 0.42), 0, Math.PI * 2);
+    context.fill();
+
+    context.strokeStyle = `rgba(${color}, ${alpha * 0.9})`;
+    context.lineWidth = item.tone === "collect" ? 4 : 3;
+    context.beginPath();
+    context.arc(0, 0, burstRadius, 0, Math.PI * 2);
+    context.stroke();
+
+    if (!reducedMotion && item.tone === "collect") {
+      context.strokeStyle = `rgba(${color}, ${alpha * 0.48})`;
+      context.lineWidth = 2;
+      context.beginPath();
+      context.arc(0, 0, burstRadius * 1.18, 0, Math.PI * 2);
+      context.stroke();
+    }
+
     context.fillStyle = `rgba(${color}, 0.96)`;
-    context.shadowBlur = reducedMotion ? 0 : 16 * alpha;
+    context.shadowBlur = reducedMotion ? 0 : 20 * alpha;
     context.shadowColor = `rgba(${color}, ${alpha})`;
-    context.font = "700 14px var(--font-mono)";
+    context.font = item.tone === "collect" ? "700 16px var(--font-mono)" : "700 14px var(--font-mono)";
     context.textAlign = "center";
     context.fillText(item.label, 0, 0);
     context.restore();

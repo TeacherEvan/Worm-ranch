@@ -15,11 +15,14 @@ type StageCopy = {
   hint: string;
 };
 
+type OverlayDensity = "standard" | "compact";
+
 export type StagePresentation = {
   phaseLabel: string;
   phaseChipLabel: string;
   statusItems: StatusItem[];
   copy: StageCopy;
+  overlayDensity: OverlayDensity;
   overlayKey: string;
   countdownOverlay: { value: string; progress: number } | null;
   fieldBanner: string | null;
@@ -43,8 +46,9 @@ export function getStagePresentation(summary: GameSummary, profile: DisplayProfi
   return {
     phaseLabel,
     phaseChipLabel,
-    statusItems: buildStatusItemsForSummary(viewSummary, phaseLabel, rules),
+    statusItems: buildStatusItemsForSummary(viewSummary, rules),
     copy,
+    overlayDensity: getOverlayDensity(viewSummary),
     overlayKey: getOverlayKey(viewSummary),
     countdownOverlay:
       viewSummary.phase === "introCountdown"
@@ -61,6 +65,10 @@ export function getStagePresentation(summary: GameSummary, profile: DisplayProfi
         ? "Ghost finale: the last outlaw only bolts"
         : null,
   };
+}
+
+function getOverlayDensity(summary: GameSummary): OverlayDensity {
+  return summary.profile === "mobile" ? "compact" : "standard";
 }
 
 function getPhaseLabelText(summary: GameSummary) {
@@ -112,7 +120,6 @@ function getPhaseChipText(summary: GameSummary, rules: ReturnType<typeof getProf
 
 function buildStatusItemsForSummary(
   summary: GameSummary,
-  phaseLabel: string,
   rules: ReturnType<typeof getProfileRules>,
 ): StatusItem[] {
   const isCountdown = summary.phase === "introCountdown";
@@ -120,7 +127,12 @@ function buildStatusItemsForSummary(
 
   if (summary.profile === "desktop") {
     return [
-      { id: "phase", label: "Phase", value: phaseLabel, active: !isResolved },
+      {
+        id: "bagged",
+        label: "Bagged",
+        value: `${summary.collected}/${rules.totalWorms}`,
+        active: !isResolved && summary.collected > 0,
+      },
       {
         id: "clock",
         label: "Clock",
@@ -128,22 +140,21 @@ function buildStatusItemsForSummary(
         active: !isCountdown && !isResolved && summary.timerMs <= 15_000,
       },
       {
-        id: "blink",
-        label: "Blink gate",
+        id: "mechanic",
+        label: summary.phase === "ghostFinale" ? "Ghost" : "Blink gate",
         value: summary.phase === "blinkBand" ? "armed" : summary.phase === "ghostFinale" ? "spent" : "arming",
-        active: summary.phase === "blinkBand",
-      },
-      {
-        id: "ghost",
-        label: "Ghost",
-        value: summary.phase === "ghostFinale" ? "escaping" : "idle",
-        active: summary.phase === "ghostFinale",
+        active: summary.phase === "blinkBand" || summary.phase === "ghostFinale",
       },
     ];
   }
 
   return [
-    { id: "phase", label: "Phase", value: phaseLabel, active: !isResolved },
+    {
+      id: "bagged",
+      label: "Bagged",
+      value: `${summary.collected}/${rules.totalWorms}`,
+      active: !isResolved && summary.collected > 0,
+    },
     {
       id: "clock",
       label: "Clock",
@@ -151,15 +162,9 @@ function buildStatusItemsForSummary(
       active: !isCountdown && !isResolved && summary.timerMs <= 15_000,
     },
     {
-      id: "rush",
-      label: "Rush",
-      value: isCountdown ? "waiting" : summary.rushTriggered ? "live" : "primed",
-      active: !isCountdown && summary.rushTriggered,
-    },
-    {
-      id: "tag",
-      label: "Tagged",
-      value: `${rules.touchBurstsToCapture} taps to bag`,
+      id: "mechanic",
+      label: summary.rushTriggered ? "Rush" : "Bag rule",
+      value: isCountdown ? "waiting" : summary.rushTriggered ? "live" : `${rules.touchBurstsToCapture} taps`,
       active: !isCountdown && !isResolved,
     },
   ];
@@ -167,6 +172,14 @@ function buildStatusItemsForSummary(
 
 function getStageCopyData(summary: GameSummary, phaseLabel: string): StageCopy {
   if (summary.phase === "introCountdown") {
+    if (summary.profile === "mobile") {
+      return {
+        title: phaseLabel,
+        body: "Bell is up. The herd breaks when the countdown clears.",
+        hint: "Pick your lane before the first tap.",
+      };
+    }
+
     return {
       title: phaseLabel,
       body: "The corral is lit, but the herd does not break until the bell clears.",
@@ -178,6 +191,14 @@ function getStageCopyData(summary: GameSummary, phaseLabel: string): StageCopy {
   }
 
   if (summary.phase === "resolved") {
+    if (summary.profile === "mobile") {
+      return {
+        title: phaseLabel,
+        body: "Round closed. Check the tally.",
+        hint: "Bagged count and escape state are final.",
+      };
+    }
+
     return {
       title: phaseLabel,
       body: "The round has closed and the ranch is settling.",
@@ -189,38 +210,58 @@ function getStageCopyData(summary: GameSummary, phaseLabel: string): StageCopy {
     if (summary.phase === "ghostFinale") {
       return {
         title: phaseLabel,
-        body: "The last outlaw is all ghost. Every clean press only forces another bolt through the fence.",
-        hint: "Close the round before the pen narrows to one ghost worm.",
+        body: "The last outlaw only bolts now.",
+        hint: "You needed the pen fuller before it turned ghost.",
       };
     }
 
     if (summary.phase === "blinkBand") {
       return {
         title: phaseLabel,
-        body: "Blink charges are armed. Every loose worm flashes once through the fence before it can be bagged.",
-        hint: "Charged worms show a pale halo and an orbit spark.",
+        body: "Every loose worm gets one blink before the bag sticks.",
+        hint: "Watch for the pale halo, then click again after the flash.",
       };
     }
 
     return {
       title: phaseLabel,
-      body: "Mouse roundup is live. Every bagged worm spooks the herd while the blink fence winds up.",
-      hint: "Herd with the pointer, then snap the catch clean.",
+      body: "Mouse roundup is live and every bagged worm spikes the herd.",
+      hint: "Sweep, click, recover, then cut back in.",
+    };
+  }
+
+  if (summary.profile === "mobile" && summary.phase === "ghostFinale") {
+    return {
+      title: phaseLabel,
+      body: "The last outlaw only bolts now.",
+      hint: "Cut off the lane and finish the bag.",
     };
   }
 
   if (summary.rushTriggered) {
     return {
       title: phaseLabel,
-      body: "The chase is fully live. A branded worm keeps a visible 1/2 marker until the next clean tap bags it.",
-      hint: "Stay on the same worm after the first clean tag and finish it with the next tap.",
+      body:
+        summary.profile === "mobile"
+          ? "Tagged worms need one more clean tap."
+          : "A branded worm only needs one more clean tap.",
+      hint:
+        summary.profile === "mobile"
+          ? "Stay on that same worm and cash it out fast."
+          : "Stay on that same worm and finish fast.",
     };
   }
 
   return {
     title: phaseLabel,
-    body: "The first touch wakes the herd immediately, even on a miss. Accurate taps add the visible 1/2 marker, and the next accurate tap on that same worm bags it.",
-    hint: "Use the first touch to wake the herd and, if you land on target, tag that worm. Then stay on it for the finishing tap.",
+    body:
+      summary.profile === "mobile"
+        ? "First touch wakes the herd. Tap once to brand, again to bag."
+        : "The first touch wakes the herd. One clean tap brands and the next one bags.",
+    hint:
+      summary.profile === "mobile"
+        ? "Wake one worm, stay on it, and finish fast."
+        : "Wake them up, pick one worm, and finish the second tap before drifting off.",
   };
 }
 

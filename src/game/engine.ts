@@ -4,6 +4,7 @@ import { getProfileRules, type ProfileRules } from "./rules";
 import { isFairyVisible, isWormActive, type ActionResult, type EngineRuntime, type Fairy, type GameSummary, type GameWorld, type Point, type RoundResult, type Worm } from "./types";
 
 const BLINK_RECOVER_MS = 220;
+const WORM_HIT_RADIUS_FACTOR = 2.8;
 
 export { PROFILE_RULES } from "./rules";
 export type {
@@ -163,7 +164,7 @@ export function findWormIdAtPoint(world: GameWorld, point: Point): string | null
     }
 
     const distance = Math.hypot(worm.x - point.x, worm.y - point.y);
-    if (distance <= worm.radius + hitPadding) {
+    if (distance <= worm.radius * WORM_HIT_RADIUS_FACTOR + hitPadding) {
       return worm.id;
     }
   }

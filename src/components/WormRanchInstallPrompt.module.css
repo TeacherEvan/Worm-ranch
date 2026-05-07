@@ -1,0 +1,112 @@
+.prompt {
+  position: fixed;
+  z-index: 30;
+  inset: auto clamp(14px, 2vw, 22px) clamp(14px, 2vw, 22px) auto;
+  display: grid;
+  gap: 10px;
+  width: min(24rem, calc(100vw - 28px));
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: rgba(8, 15, 24, 0.9);
+  border: 1px solid rgba(199, 243, 107, 0.16);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(14px);
+}
+
+.promptInline {
+  position: static;
+  inset: auto;
+  width: min(100%, 29rem);
+  padding: 10px 12px;
+  border-radius: 18px;
+  gap: 8px;
+  background: rgba(8, 15, 24, 0.68);
+  box-shadow: none;
+}
+
+.eyebrow {
+  color: color-mix(in srgb, var(--text) 74%, var(--accent) 26%);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.copy {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.promptInline .copy {
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.promptInline .actions {
+  justify-content: flex-start;
+}
+
+.install,
+.dismiss {
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.promptInline .install,
+.promptInline .dismiss {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 0.9rem;
+}
+
+.install {
+  color: #061018;
+  background: linear-gradient(135deg, var(--accent), #f4c76c);
+}
+
+.dismiss {
+  color: var(--text);
+  background: transparent;
+  border: 1px solid rgba(199, 243, 107, 0.18);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .install:hover,
+  .dismiss:hover {
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
+@media (max-width: 720px) {
+  .prompt {
+    inset-inline: 14px;
+    width: auto;
+  }
+
+  .actions {
+    justify-content: stretch;
+  }
+
+  .install,
+  .dismiss {
+    flex: 1 1 0;
+  }
+
+  .promptInline {
+    width: 100%;
+  }
+
+  .promptInline .actions {
+    justify-content: stretch;
+  }
+}

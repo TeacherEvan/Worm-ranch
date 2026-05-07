@@ -18,6 +18,18 @@ function createDeterministicOptions(seed: number): CreateWorldOptions {
 }
 
 describe("gameStagePhasePresentation", () => {
+  it("keeps the in-round desktop status strip compact around progress, clock, and the live mechanic", () => {
+    const world = createWorld("desktop", 800, 540, createDeterministicOptions(43));
+
+    startRound(world);
+
+    const presentation = getStagePresentation(getSummary(world));
+
+    expect(presentation.statusItems.map((item) => item.id)).toEqual(["bagged", "clock", "mechanic"]);
+    expect(presentation.statusItems[0]?.value).toBe("0/100");
+    expect(presentation.statusItems[2]?.value).toBe("arming");
+  });
+
   it("explains that the first touch wakes the herd immediately and that accurate taps tag worms", () => {
     const world = createWorld("mobile", 800, 540, createDeterministicOptions(57));
 
@@ -26,10 +38,9 @@ describe("gameStagePhasePresentation", () => {
     const presentation = getStagePresentation(getSummary(world));
 
     expect(presentation.phaseChipLabel).toBe("Touch wakes rush");
-    expect(presentation.copy.body).toContain("first touch wakes the herd immediately, even on a miss");
-    expect(presentation.copy.body).toContain("Accurate taps add the visible 1/2 marker");
-    expect(presentation.copy.hint).toContain("first touch to wake the herd");
-    expect(presentation.copy.hint).toContain("tag that worm");
+    expect(presentation.overlayDensity).toBe("compact");
+    expect(presentation.copy.body).toBe("First touch wakes the herd. Tap once to brand, again to bag.");
+    expect(presentation.copy.hint).toBe("Wake one worm, stay on it, and finish fast.");
   });
 
   it("explains that a tagged worm needs the next clean tap once rush is live", () => {
@@ -47,7 +58,7 @@ describe("gameStagePhasePresentation", () => {
     const presentation = getStagePresentation(getSummary(world));
 
     expect(presentation.phaseChipLabel).toBe("Rush live");
-    expect(presentation.copy.body).toContain("next clean tap bags it");
-    expect(presentation.copy.hint).toContain("finish it with the next tap");
+    expect(presentation.copy.body).toContain("one more clean tap");
+    expect(presentation.copy.hint).toContain("Stay on that same worm");
   });
 });

@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import styles from "./WormRanchApp.module.css";
-import motionStyles from "./WormRanchAppMotion.module.css";
 import { GameStage } from "@/components/GameStage";
+import { WormRanchInstallPrompt } from "@/components/WormRanchInstallPrompt";
+import { WormRanchGameExit } from "@/components/WormRanchGameExit";
+import { WormRanchMetric } from "@/components/WormRanchMetric";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { WormRanchShellHeader } from "@/components/WormRanchShellHeader";
-import { getMotionFeedback } from "@/components/gameStageMotion";
 import { areDisplaySnapshotsEqual, getProfileDetectedDetails } from "@/lib/analytics";
 import { detectDisplayProfile, type DisplayProfile, type DisplaySnapshot } from "@/game/detection";
 import { PROFILE_RULES } from "@/game/rules";
@@ -19,48 +20,25 @@ import {
   type SettingsState,
   writeStoredSettings,
 } from "@/lib/wormRanchSettings";
-import type { GameSummary, RoundResult } from "@/game/types";
+import type { RoundResult } from "@/game/types";
 import { createSilentLogger, type EventName } from "@/lib/logger";
 
 type AppScreen = "welcome" | "home" | "settings" | "game" | "results";
-type MetricImpact = "idle" | "bagged" | "remaining" | "fairies" | "critical";
-type MetricKey = "bagged" | "remaining" | "fairies" | "time";
+type DeferredInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+};
 
 const MOBILE_ROUNDUP_COPY = "The first touch wakes the herd. Land one clean tap to tag a worm, then another on that same worm to bag it.";
 const FAIRY_LIFT_COPY = "Clean catches still lift into fairies and drift out of the ranch glow.";
-const METRIC_IMPACT_MS: Record<Exclude<MetricImpact, "idle">, number> = {
-  bagged: 360,
-  remaining: 320,
-  fairies: 520,
-  critical: 820,
-};
-
-const emptySummary: GameSummary = {
-  profile: "desktop",
-  phase: "introCountdown",
-  collected: 0,
-  remaining: 100,
-  fairies: 0,
-  timerMs: PROFILE_RULES.desktop.timeLimitMs,
-  speedBonus: 0,
-  teleportsUnlocked: false,
-  countdownMs: 0,
-  finalWormActive: false,
-  rushTriggered: false,
-};
 
 export function WormRanchApp() {
   const [screen, setScreen] = useState<AppScreen>("welcome");
   const [detectedDisplay, setDetectedDisplay] = useState<DisplaySnapshot | null>(null);
   const [runProfile, setRunProfile] = useState<DisplayProfile | null>(null);
-  const [summary, setSummary] = useState<GameSummary>(emptySummary);
   const [result, setResult] = useState<RoundResult | null>(null);
-  const [metricImpacts, setMetricImpacts] = useState<Record<MetricKey, MetricImpact>>({
-    bagged: "idle",
-    remaining: "idle",
-    fairies: "idle",
-    time: "idle",
-  });
+  const [installPromptEvent, setInstallPromptEvent] = useState<DeferredInstallPromptEvent | null>(null);
+  const [installPromptDismissed, setInstallPromptDismissed] = useState(false);
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
   const [logger] = useState(() => createSilentLogger("/api/events"));
   const hasLoggedOpenRef = useRef(false);
@@ -85,13 +63,6 @@ export function WormRanchApp() {
   const effectiveProfileRef = useRef<DisplayProfile>(effectiveProfile);
   const runProfileRef = useRef<DisplayProfile | null>(runProfile);
   const detectedDisplayRef = useRef<DisplaySnapshot | null>(null);
-  const previousSummaryRef = useRef<GameSummary | null>(null);
-  const metricTimerRef = useRef<Record<MetricKey, number | null>>({
-    bagged: null,
-    remaining: null,
-    fairies: null,
-    time: null,
-  });
 
   const logEvent = useCallback(
     (
@@ -155,15 +126,35 @@ export function WormRanchApp() {
   }, [runProfile]);
 
   useEffect(() => {
-    const metricTimers = metricTimerRef.current;
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+    }
+
+    const handleBeforeInstallPrompt = (event: Event) => {
+      if (!isDeferredInstallPromptEvent(event)) {
+        return;
+      }
+
+      event.preventDefault();
+      setInstallPromptEvent(event);
+      setInstallPromptDismissed(false);
+    };
+
+    const handleAppInstalled = () => {
+      setInstallPromptEvent(null);
+      setInstallPromptDismissed(true);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt as EventListener);
+    window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
-      for (const key of Object.keys(metricTimers) as MetricKey[]) {
-        const timerId = metricTimers[key];
-        if (timerId !== null) {
-          window.clearTimeout(timerId);
-        }
-      }
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt as EventListener);
+      window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
 
@@ -239,74 +230,28 @@ export function WormRanchApp() {
     logEvent("screen_viewed", undefined, screen, settingsRef.current.analyticsEnabled, profile);
   }, [logEvent, screen]);
 
-  const triggerMetricImpact = useCallback((key: MetricKey, impact: Exclude<MetricImpact, "idle">) => {
-    const activeTimer = metricTimerRef.current[key];
-    if (activeTimer !== null) {
-      window.clearTimeout(activeTimer);
+  const handleInstallRequest = useCallback(async () => {
+    if (!installPromptEvent) {
+      return;
     }
 
-    setMetricImpacts((current) => ({ ...current, [key]: "idle" }));
-
-    window.requestAnimationFrame(() => {
-      setMetricImpacts((current) => ({ ...current, [key]: impact }));
-      metricTimerRef.current[key] = window.setTimeout(() => {
-        setMetricImpacts((current) => ({ ...current, [key]: "idle" }));
-        metricTimerRef.current[key] = null;
-      }, METRIC_IMPACT_MS[impact]);
-    });
-  }, []);
-
-  const handleSummaryChange = useCallback(
-    (nextSummary: GameSummary) => {
-      const motionFeedback = getMotionFeedback(previousSummaryRef.current, nextSummary);
-
-      previousSummaryRef.current = nextSummary;
-      setSummary(nextSummary);
-
-      if (motionFeedback.baggedBump) {
-        triggerMetricImpact("bagged", "bagged");
-      }
-
-      if (motionFeedback.remainingDip) {
-        triggerMetricImpact("remaining", "remaining");
-      }
-
-      if (motionFeedback.fairyBurst) {
-        triggerMetricImpact("fairies", "fairies");
-      }
-
-      if (motionFeedback.timerAlert) {
-        triggerMetricImpact("time", "critical");
-      }
-    },
-    [triggerMetricImpact],
-  );
+    const pendingPrompt = installPromptEvent;
+    await pendingPrompt.prompt();
+    await pendingPrompt.userChoice;
+    setInstallPromptEvent(null);
+    setInstallPromptDismissed(true);
+  }, [installPromptEvent]);
 
   const beginRun = () => {
     const nextRunProfile = effectiveProfile;
     const nextSessionId = crypto.randomUUID();
-    const nextRules = PROFILE_RULES[nextRunProfile];
 
     sessionIdRef.current = nextSessionId;
     runProfileRef.current = nextRunProfile;
-    previousSummaryRef.current = null;
-    setMetricImpacts({
-      bagged: "idle",
-      remaining: "idle",
-      fairies: "idle",
-      time: "idle",
-    });
 
     setSessionId(nextSessionId);
     setRunProfile(nextRunProfile);
     setResult(null);
-    setSummary({
-      ...emptySummary,
-      profile: nextRunProfile,
-      remaining: nextRules.totalWorms,
-      timerMs: nextRules.timeLimitMs,
-      countdownMs: nextRules.introCountdownMs,
-    });
     setScreen("game");
   };
 
@@ -318,11 +263,12 @@ export function WormRanchApp() {
   const shellScanProfile: DisplayProfile | "scanning" =
     screen === "game" || screen === "results" ? shellProfile : detectedDisplay?.profile ?? "scanning";
   const profileRules = PROFILE_RULES[shellProfile];
+  const installPromptVisible = installPromptEvent !== null && !installPromptDismissed;
   const welcomeMetrics = [
-    { label: "Big corral", value: "100 worms" },
-    { label: "Pocket corral", value: "10 worms" },
-    { label: "Fairy lift", value: "enabled" },
+    { label: "Pasture", value: "moonlit" },
+    { label: "Tack", value: "ready" },
     { label: "Trail log", value: settings.analyticsEnabled ? "silent" : "off" },
+    { label: "Orbit", value: "steady" },
   ];
 
   return (
@@ -331,21 +277,22 @@ export function WormRanchApp() {
       data-motion={settings.reducedMotion ? "reduced" : "full"}
       data-screen={screen}
     >
-      {screen === "welcome" ? (
-        <WormRanchShellHeader density="welcome" shellProfile={shellProfile} shellScanProfile={shellScanProfile} />
-      ) : (
-        <WormRanchShellHeader
-          shellProfile={shellProfile}
-          shellScanProfile={shellScanProfile}
-          totalWorms={profileRules.totalWorms}
-        />
-      )}
-
+      {screen !== "game" &&
+        (screen === "welcome" ? (
+          <WormRanchShellHeader density="welcome" shellProfile={shellProfile} shellScanProfile={shellScanProfile} />
+        ) : (
+          <WormRanchShellHeader
+            shellProfile={shellProfile}
+            shellScanProfile={shellScanProfile}
+            totalWorms={profileRules.totalWorms}
+          />
+        ))}
       {screen === "welcome" && (
         <WelcomeScreen
           metrics={welcomeMetrics}
           onOpenGate={() => setScreen("home")}
           onRigTack={() => setScreen("settings")}
+          reducedMotion={settings.reducedMotion}
         />
       )}
 
@@ -366,13 +313,21 @@ export function WormRanchApp() {
                   Ranch settings
                 </button>
               </div>
+              <div className={styles.inlineUtility}>
+                <WormRanchInstallPrompt
+                  visible={installPromptVisible}
+                  placement="inline"
+                  onInstall={handleInstallRequest}
+                  onDismiss={() => setInstallPromptDismissed(true)}
+                />
+              </div>
             </div>
           </div>
           <div className={styles.dashboard}>
-            <Metric label="Tack mode" value={settings.displayMode} />
-            <Metric label="Reins" value={detectedDisplay?.pointer ?? "unknown"} />
-            <Metric label="Horizon" value={detectedDisplay?.orientation ?? "unknown"} />
-            <Metric label="Pasture glass" value={`${detectedDisplay?.width ?? 0} x ${detectedDisplay?.height ?? 0}`} />
+            <WormRanchMetric label="Tack mode" value={settings.displayMode} />
+            <WormRanchMetric label="Reins" value={detectedDisplay?.pointer ?? "unknown"} />
+            <WormRanchMetric label="Horizon" value={detectedDisplay?.orientation ?? "unknown"} />
+            <WormRanchMetric label="Pasture glass" value={`${detectedDisplay?.width ?? 0} x ${detectedDisplay?.height ?? 0}`} />
           </div>
         </section>
       )}
@@ -444,31 +399,16 @@ export function WormRanchApp() {
       )}
 
       {screen === "game" && (
-        <section className={styles.screen}>
-          <div className={styles.hud}>
-            <Metric label="Bagged" value={String(summary.collected)} impact={metricImpacts.bagged} />
-            <Metric label="Remaining" value={String(summary.remaining)} impact={metricImpacts.remaining} />
-            <Metric
-              label="Time"
-              value={`${Math.ceil(summary.timerMs / 1000)}s`}
-              impact={summary.timerMs <= 15_000 ? metricImpacts.time : "idle"}
-              urgent={summary.timerMs <= 15_000}
-            />
-            <Metric label="Fairies" value={String(summary.fairies)} impact={metricImpacts.fairies} />
-          </div>
+        <section className={`${styles.screen} ${styles.gameScreen}`}>
           <GameStage
             key={sessionId}
             profile={runProfile ?? effectiveProfile}
             reducedMotion={settings.reducedMotion}
-            onSummaryChange={handleSummaryChange}
+            onSummaryChange={() => undefined}
             onEvent={handleStageEvent}
             onRoundEnd={handleRoundEnd}
           />
-          <div className={styles.actions}>
-            <button className={styles.secondary} onClick={() => setScreen("home")}>
-              Leave corral
-            </button>
-          </div>
+          <WormRanchGameExit profile={runProfile ?? effectiveProfile} onLeave={() => setScreen("home")} />
         </section>
       )}
 
@@ -476,9 +416,9 @@ export function WormRanchApp() {
         <section className={styles.results}>
           <h2>Round tally</h2>
           <div className={styles.resultsGrid}>
-            <Metric label="Outcome" value={formatReason(result.reason)} />
-            <Metric label="Bagged" value={String(result.collected)} />
-            <Metric label="Left loose" value={String(result.remaining)} />
+            <WormRanchMetric label="Outcome" value={formatReason(result.reason)} />
+            <WormRanchMetric label="Bagged" value={String(result.collected)} />
+            <WormRanchMetric label="Left loose" value={String(result.remaining)} />
           </div>
           <p className={styles.note}>
             {FAIRY_LIFT_COPY} On desktop, the last outlaw is designed to escape. On mobile, {MOBILE_ROUNDUP_COPY.toLowerCase()}
@@ -497,31 +437,6 @@ export function WormRanchApp() {
   );
 }
 
-function Metric({
-  label,
-  value,
-  impact = "idle",
-  urgent = false,
-}: {
-  label: string;
-  value: string;
-  impact?: MetricImpact;
-  urgent?: boolean;
-}) {
-  return (
-    <div
-      className={`${styles.metric} ${motionStyles.metricShell}`}
-      data-impact={impact}
-      data-urgent={urgent ? "true" : "false"}
-    >
-      <span className={styles.metricLabel}>{label}</span>
-      <strong className={`${styles.metricValue} ${motionStyles.metricValue}`} data-impact={impact}>
-        {value}
-      </strong>
-    </div>
-  );
-}
-
 function formatReason(reason: RoundResult["reason"]) {
   if (reason === "captured") {
     return "Corral cleared";
@@ -532,4 +447,8 @@ function formatReason(reason: RoundResult["reason"]) {
   }
 
   return "Clock ran dry";
+}
+
+function isDeferredInstallPromptEvent(event: Event): event is DeferredInstallPromptEvent {
+  return "prompt" in event && "userChoice" in event;
 }

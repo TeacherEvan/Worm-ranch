@@ -16,6 +16,7 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "Worm Ranch",
   description: "Catch the worms before the ranch turns against you.",
+  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({

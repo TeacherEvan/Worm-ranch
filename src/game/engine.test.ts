@@ -3,6 +3,7 @@ import { DESKTOP_RULES, MOBILE_RULES } from "./rules";
 import {
   applyAccuratePress,
   createWorld,
+  findWormIdAtPoint,
   getSummary,
   setPointer,
   startRound,
@@ -120,6 +121,22 @@ describe("engine", () => {
     });
     expect(world.collected).toBe(1);
     expect(worm.state).toBe("captured");
+  });
+
+  it("hit detection reaches across the visible worm length instead of only the head radius", () => {
+    const world = createWorld("desktop", 800, 540, createDeterministicOptions(97));
+    const worm = world.worms[0];
+
+    if (!worm) {
+      throw new Error("expected a worm");
+    }
+
+    const point = {
+      x: worm.x + worm.radius * 2.4,
+      y: worm.y,
+    };
+
+    expect(findWormIdAtPoint(world, point)).toBe(worm.id);
   });
 
   it("captures create a fairy morph that phases from morphing to flight to trail fade", () => {

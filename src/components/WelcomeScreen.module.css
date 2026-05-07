@@ -9,9 +9,10 @@
   position: relative;
   overflow: hidden;
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 0.8fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.92fr);
   align-items: end;
-  gap: clamp(18px, 4vw, 36px);
+  gap: clamp(18px, 3vw, 28px);
+  min-height: clamp(320px, 48vw, 470px);
   padding: clamp(22px, 4vw, 36px);
   border-radius: 32px;
   container-type: inline-size;
@@ -21,17 +22,33 @@
   box-shadow: var(--shadow);
 }
 
-.heroCard::before {
+.heroCard::before,
+.heroCard::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, rgba(199, 243, 107, 0.06), transparent 34%, rgba(240, 126, 67, 0.1) 100%);
   pointer-events: none;
+}
+
+.heroCard[data-overlay-strength="strong"]::before {
+  background:
+    linear-gradient(90deg, rgba(5, 11, 18, 0.1) 0%, rgba(5, 11, 18, 0.24) 36%, rgba(5, 11, 18, 0.78) 68%, rgba(5, 11, 18, 0.94) 100%),
+    linear-gradient(180deg, rgba(7, 14, 22, 0.08), rgba(7, 14, 22, 0.52) 100%);
+}
+
+.heroCard[data-overlay-strength="strong"]::after {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 226, 155, 0.18), transparent 22%),
+    radial-gradient(circle at 82% 18%, rgba(199, 243, 107, 0.16), transparent 20%);
+}
+
+.heroCard[data-ambient-motion="enabled"] .welcomeVisual::after {
+  animation: atmospherePulse 16s ease-in-out infinite alternate;
 }
 
 .heroCard > * {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .heroCopy {
@@ -39,6 +56,20 @@
   gap: 18px;
   align-content: end;
   justify-items: start;
+  grid-column: 2;
+    gap: 10px;
+  justify-self: end;
+  width: min(100%, 30rem);
+  padding: clamp(18px, 2.8vw, 24px);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(7, 15, 24, 0.48), rgba(7, 15, 24, 0.8));
+  border: 1px solid rgba(199, 243, 107, 0.14);
+
+  .actionButton {
+    min-height: 48px;
+  }
+  box-shadow: 0 18px 36px rgba(4, 9, 15, 0.28);
+  backdrop-filter: blur(12px);
 }
 
 .heroCopy > * {
@@ -50,7 +81,7 @@
 }
 
 .heroDeck {
-  max-width: 32rem;
+  max-width: 28rem;
   color: color-mix(in srgb, var(--text) 82%, var(--accent) 18%);
   font-size: clamp(1rem, 0.92rem + 0.4vw, 1.14rem);
   line-height: 1.55;
@@ -62,6 +93,11 @@
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
+  width: 100%;
+}
+
+.inlineUtility {
+  width: min(100%, 29rem);
 }
 
 .actionButton {
@@ -127,129 +163,45 @@
 }
 
 .welcomeVisual {
-  min-height: clamp(220px, 34vw, 320px);
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at 22% 20%, rgba(199, 243, 107, 0.18), transparent 16%),
-    radial-gradient(circle at 72% 28%, rgba(255, 203, 120, 0.18), transparent 18%),
-    linear-gradient(180deg, rgba(7, 16, 24, 0.78), rgba(18, 33, 48, 0.68) 54%, rgba(48, 35, 27, 0.84));
-  border: 1px solid rgba(199, 243, 107, 0.14);
   position: relative;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  align-self: stretch;
+  min-height: inherit;
+  margin: calc(clamp(22px, 4vw, 36px) * -1);
+  border-radius: inherit;
   overflow: hidden;
 }
 
-.orbitMoon,
-.wormTrail,
-.wormTrailAlt,
-.corralFence,
-.signalDish,
-.fairyGlow {
-  position: absolute;
-  opacity: 0.92;
-}
-
-.orbitMoon,
-.wormTrail,
-.wormTrailAlt,
-.fairyGlow {
-  border-radius: 999px;
-}
-
-.orbitMoon {
-  inset: 18% 10% auto auto;
-  width: 84px;
-  height: 84px;
-  background:
-    radial-gradient(circle at 34% 32%, rgba(255, 245, 215, 0.92), rgba(255, 245, 215, 0.44) 42%, rgba(255, 245, 215, 0.04) 70%),
-    radial-gradient(circle at 64% 66%, rgba(117, 207, 171, 0.32), rgba(117, 207, 171, 0));
-  box-shadow: 0 0 48px rgba(255, 234, 174, 0.16);
-}
-
-.wormTrail {
-  inset: 30% auto auto 10%;
-  width: 208px;
-  height: 18px;
-  background: linear-gradient(90deg, #f5be77, #ef7a44);
-  animation: drift 4.8s ease-in-out infinite;
-}
-
-.wormTrailAlt {
-  inset: auto 16% 28% auto;
-  width: 198px;
-  height: 22px;
-  background: linear-gradient(90deg, #d8f58a, #79c88f);
-  animation: drift 5.4s ease-in-out infinite reverse;
-}
-
-.corralFence {
-  inset: auto 0 0 0;
-  height: 82px;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(224, 180, 121, 0.42) 0,
-      rgba(224, 180, 121, 0.42) 10px,
-      transparent 10px,
-      transparent 74px
-    ),
-    linear-gradient(
-      180deg,
-      transparent 0,
-      transparent 10px,
-      rgba(224, 180, 121, 0.5) 10px,
-      rgba(224, 180, 121, 0.5) 14px,
-      transparent 14px,
-      transparent 28px,
-      rgba(224, 180, 121, 0.42) 28px,
-      rgba(224, 180, 121, 0.42) 32px,
-      transparent 32px,
-      transparent 46px,
-      rgba(224, 180, 121, 0.34) 46px,
-      rgba(224, 180, 121, 0.34) 50px,
-      transparent 50px
-    );
-}
-
-.signalDish {
-  inset: auto 14% 38px auto;
-  width: 84px;
-  height: 84px;
-  border-radius: 50% 50% 44% 44%;
-  border: 2px solid rgba(199, 243, 107, 0.32);
-  border-bottom-color: transparent;
-  transform: rotate(-12deg);
-}
-
-.signalDish::before,
-.signalDish::after {
+.welcomeVisual::after {
   content: "";
   position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 28%),
+    linear-gradient(0deg, rgba(8, 15, 24, 0.14), rgba(8, 15, 24, 0));
+  pointer-events: none;
 }
 
-.signalDish::before {
-  inset: auto auto -36px 39px;
-  width: 6px;
-  height: 44px;
-  border-radius: 999px;
-  background: rgba(224, 180, 121, 0.7);
+.heroImageLayer {
+  position: absolute;
+  inset: 0;
 }
 
-.signalDish::after {
-  inset: 20px auto auto 18px;
-  width: 40px;
-  height: 40px;
-  border-top: 2px solid rgba(199, 243, 107, 0.28);
-  border-right: 2px solid rgba(199, 243, 107, 0.18);
-  border-radius: 50%;
+.heroImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1.02) contrast(1.03);
 }
 
-.fairyGlow {
-  inset: 42% auto auto 48%;
-  width: 88px;
-  height: 88px;
-  background: radial-gradient(circle, rgba(255, 248, 209, 0.94), rgba(255, 248, 209, 0));
-  filter: blur(3px);
-  animation: pulse 3s ease-in-out infinite;
+.heroCard[data-safe-zone="right-copy-column"] .heroImage {
+  object-position: 34% 46%;
+}
+
+.heroCard[data-crop-intent="preserve-rider-silhouette-and-copy-safe-zone"][data-safe-zone="lower-copy-band"] .heroImage {
+  object-position: center 18%;
 }
 
 @keyframes screenEnter {
@@ -288,26 +240,12 @@
   }
 }
 
-@keyframes drift {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) rotate(-4deg);
+@keyframes atmospherePulse {
+  from {
+    opacity: 0.82;
   }
 
-  50% {
-    transform: translate3d(34px, -14px, 0) rotate(5deg);
-  }
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(0.9);
-    opacity: 0.74;
-  }
-
-  50% {
-    transform: scale(1.08);
+  to {
     opacity: 1;
   }
 }
@@ -326,9 +264,31 @@
   transform: scale(0.98);
 }
 
+.actionButton:focus-visible {
+  outline: 2px solid rgba(244, 199, 108, 0.92);
+  outline-offset: 3px;
+}
+
 @container (max-width: 46rem) {
   .heroCard {
     grid-template-columns: 1fr;
+    min-height: clamp(360px, 108vw, 520px);
+  }
+
+  .heroCard[data-overlay-strength="strong"]::before {
+    background:
+      linear-gradient(180deg, rgba(5, 11, 18, 0.08) 0%, rgba(5, 11, 18, 0.16) 32%, rgba(5, 11, 18, 0.66) 62%, rgba(5, 11, 18, 0.94) 100%),
+      linear-gradient(90deg, rgba(5, 11, 18, 0.08), rgba(5, 11, 18, 0.34));
+  }
+
+  .heroCopy {
+    grid-column: 1;
+    gap: 14px;
+    width: min(100%, 32rem);
+  }
+
+  .heroCard[data-safe-zone="lower-copy-band"] .heroCopy {
+    align-self: end;
   }
 
   .actions {
@@ -338,6 +298,10 @@
   }
 
   .actions > * {
+    width: 100%;
+  }
+
+  .inlineUtility {
     width: 100%;
   }
 }
@@ -352,13 +316,17 @@
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 767px) {
   .metricsGrid {
     grid-template-columns: 1fr;
   }
 
   .welcomeVisual {
-    min-height: 190px;
+    margin: -22px;
+  }
+
+  .heroCard[data-crop-intent="preserve-rider-silhouette-and-copy-safe-zone"][data-safe-zone="lower-copy-band"] .heroImage {
+    object-position: center 22%;
   }
 }
 
@@ -366,32 +334,20 @@
   .heroCard {
     padding: 22px;
   }
-
-  .welcomeVisual {
-    min-height: 200px;
-  }
 }
 
 @media (max-height: 560px) and (orientation: landscape) {
   .heroCard {
     grid-template-columns: minmax(0, 1.1fr) minmax(15rem, 0.85fr);
-  }
-
-  .welcomeVisual {
-    min-height: 180px;
+    min-height: 280px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wormTrail,
-  .wormTrailAlt,
-  .fairyGlow {
-    animation: none;
-  }
-
   .welcomeScreen,
   .heroCopy > *,
-  .metricCard {
+  .metricCard,
+  .heroCard[data-ambient-motion="enabled"] .welcomeVisual::after {
     animation: none;
   }
 
@@ -400,12 +356,10 @@
   }
 }
 
-:global([data-motion="reduced"]) .wormTrail,
-:global([data-motion="reduced"]) .wormTrailAlt,
-:global([data-motion="reduced"]) .fairyGlow,
 :global([data-motion="reduced"]) .welcomeScreen,
 :global([data-motion="reduced"]) .heroCopy > *,
-:global([data-motion="reduced"]) .metricCard {
+:global([data-motion="reduced"]) .metricCard,
+:global([data-motion="reduced"]) .heroCard[data-ambient-motion="enabled"] .welcomeVisual::after {
   animation: none;
 }
 

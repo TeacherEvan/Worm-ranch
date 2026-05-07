@@ -1,0 +1,72 @@
+.shell {
+  position: fixed;
+  z-index: 20;
+  inset: 12px 12px auto auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(8, 15, 24, 0.42);
+  border: 1px solid rgba(199, 243, 107, 0.14);
+  backdrop-filter: blur(12px);
+}
+
+.kicker {
+  padding-inline: 8px 2px;
+  color: color-mix(in srgb, var(--muted) 82%, var(--accent) 18%);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.leave {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: var(--text);
+  background: rgba(8, 15, 24, 0.82);
+  border: 1px solid rgba(199, 243, 107, 0.18);
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    transform 140ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 180ms cubic-bezier(0.25, 1, 0.5, 1),
+    border-color 180ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.shell[data-density="compact"] {
+  inset: auto auto calc(10px + env(safe-area-inset-bottom, 0px)) 10px;
+  gap: 0;
+  padding: 4px;
+  background: rgba(8, 15, 24, 0.34);
+}
+
+.shell[data-density="compact"] .leave {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 0.84rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .leave:hover {
+    transform: translate3d(0, -1px, 0);
+    border-color: rgba(199, 243, 107, 0.28);
+  }
+}
+
+.leave:active {
+  transform: scale(0.98);
+}
+
+.leave:focus-visible {
+  outline: 2px solid rgba(244, 199, 108, 0.92);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leave {
+    transition-duration: 0.01ms;
+  }
+}

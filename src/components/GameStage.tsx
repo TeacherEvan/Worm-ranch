@@ -119,7 +119,7 @@ export function GameStage({
 
     const initialSummary = getSummary(worldRef.current);
     summaryAnalyticsRef.current = initialSummary;
-  previousSummaryRef.current = initialSummary;
+    previousSummaryRef.current = initialSummary;
     setStageSummary(initialSummary);
     onSummaryChangeRef.current(initialSummary);
 
@@ -205,15 +205,15 @@ export function GameStage({
           x: worm.x,
           y: worm.y - worm.radius * 1.8,
           lifeMs: 0,
-          ttlMs: 780,
+          ttlMs: result.kind === "collect" ? 920 : result.kind === "tag" ? 840 : 880,
           label:
             result.kind === "collect"
-              ? "HIT"
+              ? "BAGGED"
               : result.kind === "tag"
-                ? "BRANDED"
+                ? "TAGGED"
                 : result.immortal
                   ? "OUTLAW"
-                  : "BOLTED",
+                  : "BLINK",
           tone:
             result.kind === "collect"
               ? "collect"
@@ -354,6 +354,7 @@ export function GameStage({
       data-motion={reducedMotion ? "reduced" : "full"}
       data-phase={stageSummary.phase}
       data-feedback-cue={motionCue}
+      data-overlay-density={stagePresentation.overlayDensity}
     >
       <canvas ref={canvasRef} className={styles.canvas} aria-label="Worm Ranch game field" />
       <div className={styles.statusStrip} aria-live="off">

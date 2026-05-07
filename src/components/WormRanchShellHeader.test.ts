@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { WormRanchShellHeader } from "./WormRanchShellHeader";
 
 describe("WormRanchShellHeader", () => {
-  it("renders the welcome density without requiring a herd count", () => {
+  it("renders the welcome density with the trimmed eyebrow and no chip row", () => {
     const html = renderToStaticMarkup(
       createElement(WormRanchShellHeader, {
         density: "welcome",
@@ -13,7 +13,8 @@ describe("WormRanchShellHeader", () => {
       }),
     );
 
-    expect(html).toContain("Pasture scan");
+    expect(html).toContain("Moonlit trouble");
+    expect(html).not.toContain("Pasture scan");
     expect(html).not.toContain("Loose herd");
   });
 
