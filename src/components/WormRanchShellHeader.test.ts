@@ -29,5 +29,6 @@ describe("WormRanchShellHeader", () => {
 
     expect(html).toContain("Loose herd");
     expect(html).toContain("100");
+    expect(html).not.toContain("A neon pasture scramble");
   });
 });

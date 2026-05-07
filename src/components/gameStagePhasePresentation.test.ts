@@ -54,8 +54,8 @@ describe("gameStagePhasePresentation", () => {
       active: true,
     });
     expect(presentation.copy.title).toBe("Level 1 · Live chase");
-    expect(presentation.copy.body).toBe("First touch wakes the herd. Tagged worms need 2 clean taps total.");
-    expect(presentation.copy.hint).toBe("Wake one worm, stay on it, and land all 2 taps.");
+    expect(presentation.copy.body).toBe("First touch starts the chase. 2 taps bag a worm.");
+    expect(presentation.copy.hint).toBe("Stay on one worm until it bags.");
   });
 
   it("keeps the rush guidance aligned with higher-level mobile tap counts", () => {
@@ -77,7 +77,7 @@ describe("gameStagePhasePresentation", () => {
 
     expect(presentation.phaseChipLabel).toBe("Rush live");
     expect(presentation.statusItems[2]?.value).toBe("3 taps live");
-    expect(presentation.copy.body).toBe("Tagged worms now need 3 clean taps total.");
-    expect(presentation.copy.hint).toBe("Stay on that same worm until all 3 taps land.");
+    expect(presentation.copy.body).toBe("Tagged worms need 3 taps.");
+    expect(presentation.copy.hint).toBe("Stay on one worm until it bags.");
   });
 });

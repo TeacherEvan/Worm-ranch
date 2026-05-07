@@ -17,8 +17,6 @@ type WormRanchShellHeaderWelcomeProps = WormRanchShellHeaderSharedProps & {
 
 type WormRanchShellHeaderProps = WormRanchShellHeaderStandardProps | WormRanchShellHeaderWelcomeProps;
 
-const STANDARD_COPY =
-  "A neon pasture scramble where every bagged worm spooks the herd, the blink fence wakes late, and the last outlaw was never bred to lose.";
 const WELCOME_EYEBROW = "Moonlit trouble";
 const STANDARD_EYEBROW = "Orbit corral panic";
 
@@ -38,7 +36,6 @@ export function WormRanchShellHeader(props: WormRanchShellHeaderProps) {
       <div className={styles.brand}>
         <span className={styles.eyebrow}>{density === "welcome" ? WELCOME_EYEBROW : STANDARD_EYEBROW}</span>
         <h1 className={styles.title}>Worm Ranch</h1>
-        {density === "standard" && <p className={styles.subtle}>{STANDARD_COPY}</p>}
       </div>
       {chips.length > 0 ? (
         <div className={styles.chips}>

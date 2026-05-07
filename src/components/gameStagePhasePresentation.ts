@@ -188,37 +188,18 @@ function getStageCopyData(
   const title = `Level ${normalizeGameplayLevel(level)} · ${phaseLabel}`;
 
   if (summary.phase === "introCountdown") {
-    if (summary.profile === "mobile") {
-      return {
-        title,
-        body: "Bell is up. The herd breaks when the countdown clears.",
-        hint: "Pick your lane before the first tap.",
-      };
-    }
-
     return {
       title,
-      body: "The corral is lit, but the herd does not break until the bell clears.",
-      hint:
-        summary.profile === "desktop"
-          ? "Set your corral line before the first click."
-          : "Pick a lane before you brand the first worm.",
+      body: "Round starts on zero.",
+      hint: summary.profile === "desktop" ? "Line up your first click." : "Pick a lane now.",
     };
   }
 
   if (summary.phase === "resolved") {
-    if (summary.profile === "mobile") {
-      return {
-        title,
-        body: "Round closed. Check the tally.",
-        hint: "Bagged count and escape state are final.",
-      };
-    }
-
     return {
-        title,
-      body: "The round has closed and the ranch is settling.",
-      hint: "Check the tally for the final bagged count and escape state.",
+      title,
+      body: "Round closed.",
+      hint: "Check the tally.",
     };
   }
 
@@ -226,30 +207,30 @@ function getStageCopyData(
     if (summary.phase === "ghostFinale") {
       return {
         title,
-        body: "The last outlaw only bolts now.",
-        hint: "You needed the pen fuller before it turned ghost.",
+        body: "Only the last worm moves now.",
+        hint: "Cut it off before the clock runs out.",
       };
     }
 
     if (summary.phase === "blinkBand") {
       return {
         title,
-        body: "Every loose worm gets one blink before the bag sticks.",
-        hint: "Watch for the pale halo, then click again after the flash.",
+        body: "Loose worms blink once before a bag sticks.",
+        hint: "Wait out the flash, then click again.",
       };
     }
 
     return {
       title,
-      body: "Mouse roundup is live and every bagged worm spikes the herd.",
-      hint: "Sweep, click, recover, then cut back in.",
+      body: "Roundup is live.",
+      hint: "Click once to brand, again to bag.",
     };
   }
 
-  if (summary.profile === "mobile" && summary.phase === "ghostFinale") {
+  if (summary.phase === "ghostFinale") {
     return {
       title,
-      body: "The last outlaw only bolts now.",
+      body: "Only the last worm moves now.",
       hint: "Cut off the lane and finish the bag.",
     };
   }
@@ -257,27 +238,15 @@ function getStageCopyData(
   if (summary.rushTriggered) {
     return {
       title,
-      body:
-        summary.profile === "mobile"
-          ? `Tagged worms now need ${rules.touchBurstsToCapture} clean taps total.`
-          : "A branded worm only needs one more clean tap.",
-      hint:
-        summary.profile === "mobile"
-          ? `Stay on that same worm until all ${rules.touchBurstsToCapture} taps land.`
-          : "Stay on that same worm and finish fast.",
+      body: `Tagged worms need ${rules.touchBurstsToCapture} taps.`,
+      hint: "Stay on one worm until it bags.",
     };
   }
 
   return {
     title,
-    body:
-      summary.profile === "mobile"
-        ? `First touch wakes the herd. Tagged worms need ${rules.touchBurstsToCapture} clean taps total.`
-        : "The first touch wakes the herd. One clean tap brands and the next one bags.",
-    hint:
-      summary.profile === "mobile"
-        ? `Wake one worm, stay on it, and land all ${rules.touchBurstsToCapture} taps.`
-        : "Wake them up, pick one worm, and finish the second tap before drifting off.",
+    body: `First touch starts the chase. ${rules.touchBurstsToCapture} taps bag a worm.`,
+    hint: "Stay on one worm until it bags.",
   };
 }
 

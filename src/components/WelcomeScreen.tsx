@@ -64,10 +64,7 @@ export function WelcomeScreen({ metrics, onOpenGate, onRigTack, reducedMotion }:
       >
         <WelcomeHeroMedia key={launchMediaKey} heroVariant={heroVariant} reducedMotion={reducedMotion} />
         <div className={styles.heroCopy}>
-          <p className={styles.heroDeck}>
-            Cold light, loose dust, and one bad rider cutting across the pasture. Open the gate to step into it, or
-            rig the tack first and set the ride your way.
-          </p>
+          <p className={styles.heroDeck}>Open the gate, or rig the tack first.</p>
           <div className={styles.actions}>
             <button autoFocus className={`${styles.actionButton} ${styles.primaryButton}`} onClick={onOpenGate}>
               Open the gate

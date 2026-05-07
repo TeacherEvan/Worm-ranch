@@ -29,6 +29,7 @@ describe("WelcomeScreen", () => {
     expect(html).toContain("welcome-memory-desktop.webp");
     expect(html).toContain('data-launch-media="image"');
     expect(html).toContain('data-launch-loader-state="loading"');
+    expect(html).toContain("Open the gate, or rig the tack first.");
     expect(html).toContain("Ranch glass coming online");
     expect(html).toContain("18%");
   });

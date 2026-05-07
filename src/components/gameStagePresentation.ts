@@ -169,9 +169,9 @@ function drawCorralBackdrop(context: CanvasRenderingContext2D, width: number, he
 
 function drawStageBaseFill(context: CanvasRenderingContext2D, width: number, height: number) {
   const gradient = context.createLinearGradient(0, 0, 0, height);
-  gradient.addColorStop(0, "rgba(7, 18, 26, 0.98)");
-  gradient.addColorStop(0.62, "rgba(17, 31, 33, 0.98)");
-  gradient.addColorStop(1, "rgba(36, 28, 23, 0.98)");
+  gradient.addColorStop(0, "rgba(7, 18, 26, 0.38)");
+  gradient.addColorStop(0.62, "rgba(17, 31, 33, 0.44)");
+  gradient.addColorStop(1, "rgba(36, 28, 23, 0.54)");
   context.fillStyle = gradient;
   context.fillRect(0, 0, width, height);
 }

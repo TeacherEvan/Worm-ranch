@@ -19,7 +19,7 @@ describe("GameStage", () => {
 
     expect(html).toContain(styles.phaseBadge);
     expect(html).toContain(`class="${styles.phaseBadge} `);
-    expect(html.indexOf(styles.phaseBadge)).toBeLessThan(html.indexOf("Bell is up. The herd breaks when the countdown clears."));
+    expect(html.indexOf(styles.phaseBadge)).toBeLessThan(html.indexOf("Round starts on zero."));
   });
 
   it("marks the phase chip as a full-motion idle badge when no gameplay cue is active", () => {
@@ -70,5 +70,21 @@ describe("GameStage", () => {
     expect(html).toContain("Level 2");
     expect(html).toContain("Use arrow keys to move the target between worms.");
     expect(html).toContain('aria-live="polite"');
+  });
+
+  it("renders the provided gameplay backdrop behind the stage", () => {
+    const html = renderToStaticMarkup(
+      createElement(GameStage, {
+        backdropUrl: "/art/Gameplay%20backdrops/desert-landscape-with-sparse-vegetation_1308-178017.avif",
+        level: 1,
+        profile: "desktop",
+        reducedMotion: false,
+        onSummaryChange: vi.fn(),
+        onRoundEnd: vi.fn(),
+        onEvent: vi.fn(),
+      }),
+    );
+
+    expect(html).toContain('background-image:url(&quot;/art/Gameplay%20backdrops/desert-landscape-with-sparse-vegetation_1308-178017.avif&quot;)');
   });
 });
