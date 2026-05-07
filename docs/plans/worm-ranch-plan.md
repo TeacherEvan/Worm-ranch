@@ -4,259 +4,206 @@ Status: active, ready for implementation
 
 ## Approved Design Assumption
 
-This plan assumes the approved direction is a welcome-screen refresh centered on generated key art: a cinematic, exaggerated “worm-riding-snake memory” scene that feels scrappy, mischievous, and space-ranch rather than clip-art or hand-drawn placeholder art. The art is decorative background storytelling, while the text layer stays calmer, shorter, and easier to scan.
+This plan assumes the approved direction is the serious, cinematic welcome-art option shown in the browser review: moonlit outlaw realism with a lone rider mounted on a giant worm-snake silhouette crossing a dusty alien ranch at night. The image should read like premium key art, not cute, not abstract placeholder illustration, and not a neon fever-dream.
 
 ## Goal
 
-Replace the current abstract CSS-drawn welcome art with art-directed generated hero imagery, reduce the welcome screen’s information density, and keep the resulting implementation fast, responsive, and isolated from gameplay logic.
+Replace the current welcome hero art with a much stronger Hugging Face-generated desktop/mobile asset pair while keeping the existing welcome component structure, calm copy, and two-action layout intact.
 
 ## Non-goals
 
-- Do not change gameplay rules, input timing, scoring, or analytics behavior.
-- Do not move simulation logic into `src/app` or the welcome screen.
-- Do not add an external CMS, image service dependency, or runtime art generation.
-- Do not broaden the redesign into the game, results, or settings screens unless validation exposes a layout dependency.
-- Do not keep adding styles to `src/components/WormRanchApp.module.css`; split welcome-only presentation into focused files.
+- Do not rewrite the welcome component tree again.
+- Do not change gameplay rules, app flow, analytics, install behavior, or PWA files.
+- Do not add runtime image generation, external fetches, or product dependencies on Hugging Face.
+- Do not broaden this pass into home, settings, game, or results screens unless the new art exposes a narrow layout defect.
+- Do not change CTA wording unless the final crop forces a tiny copy-wrap fix.
 
 ## Architecture Summary
 
-- Keep `src/app/page.tsx` as the route shell only.
-- Keep the welcome-screen composition in `src/components`.
-- Treat the first-load header as part of the welcome redesign rather than a permanently global block; give it explicit component ownership so welcome density can change without accidentally restyling game or settings views.
-- Treat generated art as a static asset served from `public`.
-- Use a focused welcome component and welcome-specific CSS module so source files stay readable and under repo size limits.
-- Keep the generated art decorative; the actionable content remains text and buttons in the React layer.
-- Preserve `reducedMotion` handling so any ambient movement can be disabled without affecting navigation.
+- Keep `src/components/WelcomeScreen.tsx` as the integration point for the welcome hero.
+- Keep `src/components/welcomeHeroPresentation.ts` as the single source of truth for art asset metadata, crop intent, safe zones, and reduced-motion presentation flags.
+- Treat Hugging Face generation as an offline asset pipeline that ends in static files under `public/art/`.
+- Tune readability in `src/components/WelcomeScreen.module.css`; do not spread art-specific positioning logic across unrelated components.
+- Preserve stable asset filenames when possible so the runtime code changes stay minimal.
 
 ## File Responsibilities
 
 ### Modify
 
-- `src/components/WormRanchApp.tsx`
-  Replace the inline welcome-screen markup with focused component calls, keep screen-state ownership in one place, and stop treating the first-load header as an unowned shared block.
-- `package.json`
-  Extend `test:engine` so the new welcome presentation test is part of the normal verification path.
 - `docs/jobcard.md`
-  Track implementation progress for the welcome refresh.
+  Track the focused art-refresh slice instead of the broader welcome redesign.
 - `docs/plans/worm-ranch-plan.md`
-  Keep this plan active until the new welcome screen is implemented and approved.
-
-### Create
-
-- `src/components/WelcomeScreen.tsx`
-  Own the welcome-screen structure, CTA wiring, and decorative art composition.
-- `src/components/WelcomeScreen.module.css`
-  Own the welcome-screen layout, art framing, overlays, and responsive behavior.
-- `src/components/WormRanchShellHeader.tsx`
-  Own the title, eyebrow, and scan chips with a `welcome` and `standard` density variant so the first-load screen can simplify without broad shell churn.
-- `src/components/welcomeHeroPresentation.ts`
-  Define the static asset metadata, crop intent, decorative treatment toggles, and any reduced-motion-friendly presentation flags.
-- `src/components/welcomeHeroPresentation.test.ts`
-  Verify the selected asset metadata and reduced-motion presentation behavior without needing a full browser test harness.
+  Keep this plan current until the approved art pass is shipped.
 - `public/art/welcome-memory-desktop.webp`
-  Primary landscape key art for desktop.
+  Replace the current desktop placeholder with the approved Hugging Face desktop master.
 - `public/art/welcome-memory-mobile.webp`
-  Alternate crop for narrow viewports if the desktop crop does not preserve the rider silhouette and CTA space.
+  Replace the current mobile placeholder with the approved narrow crop or dedicated mobile render.
+- `src/components/welcomeHeroPresentation.ts`
+  Update metadata only if the final art requires different crop intent, safe-zone naming, or layout selection rules.
+- `src/components/welcomeHeroPresentation.test.ts`
+  Update tests first if the helper contract changes.
+- `src/components/WelcomeScreen.module.css`
+  Adjust overlay strength, object positioning, or safe-zone styling if the new art needs a tighter fit.
+- `src/components/WelcomeScreen.tsx`
+  Touch only if `sizes`, preload behavior, or hero wiring needs a small follow-up after the asset swap.
 
 ### Leave Untouched Unless Validation Forces a Small Follow-up
 
+- `src/components/WormRanchApp.tsx`
+- `src/components/WormRanchShellHeader.tsx`
 - `src/game/**`
 - `src/lib/**`
-- `src/app/api/**`
-- `src/app/layout.tsx`
-- `src/app/globals.css`
-- `next.config.ts`
+- `src/app/**`
+- `package.json`
+
+## Approved Art Brief
+
+- Subject: one clear rider silhouette mounted on a massive worm-snake hybrid crossing a dusty alien ranch.
+- Mood: cinematic, moody, dangerous, and premium rather than playful or goofy.
+- Lighting: cold moonlight with restrained warm dust highlights.
+- Palette: midnight blues, steel grays, dusted amber accents; avoid purple-heavy or candy neon color balance.
+- Desktop composition: keep the main action left-of-center so the right copy column can stay readable.
+- Mobile composition: keep the rider and the strongest curve of the creature above the lower copy band.
+- Surface quality: crisp silhouette edges, readable anatomy, no mushy faces, no extra limbs, no text baked into the art.
+- Negative prompt: cartoon mascot style, clip-art, childish proportions, oversaturated pink-purple glow, distorted anatomy, watermarks, logos, captions, collage artifacts.
+- Export requirement: deliver local WebP files only, with a desktop master at or above `1600x900` and a mobile master at or above `900x1400` before final compression.
 
 ## Ordered Tasks
 
-### Task 1: Lock the welcome-screen ownership boundary
+### Task 1: Lock the Hugging Face prompt pack and candidate gate
 
 Dependency: none
 
-1. Create `src/components/WormRanchShellHeader.tsx` and move the current title, eyebrow, and chip block out of `src/components/WormRanchApp.tsx`.
-2. Give the header a `welcome` density variant so the first-load screen can reduce copy and chip count without changing the rest of the app shell by accident.
-3. Create `src/components/WelcomeScreen.tsx` and move the current welcome-screen JSX out of `src/components/WormRanchApp.tsx`.
-4. Create `src/components/WelcomeScreen.module.css` and move all welcome-only styles out of `src/components/WormRanchApp.module.css`.
-5. Keep `WormRanchApp` responsible only for screen state, shared metrics, and CTA callbacks.
-6. Preserve current button behavior exactly: `Open the gate` routes to home and `Rig the tack` routes to settings.
+1. Convert the art brief above into one exact positive prompt and one exact negative prompt for the generation run.
+2. Decide whether to use the Hugging Face browser workflow or a VS Code extension; install the extension only if it reduces export friction for this repo-local asset pass.
+3. Generate at least three desktop candidates in the approved direction before choosing one.
+4. Reject any candidate that looks cartoony, muddy, text-stamped, or too busy for the existing copy-safe zones.
 
 Test-first step:
 
-1. No new unit test is required for the extraction itself.
-2. Before styling changes, run `npm run lint` to confirm the current baseline is clean.
+1. Structural review only.
+2. Before accepting any image, compare it against the brief in this plan and confirm it still supports the current right-column desktop copy layout.
 
 Implementation step:
 
-1. Keep the extraction behavior-preserving except for the intentional welcome-header density reduction.
-2. Do not alter gameplay, settings, or results markup in this task.
-3. Remove dead welcome selectors from `src/components/WormRanchApp.module.css` once the new module owns them.
+1. Keep the prompt pack in the working notes or PR description so the generation path is reproducible.
+2. Prefer one coherent generation run over mixing unrelated styles.
 
 Validation:
 
-1. Run `npm run lint`.
-Expected outcome: no lint errors after the component split.
-2. Run `npm run build`.
-Expected outcome: the app still compiles and the home route renders through `WormRanchApp`.
+1. External Hugging Face generation step.
+Expected outcome: at least three viable desktop candidates exist locally for review.
 
-### Task 2: Add the generated-art presentation model
+### Task 2: Approve and stage the desktop/mobile assets
 
 Dependency: Task 1
 
-1. Create `src/components/welcomeHeroPresentation.ts` with typed metadata for:
-   - desktop asset path
-   - mobile asset path
-   - focal point or crop intent
-   - overlay strength
-   - whether ambient motion layers should be enabled
-2. Create `src/components/welcomeHeroPresentation.test.ts` covering:
-   - desktop asset selection for wide layouts
-   - mobile asset selection for narrow layouts
-   - reduced-motion disabling any optional motion layer flags
-3. Keep the presentation helper pure so it can be verified in Vitest without browser-only APIs.
-4. Update `package.json` so `npm run test:engine` includes `src/components/welcomeHeroPresentation.test.ts`.
+1. Choose the strongest desktop candidate.
+2. Decide whether the mobile image can be a clean crop of the desktop master or needs its own dedicated render.
+3. Export the approved files to `public/art/welcome-memory-desktop.webp` and `public/art/welcome-memory-mobile.webp`.
+4. Keep the filenames stable unless a code-level contract change is unavoidable.
 
 Test-first step:
 
-1. Write the presentation tests first.
-2. Run `npm run test:engine` and confirm the new welcome presentation tests fail for missing implementation only.
+1. Structural review only.
+2. Before copying files into the repo, confirm the mobile framing still preserves the rider silhouette above the lower copy band.
 
 Implementation step:
 
-1. Implement the helper with plain objects and narrow functions.
-2. Do not put image-selection logic directly in JSX if it can live in the helper.
+1. Replace the existing files in place.
+2. Do not start CSS tuning until the asset filenames and crops are final.
 
 Validation:
 
-1. Run `npm run test:engine`.
-Expected outcome: the new welcome presentation tests pass alongside existing tests.
-2. Run `npm run lint`.
-Expected outcome: no type or lint regressions.
+1. Run `file public/art/welcome-memory-desktop.webp public/art/welcome-memory-mobile.webp`.
+Expected outcome: both files resolve as WebP images.
+2. Run `ls public/art`.
+Expected outcome: the welcome hero filenames remain stable and present.
 
-### Task 3: Approve and stage the generated art assets
+### Task 3: Update the presentation helper only if the art contract changed
 
 Dependency: Task 2
 
-1. Produce candidate images using the asset brief in this plan.
-2. Select one approved desktop image and, if needed, one approved mobile crop before any layout integration begins.
-3. Add the approved generated art files under `public/art/` only after the crop and composition are signed off.
-4. Reject assets that hide the rider silhouette behind copy-safe zones or that force unreadable overlays.
+1. If the approved assets require different crop intent, safe-zone metadata, or breakpoint selection, update `src/components/welcomeHeroPresentation.test.ts` first.
+2. Run `npm run test:engine` and confirm the failure is isolated to the changed welcome presentation expectation.
+3. Implement the minimum helper update in `src/components/welcomeHeroPresentation.ts`.
+4. Keep viewport selection logic in the helper rather than duplicating it in JSX or CSS comments.
 
 Test-first step:
 
-1. Structural review only.
-2. Before accepting the files, compare the candidates against the copy-safe zone and mobile-crop requirements listed in this plan.
+1. Edit the helper test before the helper implementation when the contract changes.
+2. Run `npm run test:engine`.
+Expected outcome: the changed welcome presentation expectation fails before the implementation update.
 
 Implementation step:
 
-1. Keep filenames stable once approved so layout work does not chase moving asset targets.
-2. If the desktop art cannot crop cleanly to mobile, require the dedicated mobile asset now instead of forcing a later redesign.
-
-Validation:
-
-1. Confirm both approved files exist under `public/art/`.
-Expected outcome: the desktop asset is ready, and the mobile asset exists when one shared crop is not sufficient.
-
-### Task 4: Integrate static key art into the welcome hero
-
-Dependency: Task 3
-
-1. In `src/components/WelcomeScreen.tsx`, render the approved art with `next/image` so the browser gets responsive sizing, preload priority, and stable layout.
-2. Keep the art decorative with `alt=""` and `aria-hidden` if the copy already conveys the experience.
-3. Add overlay treatments in `src/components/WelcomeScreen.module.css` that keep buttons readable without burying the art.
-4. Preserve a dedicated text-safe zone so the rider silhouette and worm-snake action remain visible on both desktop and mobile.
-
-Test-first step:
-
-1. Re-run `npm run test:engine` before integration to confirm the helper tests remain green.
-2. Start `npm run dev` and use the current welcome screen as the visual baseline for layout, button positions, and first-load behavior.
-
-Implementation step:
-
-1. Use static imports or direct `/art/...` paths consistently in one approach.
-2. Prefer subtle ambient overlays over rebuilding the old worm/fence CSS illustration.
-3. Keep the welcome art load path local and offline-safe.
-
-Validation:
-
-1. Run `npm run lint`.
-Expected outcome: no Next.js image or accessibility lint failures.
-2. Run `npm run build`.
-Expected outcome: image optimization and production compilation succeed.
-3. Run `npm run dev`.
-Expected outcome: the welcome hero paints with no layout jump and no broken image references.
-
-### Task 5: Rewrite the welcome copy for faster scanning
-
-Dependency: Task 4
-
-1. Shorten the hero deck and any surrounding welcome metrics so the screen reads as one scene, one promise, and two actions.
-2. Keep the tone mischievous and space-ranch, but remove copy that feels overloaded or apologizes for the art.
-3. Ensure the welcome text complements the new “memory” art instead of explaining game rules that already belong on the home screen.
-4. Keep primary CTA labels stable unless the user explicitly approves different wording.
-
-Test-first step:
-
-1. Structural review only.
-2. Before editing copy, identify which lines still need to remain visible above the fold on a narrow mobile viewport.
-
-Implementation step:
-
-1. Favor one short eyebrow, one strong heading, and one compact support paragraph.
-2. Keep welcome metrics secondary and scannable.
-
-Validation:
-
-1. Run `npm run lint`.
-Expected outcome: no JSX regressions.
-2. Manual check in `npm run dev` at a narrow viewport.
-Expected outcome: no overflow, awkward wrapping, or CTA displacement.
-
-### Task 6: Tune responsive behavior and reduced-motion handling
-
-Dependency: Tasks 4 and 5
-
-1. Verify the desktop and mobile crops independently.
-2. If one asset cannot crop well enough for both widths, keep the dedicated mobile asset rather than forcing one compromised image.
-3. Disable or simplify any ambient overlay motion when `reducedMotion` is enabled.
-4. Ensure the hero still feels intentional on touch devices where hover styles do not apply.
-
-Test-first step:
-
-1. Extend `src/components/welcomeHeroPresentation.test.ts` before changing logic if responsive selection rules change.
-2. Re-run the narrow test command and confirm only the new responsive expectations fail.
-
-Implementation step:
-
-1. Keep any viewport-based branching inside the presentation helper or CSS, not spread across multiple components.
-2. Do not add runtime resize listeners just for decorative art.
+1. Keep the helper pure and metadata-driven.
+2. Avoid new browser-only logic in the helper.
 
 Validation:
 
 1. Run `npm run test:engine`.
-Expected outcome: presentation tests still pass.
-2. Run `npm run verify`.
-Expected outcome: lint, tests, and production build all pass.
+Expected outcome: welcome presentation tests pass again.
+2. Run `npm run lint`.
+Expected outcome: no type or lint regressions.
 
-### Task 7: Manual review, asset QA, and sign-off
+### Task 4: Tune the welcome hero around the approved art
 
-Dependency: Tasks 1 through 6
+Dependency: Task 2, and Task 3 if helper metadata changed
 
-1. Review the welcome screen in `npm run dev` at approximately `1440x900`, `1024x768`, `768x1024`, and `390x844`.
-2. Confirm the rider silhouette, worm-snake action, and CTA area remain readable in each layout.
-3. Check that the art compression is acceptable:
-   - no obvious banding in gradients
-   - no blurry rider focal point
-   - no distracting halos around subject edges
-4. Confirm that the home, settings, game, and results screens are visually untouched unless intentionally adjusted during extraction.
+1. Start from the existing welcome shell and tune only what the new art requires.
+2. Adjust `src/components/WelcomeScreen.module.css` overlay strength, object position, or safe-zone alignment so the copy stays legible without flattening the art.
+3. Touch `src/components/WelcomeScreen.tsx` only if `next/image` sizing, preload, or hero wrapper attributes need a small follow-up.
+4. Keep the image decorative with the current accessibility treatment.
+
+Test-first step:
+
+1. Run `npm run dev` before CSS changes to confirm the current layout baseline.
+2. If a helper contract changed in Task 3, re-run `npm run test:engine` before any CSS edits so the logic baseline is already green.
+
+Implementation step:
+
+1. Keep the shell structure stable.
+2. Prefer small overlay and crop-position changes over new layout branches.
+3. Do not reintroduce duplicate desktop/mobile image render paths.
 
 Validation:
 
-1. Run `npm run verify` one final time.
-Expected outcome: full verification passes.
-2. Capture screenshots for desktop and mobile welcome states for user approval.
-Expected outcome: one desktop and one mobile image clearly show the final composition.
+1. Run `npm run lint`.
+Expected outcome: no JSX, CSS-module, or Next.js image lint regressions.
+2. Run `npm run build`.
+Expected outcome: production compilation succeeds with the new assets.
+3. Run `npm run dev`.
+Expected outcome: the welcome hero loads the new art with no broken image references or layout jump.
 
-## Asset Brief For The Generated Images
+### Task 5: Manual art QA, review, and deployment gate
+
+Dependency: Tasks 2 through 4
+
+1. Review the welcome screen at approximately `1440x900`, `1024x768`, `768x1024`, and `390x844`.
+2. Confirm the rider silhouette, creature curve, and CTA-safe regions remain readable in each viewport.
+3. Check for image-quality failures: muddy anatomy, extra limbs, banding, halos, watermark residue, or unreadable focal detail.
+4. Confirm the rest of the app still looks unchanged outside the welcome hero.
+
+Test-first step:
+
+1. Structural review only.
+2. Capture the desktop and mobile welcome states for approval before calling the slice done.
+
+Validation:
+
+1. Run `npm run verify`.
+Expected outcome: tests, lint, and production build all pass.
+2. Review the final screenshots.
+Expected outcome: one desktop and one mobile capture clearly show the approved hero art and readable copy.
+
+## Review And Deployment Steps
+
+1. Review the generated-asset diff first so the staged WebP files and any helper/CSS follow-ups are easy to inspect.
+2. Review the welcome screen locally in `npm run dev` before handing off to a preview deploy.
+3. Run `npm run verify` after the final asset and layout adjustments.
+4. Ship through the normal Vercel preview flow.
+Expected outcome: the preview matches the approved local desktop and mobile welcome screenshots.
 
 Use this brief when producing the actual hero art outside the repo:
 

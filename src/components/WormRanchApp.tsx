@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import styles from "./WormRanchApp.module.css";
 import { GameStage } from "@/components/GameStage";
+import { HomeScreen } from "@/components/HomeScreen";
+import { ResultsScreen } from "@/components/ResultsScreen";
+import { SettingsScreen } from "@/components/SettingsScreen";
 import { WormRanchInstallPrompt } from "@/components/WormRanchInstallPrompt";
 import { WormRanchGameExit } from "@/components/WormRanchGameExit";
-import { WormRanchMetric } from "@/components/WormRanchMetric";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { WormRanchShellHeader } from "@/components/WormRanchShellHeader";
 import { areDisplaySnapshotsEqual, getProfileDetectedDetails } from "@/lib/analytics";
@@ -297,105 +299,42 @@ export function WormRanchApp() {
       )}
 
       {screen === "home" && (
-        <section className={`${styles.screen} ${styles.homeScreen}`}>
-          <div className={`${styles.hero} ${styles.heroHome}`}>
-            <div className={styles.heroCopy}>
-              <p className={`${styles.subtle} ${styles.heroLead}`}>
-                Desktop opens a full pasture of 100 worms and every bagged one whips 0.1 more speed into the herd.
-                {" "}Mobile opens with 10 worms: {MOBILE_ROUNDUP_COPY}{" "}
-                After catch 50, desktop worms get one blink through the fence before they can be penned.
-              </p>
-              <div className={styles.actions}>
-                <button className={styles.primary} onClick={beginRun}>
-                  Start roundup
-                </button>
-                <button className={styles.secondary} onClick={() => setScreen("settings")}>
-                  Ranch settings
-                </button>
-              </div>
-              <div className={styles.inlineUtility}>
-                <WormRanchInstallPrompt
-                  visible={installPromptVisible}
-                  placement="inline"
-                  onInstall={handleInstallRequest}
-                  onDismiss={() => setInstallPromptDismissed(true)}
-                />
-              </div>
-            </div>
-          </div>
-          <div className={styles.dashboard}>
-            <WormRanchMetric label="Tack mode" value={settings.displayMode} />
-            <WormRanchMetric label="Reins" value={detectedDisplay?.pointer ?? "unknown"} />
-            <WormRanchMetric label="Horizon" value={detectedDisplay?.orientation ?? "unknown"} />
-            <WormRanchMetric label="Pasture glass" value={`${detectedDisplay?.width ?? 0} x ${detectedDisplay?.height ?? 0}`} />
-          </div>
-        </section>
+        <HomeScreen
+          leadCopy={
+            "Desktop opens a full pasture of 100 worms and every bagged one whips 0.1 more speed into the herd. " +
+            `Mobile opens with 10 worms: ${MOBILE_ROUNDUP_COPY} ` +
+            "After catch 50, desktop worms get one blink through the fence before they can be penned."
+          }
+          scanItems={[
+            { label: "Tack mode", value: settings.displayMode },
+            { label: "Reins", value: detectedDisplay?.pointer ?? "unknown" },
+            { label: "Horizon", value: detectedDisplay?.orientation ?? "unknown" },
+            { label: "Pasture glass", value: `${detectedDisplay?.width ?? 0} x ${detectedDisplay?.height ?? 0}` },
+          ]}
+          installPrompt={
+            <WormRanchInstallPrompt
+              visible={installPromptVisible}
+              placement="inline"
+              onInstall={handleInstallRequest}
+              onDismiss={() => setInstallPromptDismissed(true)}
+            />
+          }
+          onOpenSettings={() => setScreen("settings")}
+          onStart={beginRun}
+        />
       )}
 
       {screen === "settings" && (
-        <section className={styles.panel}>
-          <h2>Ranch settings</h2>
-          <div className={styles.settingsGrid}>
-            <div className={styles.toggleRow}>
-              <strong>Display mode</strong>
-              <label>
-                <input
-                  type="radio"
-                  name="displayMode"
-                  checked={settings.displayMode === "auto"}
-                  onChange={() => updateSetting("displayMode", "auto")}
-                />
-                Auto scout
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="displayMode"
-                  checked={settings.displayMode === "desktop"}
-                  onChange={() => updateSetting("displayMode", "desktop")}
-                />
-                Force desktop corral
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="displayMode"
-                  checked={settings.displayMode === "mobile"}
-                  onChange={() => updateSetting("displayMode", "mobile")}
-                />
-                Force pocket corral
-              </label>
-            </div>
-
-            <div className={styles.toggleRow}>
-              <strong>Preferences</strong>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={settings.reducedMotion}
-                  onChange={(event) => updateSetting("reducedMotion", event.target.checked)}
-                />
-                Reduced motion
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={settings.analyticsEnabled}
-                  onChange={(event) => updateSetting("analyticsEnabled", event.target.checked)}
-                />
-                Silent analytics
-              </label>
-            </div>
-          </div>
-          <div className={styles.actions}>
-            <button className={styles.primary} onClick={() => setScreen("home")}>
-              Back to yard
-            </button>
-            <button className={styles.secondary} onClick={beginRun}>
-              Ride this setup
-            </button>
-          </div>
-        </section>
+        <SettingsScreen
+          displayMode={settings.displayMode}
+          reducedMotion={settings.reducedMotion}
+          analyticsEnabled={settings.analyticsEnabled}
+          onDisplayModeChange={(value) => updateSetting("displayMode", value)}
+          onReducedMotionChange={(value) => updateSetting("reducedMotion", value)}
+          onAnalyticsEnabledChange={(value) => updateSetting("analyticsEnabled", value)}
+          onBack={() => setScreen("home")}
+          onStart={beginRun}
+        />
       )}
 
       {screen === "game" && (
@@ -413,25 +352,14 @@ export function WormRanchApp() {
       )}
 
       {screen === "results" && result && (
-        <section className={styles.results}>
-          <h2>Round tally</h2>
-          <div className={styles.resultsGrid}>
-            <WormRanchMetric label="Outcome" value={formatReason(result.reason)} />
-            <WormRanchMetric label="Bagged" value={String(result.collected)} />
-            <WormRanchMetric label="Left loose" value={String(result.remaining)} />
-          </div>
-          <p className={styles.note}>
-            {FAIRY_LIFT_COPY} On desktop, the last outlaw is designed to escape. On mobile, {MOBILE_ROUNDUP_COPY.toLowerCase()}
-          </p>
-          <div className={styles.actions}>
-            <button className={styles.primary} onClick={beginRun}>
-              Ride again
-            </button>
-            <button className={styles.secondary} onClick={() => setScreen("home")}>
-              Yard
-            </button>
-          </div>
-        </section>
+        <ResultsScreen
+          outcome={formatReason(result.reason)}
+          bagged={result.collected}
+          leftLoose={result.remaining}
+          note={`${FAIRY_LIFT_COPY} On desktop, the last outlaw is designed to escape. On mobile, ${MOBILE_ROUNDUP_COPY.toLowerCase()}`}
+          onReplay={beginRun}
+          onReturnHome={() => setScreen("home")}
+        />
       )}
     </main>
   );

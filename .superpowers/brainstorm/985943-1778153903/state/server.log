@@ -1,0 +1,5 @@
+{"type":"server-started","port":56567,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:56567","screen_dir":"/home/ewaldt/Documents/VS/GAMES/Worm ranch/.superpowers/brainstorm/985943-1778153903/content","state_dir":"/home/ewaldt/Documents/VS/GAMES/Worm ranch/.superpowers/brainstorm/985943-1778153903/state"}
+{"type":"screen-added","file":"/home/ewaldt/Documents/VS/GAMES/Worm ranch/.superpowers/brainstorm/985943-1778153903/content/art-direction-1.html"}
+{"type":"screen-updated","file":"/home/ewaldt/Documents/VS/GAMES/Worm ranch/.superpowers/brainstorm/985943-1778153903/content/art-direction-1.html"}
+{"type":"screen-updated","file":"/home/ewaldt/Documents/VS/GAMES/Worm ranch/.superpowers/brainstorm/985943-1778153903/content/art-direction-1.html"}
+{"type":"server-stopped","reason":"idle timeout"}

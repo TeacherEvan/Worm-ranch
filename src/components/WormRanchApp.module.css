@@ -1,18 +1,9 @@
 .page {
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
-  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   width: min(1220px, calc(100vw - clamp(18px, 4vw, 52px)));
   margin: 0 auto;
   padding: clamp(18px, 3vw, 30px) 0 clamp(40px, 6vw, 72px);
-}
-
-.subtle {
-  color: var(--muted);
-  max-width: 46rem;
-  font-size: clamp(0.98rem, 0.9rem + 0.35vw, 1.08rem);
-  line-height: 1.65;
-  text-wrap: pretty;
 }
 
 .screen {
@@ -28,133 +19,11 @@
   animation: none;
 }
 
-.hero,
-.panel,
-.hud,
-.results {
-  background: color-mix(in srgb, var(--panel-strong) 90%, transparent);
-  border: 1px solid rgba(199, 243, 107, 0.14);
-  backdrop-filter: blur(16px);
-  box-shadow: var(--shadow);
-}
-
-.hero {
-  position: relative;
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(16rem, 0.95fr);
-  align-items: end;
-  gap: clamp(18px, 4vw, 36px);
-  padding: clamp(22px, 4vw, 36px);
-  border-radius: 32px;
-  container-type: inline-size;
-}
-
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(115deg, rgba(199, 243, 107, 0.06), transparent 34%, rgba(240, 126, 67, 0.1) 100%);
-  pointer-events: none;
-}
-
-.hero > * {
-  position: relative;
-  z-index: 1;
-}
-
-.heroCopy > * {
-  animation: contentLift 480ms var(--ease-out-quart) both;
-}
-
-.heroCopy > *:nth-child(2) {
-  animation-delay: 90ms;
-}
-
-.homeScreen {
-  container-type: inline-size;
-}
-
-.heroHome {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.heroCopy {
-  display: grid;
-  gap: 18px;
-  align-content: end;
-  justify-items: start;
-}
-
-.heroLead {
-  color: color-mix(in srgb, var(--text) 76%, var(--accent) 24%);
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-}
-
-.inlineUtility {
-  width: min(100%, 29rem);
-}
-
-.primary,
-.secondary,
-.ghost {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 52px;
-  padding: 0 20px;
-  border-radius: 999px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform 140ms var(--ease-out-quint),
-    background 180ms var(--ease-out-quart),
-    border-color 180ms var(--ease-out-quart),
-    box-shadow 180ms var(--ease-out-quart);
-}
-
-.primary {
-  color: #061018;
-  background: linear-gradient(135deg, var(--accent), #f4c76c);
-  box-shadow: 0 12px 28px rgba(199, 243, 107, 0.18);
-}
-
-.secondary {
-  color: var(--text);
-  background: rgba(10, 20, 32, 0.92);
-  border: 1px solid rgba(199, 243, 107, 0.16);
-}
-
-.ghost {
-  color: var(--muted);
-  background: transparent;
-  border: 1px dashed rgba(199, 243, 107, 0.22);
-}
-
-.dashboard,
-.hud {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
-  gap: 14px;
-}
-
-.metric,
-.toggleRow,
-.panel,
-.results {
-  padding: clamp(16px, 2.5vw, 24px);
-  border-radius: 24px;
-}
-
 .metric {
   display: grid;
   gap: 12px;
+  padding: clamp(16px, 2.5vw, 24px);
+  border-radius: 24px;
   min-height: 100%;
   background: linear-gradient(180deg, rgba(8, 15, 24, 0.72), rgba(8, 15, 24, 0.94));
   border: 1px solid rgba(199, 243, 107, 0.12);
@@ -178,68 +47,10 @@
   text-wrap: balance;
 }
 
-.panel {
-  display: grid;
-  gap: 18px;
-  container-type: inline-size;
-}
-
-.settingsGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  gap: 16px;
-}
-
-.toggleRow {
-  display: grid;
-  gap: 12px;
-  border: 1px solid rgba(199, 243, 107, 0.12);
-  background: rgba(8, 15, 24, 0.58);
-}
-
-.toggleRow label {
-  display: grid;
-  grid-template-columns: 18px 1fr;
-  align-items: start;
-  gap: 10px;
-  line-height: 1.45;
-}
-
-.results {
-  display: grid;
-  gap: 16px;
-  container-type: inline-size;
-}
-
-.resultsGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.note {
-  color: var(--muted);
-  font-size: 0.92rem;
-  line-height: 1.5;
-  max-width: 48rem;
-}
-
 @keyframes screenEnter {
   from {
     opacity: 0;
     transform: translate3d(0, 22px, 0);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes contentLift {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 18px, 0);
   }
 
   to {
@@ -266,58 +77,9 @@
   padding: 0;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .primary:hover,
-  .secondary:hover,
-  .ghost:hover {
-    transform: translate3d(0, -2px, 0);
-  }
-
-  .primary:hover {
-    box-shadow: 0 16px 34px rgba(199, 243, 107, 0.22);
-  }
-}
-
-.primary:active,
-.secondary:active,
-.ghost:active {
-  transform: scale(0.98);
-}
-
-@container (max-width: 46rem) {
-  .hero {
-    grid-template-columns: 1fr;
-  }
-
-  .actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-  }
-
-  .actions > * {
-    width: 100%;
-  }
-
-  .inlineUtility {
-    width: 100%;
-  }
-}
-
 @container (max-width: 32rem) {
-  .actions {
-    grid-template-columns: 1fr;
-  }
-
   .metricValue {
     font-size: clamp(1.4rem, 9vw, 2.2rem);
-  }
-}
-
-@media (max-width: 1024px) {
-  .resultsGrid,
-  .settingsGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -325,57 +87,22 @@
   .page {
     width: min(100vw - 18px, 100%);
   }
-
-  .dashboard,
-  .hud,
-  .resultsGrid,
-  .settingsGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .gameActions {
-    inset: auto 12px 12px 12px;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .gameActions .secondary {
-    grid-column: 1 / -1;
-  }
 }
 
 @media (max-height: 780px) {
   .page {
     padding-top: 16px;
   }
-
-  .hero {
-    padding: 22px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .screen,
-  .heroCopy > *,
   .metric {
     animation: none;
-  }
-
-  .primary,
-  .secondary,
-  .ghost {
-    transition-duration: 0.01ms;
   }
 }
 
 .page[data-motion="reduced"] .screen,
-.page[data-motion="reduced"] .heroCopy > *,
 .page[data-motion="reduced"] .metric {
   animation: none;
-}
-
-.page[data-motion="reduced"] .primary,
-.page[data-motion="reduced"] .secondary,
-.page[data-motion="reduced"] .ghost {
-  transition-duration: 0.01ms;
 }

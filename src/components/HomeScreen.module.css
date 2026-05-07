@@ -1,0 +1,151 @@
+.shell {
+  display: grid;
+  container-type: inline-size;
+}
+
+.launchPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.95fr);
+  gap: clamp(16px, 3vw, 24px);
+  align-items: end;
+  padding: clamp(18px, 3vw, 28px);
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--panel-strong) 90%, transparent);
+  border: 1px solid rgba(199, 243, 107, 0.14);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
+}
+
+.copyCluster {
+  display: grid;
+  gap: 16px;
+  justify-items: start;
+}
+
+.lead {
+  color: color-mix(in srgb, var(--text) 76%, var(--accent) 24%);
+  max-width: 42rem;
+  font-size: clamp(0.98rem, 0.92rem + 0.32vw, 1.08rem);
+  line-height: 1.58;
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.inlineUtility {
+  width: min(100%, 29rem);
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 140ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 180ms cubic-bezier(0.25, 1, 0.5, 1),
+    border-color 180ms cubic-bezier(0.25, 1, 0.5, 1),
+    box-shadow 180ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.primary {
+  color: #061018;
+  background: linear-gradient(135deg, var(--accent), #f4c76c);
+  box-shadow: 0 12px 28px rgba(199, 243, 107, 0.18);
+}
+
+.secondary {
+  color: var(--text);
+  background: rgba(10, 20, 32, 0.92);
+  border: 1px solid rgba(199, 243, 107, 0.16);
+}
+
+.scanStrip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.scanItem {
+  display: grid;
+  gap: 6px;
+  min-height: 100%;
+  padding: 12px 13px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(8, 15, 24, 0.58), rgba(8, 15, 24, 0.84));
+  border: 1px solid rgba(199, 243, 107, 0.12);
+}
+
+.scanLabel {
+  color: color-mix(in srgb, var(--muted) 88%, var(--accent) 12%);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.scanValue {
+  color: var(--text);
+  font-size: clamp(0.95rem, 0.88rem + 0.2vw, 1.08rem);
+  line-height: 1.1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .primary:hover,
+  .secondary:hover {
+    transform: translate3d(0, -2px, 0);
+  }
+
+  .primary:hover {
+    box-shadow: 0 16px 34px rgba(199, 243, 107, 0.22);
+  }
+}
+
+.primary:active,
+.secondary:active {
+  transform: scale(0.98);
+}
+
+@container (max-width: 50rem) {
+  .launchPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .scanStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 34rem) {
+  .actions,
+  .scanStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    display: grid;
+    width: 100%;
+  }
+
+  .actions > *,
+  .inlineUtility {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary,
+  .secondary {
+    transition-duration: 0.01ms;
+  }
+}
