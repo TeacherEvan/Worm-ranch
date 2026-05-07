@@ -82,9 +82,13 @@ export function setPointer(world: GameWorld, point: Point | null) {
 }
 
 export function triggerTouchRush(world: GameWorld, point: Point) {
+  if (world.profile !== "mobile" || world.roundResult || world.countdownMs > 0) {
+    return;
+  }
+
   setPointer(world, point);
 
-  if (world.profile !== "mobile" || world.roundResult || world.countdownMs > 0 || world.rushTriggered) {
+  if (world.rushTriggered) {
     return;
   }
 

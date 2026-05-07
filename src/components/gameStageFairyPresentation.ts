@@ -2,37 +2,40 @@ import type { Fairy } from "@/game/types";
 
 const ORBIT_SPARKLE_COUNT = 8;
 
+export type FairyMorphFrame = {
+  fairyOpacity: number;
+  fairyPosition: { x: number; y: number };
+  fairyFadeIn: number;
+  glowIntensity: number;
+  morphScale: number;
+  morphProgress: number;
+  orbitSparkleCount: number;
+  trailFadeProgress: number;
+  trailSparkleCount: number;
+  wormOpacity: number;
+};
+
 export function drawFairyMorph(context: CanvasRenderingContext2D, fairy: Fairy, reducedMotion: boolean) {
-  const morphProgress = clamp01(fairy.lifeMs / Math.max(1, fairy.morphDurationMs));
-  const flyProgress = clamp01((fairy.lifeMs - fairy.morphDurationMs) / Math.max(1, fairy.flyDurationMs));
-  const trailFadeProgress = clamp01(
-    (fairy.lifeMs - fairy.morphDurationMs - fairy.flyDurationMs) / Math.max(1, fairy.trailFadeDurationMs),
-  );
-  const fairyPosition = getFairyPosition(fairy, flyProgress);
-  const wormOpacity = Math.max(0, 1 - morphProgress * 2);
-  const fairyFadeIn = Math.min(1, morphProgress * 2 - 0.5);
-  const morphScale = 0.5 + morphProgress * 0.7 + Math.sin(morphProgress * Math.PI * 4) * 0.1;
-  const glowIntensity = 10 + Math.sin(fairy.lifeMs / 100) * 5;
-  const fairyOpacity = fairy.state === "trailFading" ? 1 - trailFadeProgress : 1;
+  const frame = getFairyMorphFrame(fairy, reducedMotion);
 
   if (fairy.state !== "morphing") {
-    drawTrailSparkles(context, fairy, reducedMotion, flyProgress, trailFadeProgress);
+    drawTrailSparkles(context, fairy, reducedMotion, frame.flyProgress, frame.trailFadeProgress);
   }
 
-  if (fairyOpacity <= 0) {
+  if (frame.fairyOpacity <= 0) {
     return;
   }
 
   context.save();
-  context.translate(fairyPosition.x, fairyPosition.y);
-  context.globalAlpha = fairyOpacity;
-  context.scale(morphScale, morphScale);
-  context.shadowBlur = reducedMotion ? 0 : glowIntensity;
+  context.translate(frame.fairyPosition.x, frame.fairyPosition.y);
+  context.globalAlpha = frame.fairyOpacity;
+  context.scale(frame.morphScale, frame.morphScale);
+  context.shadowBlur = reducedMotion ? 0 : frame.glowIntensity;
   context.shadowColor = `hsla(${fairy.hue}, 95%, 74%, 0.55)`;
 
-  if (wormOpacity > 0) {
+  if (frame.wormOpacity > 0) {
     context.save();
-    context.globalAlpha = wormOpacity;
+    context.globalAlpha = frame.wormOpacity;
     context.rotate(Math.sin(fairy.lifeMs * 0.006) * 0.2);
     context.lineCap = "round";
     context.lineWidth = 4;
@@ -44,10 +47,10 @@ export function drawFairyMorph(context: CanvasRenderingContext2D, fairy: Fairy, 
     context.restore();
   }
 
-  if (fairyFadeIn > 0) {
+  if (frame.fairyFadeIn > 0) {
     const wingPulse = reducedMotion ? 1 : 0.92 + Math.sin(fairy.lifeMs * 0.018 + fairy.hue) * 0.08;
     context.save();
-    context.globalAlpha = fairyFadeIn;
+    context.globalAlpha = frame.fairyFadeIn;
     context.fillStyle = `hsla(${fairy.hue}, 96%, 80%, 0.86)`;
     context.beginPath();
     context.ellipse(-8, 0, 7.5 * wingPulse, 4.5, -0.45, 0, Math.PI * 2);
@@ -67,10 +70,33 @@ export function drawFairyMorph(context: CanvasRenderingContext2D, fairy: Fairy, 
   }
 
   if (!reducedMotion) {
-    drawOrbitSparkles(context, fairy, fairyPosition, fairy.lifeMs);
+    drawOrbitSparkles(context, fairy, frame.fairyPosition, fairy.lifeMs);
   }
 
   context.restore();
+}
+
+export function getFairyMorphFrame(fairy: Fairy, reducedMotion: boolean): FairyMorphFrame & { flyProgress: number } {
+  const morphProgress = clamp01(fairy.lifeMs / Math.max(1, fairy.morphDurationMs));
+  const flyProgress = clamp01((fairy.lifeMs - fairy.morphDurationMs) / Math.max(1, fairy.flyDurationMs));
+  const trailFadeProgress = clamp01(
+    (fairy.lifeMs - fairy.morphDurationMs - fairy.flyDurationMs) / Math.max(1, fairy.trailFadeDurationMs),
+  );
+  const fairyPosition = getFairyPosition(fairy, flyProgress);
+
+  return {
+    fairyOpacity: fairy.state === "trailFading" ? 1 - trailFadeProgress : 1,
+    fairyPosition,
+    fairyFadeIn: Math.min(1, morphProgress * 2 - 0.5),
+    flyProgress,
+    glowIntensity: 10 + Math.sin(fairy.lifeMs / 100) * 5,
+    morphScale: 0.5 + morphProgress * 0.7 + Math.sin(morphProgress * Math.PI * 4) * 0.1,
+    morphProgress,
+    orbitSparkleCount: reducedMotion ? 0 : ORBIT_SPARKLE_COUNT,
+    trailFadeProgress,
+    trailSparkleCount: fairy.state === "morphing" ? 0 : reducedMotion ? 4 : 9,
+    wormOpacity: Math.max(0, 1 - morphProgress * 2),
+  };
 }
 
 function drawOrbitSparkles(

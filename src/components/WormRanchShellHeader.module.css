@@ -1,0 +1,129 @@
+.header {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) auto;
+  align-items: end;
+  gap: clamp(18px, 4vw, 40px);
+  padding: 0 0 clamp(20px, 3vw, 32px);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: screenEnter 560ms var(--ease-out-expo) both;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-family: var(--font-mono), monospace;
+  font-size: clamp(0.74rem, 0.5rem + 0.5vw, 0.88rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.title {
+  max-width: 7ch;
+  font-size: clamp(3rem, 7vw, 5.8rem);
+  line-height: 0.92;
+  letter-spacing: -0.06em;
+}
+
+.subtle {
+  color: var(--muted);
+  max-width: 46rem;
+  font-size: clamp(0.98rem, 0.9rem + 0.35vw, 1.08rem);
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 28rem;
+  justify-content: flex-end;
+  align-content: start;
+  animation: screenEnter 620ms var(--ease-out-quart) both;
+}
+
+.chip {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-soft) 74%, transparent);
+  border: 1px solid rgba(199, 243, 107, 0.16);
+  color: color-mix(in srgb, var(--text) 78%, var(--accent) 22%);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  transition:
+    transform 180ms var(--ease-out-quart),
+    border-color 180ms var(--ease-out-quart),
+    background-color 180ms var(--ease-out-quart);
+}
+
+@keyframes screenEnter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover {
+    transform: translate3d(0, -1px, 0);
+    border-color: rgba(199, 243, 107, 0.26);
+  }
+}
+
+@media (max-width: 1024px) {
+  .header {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .chips {
+    justify-content: flex-start;
+    max-width: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .title {
+    max-width: none;
+  }
+
+  .chip {
+    flex: 1 1 12rem;
+  }
+}
+
+@media (max-height: 560px) and (orientation: landscape) {
+  .header {
+    gap: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand,
+  .chips {
+    animation: none;
+  }
+
+  .chip {
+    transition-duration: 0.01ms;
+  }
+}
+
+:global([data-motion="reduced"]) .brand,
+:global([data-motion="reduced"]) .chips {
+  animation: none;
+}
+
+:global([data-motion="reduced"]) .chip {
+  transition-duration: 0.01ms;
+}

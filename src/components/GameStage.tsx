@@ -9,6 +9,7 @@ import {
   stepFeedback,
   type StageFeedback,
 } from "@/components/gameStagePresentation";
+import { getMotionFeedback, type StageMotionCue } from "@/components/gameStageMotion";
 import { getStagePresentation } from "@/components/gameStagePhasePresentation";
 import { getFairyLifecycleEvents, getRoundEndedDetails, getRoundTransitionEvents } from "@/lib/analytics";
 import {
@@ -52,12 +53,15 @@ export function GameStage({
   const lastTimestampRef = useRef<number | null>(null);
   const canvasBoundsRef = useRef<{ left: number; top: number; width: number; height: number } | null>(null);
   const summaryAnalyticsRef = useRef<GameSummary | null>(null);
+  const previousSummaryRef = useRef<GameSummary | null>(null);
   const fairyStatesRef = useRef<Map<string, FairyState>>(new Map());
+  const cueTimerRef = useRef<number | null>(null);
   const reducedMotionRef = useRef(reducedMotion);
   const onSummaryChangeRef = useRef(onSummaryChange);
   const onRoundEndRef = useRef(onRoundEnd);
   const onEventRef = useRef(onEvent);
   const [stageSummary, setStageSummary] = useState<GameSummary>(() => createInitialSummary(profile));
+  const [motionCue, setMotionCue] = useState<StageMotionCue>("none");
   const stagePresentation = getStagePresentation(stageSummary, profile);
   const copyKey = stagePresentation.overlayKey;
 
@@ -78,6 +82,33 @@ export function GameStage({
   }, [onEvent]);
 
   useEffect(() => {
+    return () => {
+      if (cueTimerRef.current !== null) {
+        window.clearTimeout(cueTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const motionFeedback = getMotionFeedback(previousSummaryRef.current, stageSummary);
+    previousSummaryRef.current = stageSummary;
+
+    if (motionFeedback.stageCue === "none") {
+      return;
+    }
+
+    if (cueTimerRef.current !== null) {
+      window.clearTimeout(cueTimerRef.current);
+    }
+
+    setMotionCue(motionFeedback.stageCue);
+    cueTimerRef.current = window.setTimeout(() => {
+      setMotionCue("none");
+      cueTimerRef.current = null;
+    }, reducedMotion ? 140 : 760);
+  }, [reducedMotion, stageSummary]);
+
+  useEffect(() => {
     worldRef.current = createWorld(profile, 800, 540);
     feedbackRef.current = [];
     finishedRef.current = false;
@@ -88,6 +119,7 @@ export function GameStage({
 
     const initialSummary = getSummary(worldRef.current);
     summaryAnalyticsRef.current = initialSummary;
+  previousSummaryRef.current = initialSummary;
     setStageSummary(initialSummary);
     onSummaryChangeRef.current(initialSummary);
 
@@ -321,6 +353,7 @@ export function GameStage({
       className={styles.shell}
       data-motion={reducedMotion ? "reduced" : "full"}
       data-phase={stageSummary.phase}
+      data-feedback-cue={motionCue}
     >
       <canvas ref={canvasRef} className={styles.canvas} aria-label="Worm Ranch game field" />
       <div className={styles.statusStrip} aria-live="off">

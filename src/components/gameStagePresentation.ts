@@ -54,6 +54,7 @@ export function renderStage(
   }
 
   const summary = getSummary(world);
+  const stagePresentation = getStagePresentation(summary, world.profile);
   const activeWorms = world.worms.filter(isWormActive);
   const ghostWormId = activeWorms.find((worm) => worm.state === "ghost")?.id ?? null;
 
@@ -65,25 +66,24 @@ export function renderStage(
     drawWorm(context, world, worm, reducedMotion, worm.id === ghostWormId, frameNow);
   }
 
-  if (summary.countdownMs > 0) {
+  if (stagePresentation.countdownOverlay) {
     context.save();
-    const countdownProgress = world.rules.introCountdownMs > 0 ? summary.countdownMs / world.rules.introCountdownMs : 0;
-    context.fillStyle = `rgba(5, 10, 15, ${0.2 + countdownProgress * 0.42})`;
+    context.fillStyle = `rgba(5, 10, 15, ${0.2 + stagePresentation.countdownOverlay.progress * 0.42})`;
     context.fillRect(0, 0, world.width, world.height);
     context.globalAlpha = reducedMotion ? 1 : 0.92 + (Math.sin(frameNow * 0.014) + 1) * 0.04;
     context.fillStyle = "#f5f4e9";
     context.font = "600 60px var(--font-sans)";
     context.textAlign = "center";
-    context.fillText(String(Math.max(1, Math.ceil(summary.countdownMs / 1000))), world.width / 2, world.height / 2);
+    context.fillText(stagePresentation.countdownOverlay.value, world.width / 2, world.height / 2);
     context.restore();
   }
 
-  if (summary.finalWormActive) {
+  if (stagePresentation.fieldBanner) {
     context.save();
     context.fillStyle = "rgba(240, 126, 67, 0.95)";
     context.font = "500 18px var(--font-mono)";
     context.textAlign = "center";
-    context.fillText("Last outlaw loose: the pen will not hold", world.width / 2, 42);
+    context.fillText(stagePresentation.fieldBanner, world.width / 2, 42);
     context.restore();
   }
 

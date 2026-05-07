@@ -2,8 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import styles from "./WormRanchApp.module.css";
+import motionStyles from "./WormRanchAppMotion.module.css";
 import { GameStage } from "@/components/GameStage";
-import { getStagePresentation } from "@/components/gameStagePhasePresentation";
+import { WelcomeScreen } from "@/components/WelcomeScreen";
+import { WormRanchShellHeader } from "@/components/WormRanchShellHeader";
+import { getMotionFeedback } from "@/components/gameStageMotion";
 import { areDisplaySnapshotsEqual, getProfileDetectedDetails } from "@/lib/analytics";
 import { detectDisplayProfile, type DisplayProfile, type DisplaySnapshot } from "@/game/detection";
 import { PROFILE_RULES } from "@/game/rules";
@@ -20,9 +23,17 @@ import type { GameSummary, RoundResult } from "@/game/types";
 import { createSilentLogger, type EventName } from "@/lib/logger";
 
 type AppScreen = "welcome" | "home" | "settings" | "game" | "results";
+type MetricImpact = "idle" | "bagged" | "remaining" | "fairies" | "critical";
+type MetricKey = "bagged" | "remaining" | "fairies" | "time";
 
 const MOBILE_ROUNDUP_COPY = "The first touch wakes the herd. Land one clean tap to tag a worm, then another on that same worm to bag it.";
 const FAIRY_LIFT_COPY = "Clean catches still lift into fairies and drift out of the ranch glow.";
+const METRIC_IMPACT_MS: Record<Exclude<MetricImpact, "idle">, number> = {
+  bagged: 360,
+  remaining: 320,
+  fairies: 520,
+  critical: 820,
+};
 
 const emptySummary: GameSummary = {
   profile: "desktop",
@@ -44,6 +55,12 @@ export function WormRanchApp() {
   const [runProfile, setRunProfile] = useState<DisplayProfile | null>(null);
   const [summary, setSummary] = useState<GameSummary>(emptySummary);
   const [result, setResult] = useState<RoundResult | null>(null);
+  const [metricImpacts, setMetricImpacts] = useState<Record<MetricKey, MetricImpact>>({
+    bagged: "idle",
+    remaining: "idle",
+    fairies: "idle",
+    time: "idle",
+  });
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
   const [logger] = useState(() => createSilentLogger("/api/events"));
   const hasLoggedOpenRef = useRef(false);
@@ -68,6 +85,13 @@ export function WormRanchApp() {
   const effectiveProfileRef = useRef<DisplayProfile>(effectiveProfile);
   const runProfileRef = useRef<DisplayProfile | null>(runProfile);
   const detectedDisplayRef = useRef<DisplaySnapshot | null>(null);
+  const previousSummaryRef = useRef<GameSummary | null>(null);
+  const metricTimerRef = useRef<Record<MetricKey, number | null>>({
+    bagged: null,
+    remaining: null,
+    fairies: null,
+    time: null,
+  });
 
   const logEvent = useCallback(
     (
@@ -129,6 +153,19 @@ export function WormRanchApp() {
   useEffect(() => {
     runProfileRef.current = runProfile;
   }, [runProfile]);
+
+  useEffect(() => {
+    const metricTimers = metricTimerRef.current;
+
+    return () => {
+      for (const key of Object.keys(metricTimers) as MetricKey[]) {
+        const timerId = metricTimers[key];
+        if (timerId !== null) {
+          window.clearTimeout(timerId);
+        }
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const updateProfile = () => setDetectedDisplay(detectDisplayProfile(window));
@@ -202,6 +239,49 @@ export function WormRanchApp() {
     logEvent("screen_viewed", undefined, screen, settingsRef.current.analyticsEnabled, profile);
   }, [logEvent, screen]);
 
+  const triggerMetricImpact = useCallback((key: MetricKey, impact: Exclude<MetricImpact, "idle">) => {
+    const activeTimer = metricTimerRef.current[key];
+    if (activeTimer !== null) {
+      window.clearTimeout(activeTimer);
+    }
+
+    setMetricImpacts((current) => ({ ...current, [key]: "idle" }));
+
+    window.requestAnimationFrame(() => {
+      setMetricImpacts((current) => ({ ...current, [key]: impact }));
+      metricTimerRef.current[key] = window.setTimeout(() => {
+        setMetricImpacts((current) => ({ ...current, [key]: "idle" }));
+        metricTimerRef.current[key] = null;
+      }, METRIC_IMPACT_MS[impact]);
+    });
+  }, []);
+
+  const handleSummaryChange = useCallback(
+    (nextSummary: GameSummary) => {
+      const motionFeedback = getMotionFeedback(previousSummaryRef.current, nextSummary);
+
+      previousSummaryRef.current = nextSummary;
+      setSummary(nextSummary);
+
+      if (motionFeedback.baggedBump) {
+        triggerMetricImpact("bagged", "bagged");
+      }
+
+      if (motionFeedback.remainingDip) {
+        triggerMetricImpact("remaining", "remaining");
+      }
+
+      if (motionFeedback.fairyBurst) {
+        triggerMetricImpact("fairies", "fairies");
+      }
+
+      if (motionFeedback.timerAlert) {
+        triggerMetricImpact("time", "critical");
+      }
+    },
+    [triggerMetricImpact],
+  );
+
   const beginRun = () => {
     const nextRunProfile = effectiveProfile;
     const nextSessionId = crypto.randomUUID();
@@ -209,6 +289,13 @@ export function WormRanchApp() {
 
     sessionIdRef.current = nextSessionId;
     runProfileRef.current = nextRunProfile;
+    previousSummaryRef.current = null;
+    setMetricImpacts({
+      bagged: "idle",
+      remaining: "idle",
+      fairies: "idle",
+      time: "idle",
+    });
 
     setSessionId(nextSessionId);
     setRunProfile(nextRunProfile);
@@ -228,9 +315,15 @@ export function WormRanchApp() {
   };
 
   const shellProfile = screen === "game" || screen === "results" ? runProfile ?? effectiveProfile : effectiveProfile;
-  const shellScanProfile = screen === "game" || screen === "results" ? shellProfile : detectedDisplay?.profile ?? "scanning";
+  const shellScanProfile: DisplayProfile | "scanning" =
+    screen === "game" || screen === "results" ? shellProfile : detectedDisplay?.profile ?? "scanning";
   const profileRules = PROFILE_RULES[shellProfile];
-  const gamePresentation = getStagePresentation(summary, shellProfile);
+  const welcomeMetrics = [
+    { label: "Big corral", value: "100 worms" },
+    { label: "Pocket corral", value: "10 worms" },
+    { label: "Fairy lift", value: "enabled" },
+    { label: "Trail log", value: settings.analyticsEnabled ? "silent" : "off" },
+  ];
 
   return (
     <main
@@ -238,55 +331,22 @@ export function WormRanchApp() {
       data-motion={settings.reducedMotion ? "reduced" : "full"}
       data-screen={screen}
     >
-      <header className={styles.header}>
-        <div className={styles.brand}>
-          <span className={styles.eyebrow}>Orbit corral panic</span>
-          <h1 className={styles.title}>Worm Ranch</h1>
-          <p className={styles.subtle}>
-            A neon pasture scramble where every bagged worm spooks the herd, the blink fence wakes late, and the
-            last outlaw was never bred to lose.
-          </p>
-        </div>
-        <div className={styles.chips}>
-          <span className={styles.chip}>Pasture scan: {shellScanProfile}</span>
-          <span className={styles.chip}>Loaded tack: {shellProfile}</span>
-          <span className={styles.chip}>Loose herd: {profileRules.totalWorms}</span>
-        </div>
-      </header>
+      {screen === "welcome" ? (
+        <WormRanchShellHeader density="welcome" shellProfile={shellProfile} shellScanProfile={shellScanProfile} />
+      ) : (
+        <WormRanchShellHeader
+          shellProfile={shellProfile}
+          shellScanProfile={shellScanProfile}
+          totalWorms={profileRules.totalWorms}
+        />
+      )}
 
       {screen === "welcome" && (
-        <section className={`${styles.screen} ${styles.welcomeScreen}`}>
-          <div className={`${styles.hero} ${styles.heroWelcome}`}>
-            <div className={styles.welcomeVisual} aria-hidden="true">
-              <div className={styles.orbitMoon} />
-              <div className={styles.wormTrail} />
-              <div className={styles.wormTrailAlt} />
-              <div className={styles.corralFence} />
-              <div className={styles.signalDish} />
-              <div className={styles.fairyGlow} />
-            </div>
-            <div className={styles.heroCopy}>
-              <p className={styles.heroDeck}>
-                Big-screen runs open the whole pasture. Touch runs compress the chase into thumb reach without easing
-                the panic.
-              </p>
-              <div className={styles.actions}>
-                <button className={styles.primary} onClick={() => setScreen("home")}>
-                  Open the gate
-                </button>
-                <button className={styles.secondary} onClick={() => setScreen("settings")}>
-                  Rig the tack
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className={styles.dashboard}>
-            <Metric label="Big corral" value="100 worms" />
-            <Metric label="Pocket corral" value="10 worms" />
-            <Metric label="Fairy lift" value="enabled" />
-            <Metric label="Trail log" value={settings.analyticsEnabled ? "silent" : "off"} />
-          </div>
-        </section>
+        <WelcomeScreen
+          metrics={welcomeMetrics}
+          onOpenGate={() => setScreen("home")}
+          onRigTack={() => setScreen("settings")}
+        />
       )}
 
       {screen === "home" && (
@@ -386,16 +446,21 @@ export function WormRanchApp() {
       {screen === "game" && (
         <section className={styles.screen}>
           <div className={styles.hud}>
-            <Metric label="Bagged" value={String(summary.collected)} />
-            <Metric label="Remaining" value={String(summary.remaining)} />
-            <Metric label="Time" value={`${Math.ceil(summary.timerMs / 1000)}s`} />
-            <Metric label="Phase" value={gamePresentation.phaseChipLabel} />
+            <Metric label="Bagged" value={String(summary.collected)} impact={metricImpacts.bagged} />
+            <Metric label="Remaining" value={String(summary.remaining)} impact={metricImpacts.remaining} />
+            <Metric
+              label="Time"
+              value={`${Math.ceil(summary.timerMs / 1000)}s`}
+              impact={summary.timerMs <= 15_000 ? metricImpacts.time : "idle"}
+              urgent={summary.timerMs <= 15_000}
+            />
+            <Metric label="Fairies" value={String(summary.fairies)} impact={metricImpacts.fairies} />
           </div>
           <GameStage
             key={sessionId}
             profile={runProfile ?? effectiveProfile}
             reducedMotion={settings.reducedMotion}
-            onSummaryChange={setSummary}
+            onSummaryChange={handleSummaryChange}
             onEvent={handleStageEvent}
             onRoundEnd={handleRoundEnd}
           />
@@ -432,11 +497,27 @@ export function WormRanchApp() {
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({
+  label,
+  value,
+  impact = "idle",
+  urgent = false,
+}: {
+  label: string;
+  value: string;
+  impact?: MetricImpact;
+  urgent?: boolean;
+}) {
   return (
-    <div className={styles.metric}>
+    <div
+      className={`${styles.metric} ${motionStyles.metricShell}`}
+      data-impact={impact}
+      data-urgent={urgent ? "true" : "false"}
+    >
       <span className={styles.metricLabel}>{label}</span>
-      <strong className={styles.metricValue}>{value}</strong>
+      <strong className={`${styles.metricValue} ${motionStyles.metricValue}`} data-impact={impact}>
+        {value}
+      </strong>
     </div>
   );
 }

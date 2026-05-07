@@ -1,0 +1,194 @@
+.metricShell {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.metricShell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.metricShell[data-urgent="true"] {
+  border-color: rgba(255, 127, 116, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 0 1px rgba(255, 127, 116, 0.08);
+}
+
+.metricShell[data-impact="bagged"]::after {
+  background: radial-gradient(circle at 50% 58%, rgba(199, 243, 107, 0.24), transparent 62%);
+  animation: metricFlash 360ms cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+.metricShell[data-impact="remaining"]::after {
+  background: linear-gradient(180deg, rgba(255, 214, 145, 0.18), transparent 78%);
+  animation: metricSweep 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.metricShell[data-impact="fairies"]::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 247, 219, 0.28), transparent);
+  animation: fairyWash 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.metricShell[data-impact="critical"]::after {
+  background: linear-gradient(180deg, rgba(255, 127, 116, 0.22), rgba(255, 127, 116, 0.02));
+  animation: criticalAlarm 820ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.metricValue {
+  display: block;
+  transform-origin: left center;
+}
+
+.metricValue[data-impact="bagged"] {
+  animation: valueKick 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.metricValue[data-impact="remaining"] {
+  animation: valueDip 320ms cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+.metricValue[data-impact="fairies"] {
+  animation: valueLift 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.metricValue[data-impact="critical"] {
+  animation: valueAlarm 820ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes metricFlash {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+
+  35% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes metricSweep {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -16%, 0);
+  }
+
+  35% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 16%, 0);
+  }
+}
+
+@keyframes fairyWash {
+  0% {
+    opacity: 0;
+    transform: translate3d(-16%, 0, 0);
+  }
+
+  30% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(16%, 0, 0);
+  }
+}
+
+@keyframes criticalAlarm {
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  24%,
+  70% {
+    opacity: 1;
+  }
+}
+
+@keyframes valueKick {
+  0% {
+    transform: translate3d(0, 8px, 0) scale(0.96);
+  }
+
+  55% {
+    transform: translate3d(0, -4px, 0) scale(1.06);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes valueDip {
+  0% {
+    transform: translate3d(0, -4px, 0);
+  }
+
+  50% {
+    transform: translate3d(0, 6px, 0) scale(0.98);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes valueLift {
+  0% {
+    transform: translate3d(0, 8px, 0) scale(0.98);
+    opacity: 0.72;
+  }
+
+  55% {
+    transform: translate3d(0, -6px, 0) scale(1.04);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes valueAlarm {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  20% {
+    transform: scale(1.04);
+  }
+
+  46% {
+    transform: scale(0.98);
+  }
+
+  72% {
+    transform: scale(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .metricShell::after,
+  .metricValue {
+    animation: none;
+    transition-duration: 0.01ms;
+  }
+}

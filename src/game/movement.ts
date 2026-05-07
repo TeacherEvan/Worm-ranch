@@ -36,12 +36,23 @@ function getPointerEscapeVector(world: GameWorld, worm: Worm) {
     return null;
   }
 
+  if (world.profile === "mobile" && !world.rushTriggered) {
+    return null;
+  }
+
   const dx = worm.x - world.pointer.x;
   const dy = worm.y - world.pointer.y;
   const distance = Math.hypot(dx, dy);
 
-  if (!Number.isFinite(distance) || distance === 0 || distance > world.rules.cursorThreatRadius) {
+  if (!Number.isFinite(distance) || distance > world.rules.cursorThreatRadius) {
     return null;
+  }
+
+  if (distance < 0.0001) {
+    return {
+      x: Math.cos(worm.direction),
+      y: Math.sin(worm.direction),
+    };
   }
 
   return {

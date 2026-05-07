@@ -28,6 +28,14 @@
   pointer-events: none;
 }
 
+.shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .shell[data-phase="introCountdown"]::before {
   opacity: 0.7;
   transform: scale(1);
@@ -53,6 +61,40 @@
 .shell[data-phase="resolved"]::before {
   opacity: 0.28;
   transform: scale(1.08);
+}
+
+.shell[data-feedback-cue="round-live"]::after {
+  background: linear-gradient(90deg, transparent 10%, rgba(199, 243, 107, 0.24) 48%, transparent 90%);
+  animation: stageSweep 700ms var(--ease-out-expo) both;
+}
+
+.shell[data-feedback-cue="rush-start"]::after {
+  background: radial-gradient(circle at 50% 62%, rgba(240, 126, 67, 0.26), transparent 52%);
+  animation: stageBurst 620ms var(--ease-out-expo) both;
+}
+
+.shell[data-feedback-cue="blink-armed"]::after {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 18px,
+      rgba(199, 243, 107, 0.14) 18px,
+      rgba(199, 243, 107, 0.14) 34px,
+      transparent 34px,
+      transparent 68px
+    );
+  animation: fenceSurge 620ms var(--ease-out-quart) both;
+}
+
+.shell[data-feedback-cue="final-outlaw"]::after {
+  background: radial-gradient(circle at 50% 50%, rgba(240, 126, 67, 0.28), transparent 58%);
+  animation: outlawFlare 760ms var(--ease-out-expo) both;
+}
+
+.shell[data-feedback-cue="clock-critical"]::after {
+  background: linear-gradient(180deg, rgba(255, 127, 116, 0.2), transparent 34%, rgba(255, 127, 116, 0.16));
+  animation: clockSurge 760ms var(--ease-out-quint) both;
 }
 
 .canvas {
@@ -97,6 +139,12 @@
   transform: translate3d(0, -2px, 0);
 }
 
+.shell[data-feedback-cue="round-live"] .statusPillActive,
+.shell[data-feedback-cue="blink-armed"] .statusPillActive,
+.shell[data-feedback-cue="clock-critical"] .statusPillActive {
+  animation: activePillThrum 520ms var(--ease-out-quart) both;
+}
+
 .shell[data-phase="ghostFinale"] .statusPillActive {
   border-color: rgba(240, 126, 67, 0.46);
   box-shadow: inset 0 0 0 1px rgba(240, 126, 67, 0.12);
@@ -129,6 +177,11 @@
   gap: 10px;
   max-width: min(36ch, 48%);
   animation: copyReveal 340ms var(--ease-out-quart) both;
+}
+
+.shell[data-feedback-cue="rush-start"] .copyCluster,
+.shell[data-feedback-cue="final-outlaw"] .copyCluster {
+  animation: cueLunge 420ms var(--ease-out-quart) both;
 }
 
 .phaseBadge {
@@ -209,6 +262,113 @@
   }
 }
 
+@keyframes stageSweep {
+  0% {
+    opacity: 0;
+    transform: translate3d(-18%, 0, 0) skewX(-18deg);
+  }
+
+  30% {
+    opacity: 0.92;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(18%, 0, 0) skewX(-18deg);
+  }
+}
+
+@keyframes stageBurst {
+  0% {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+
+  38% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.16);
+  }
+}
+
+@keyframes fenceSurge {
+  0% {
+    opacity: 0;
+    transform: translate3d(-4%, 0, 0);
+  }
+
+  30% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(4%, 0, 0);
+  }
+}
+
+@keyframes outlawFlare {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  28% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes clockSurge {
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  22%,
+  68% {
+    opacity: 1;
+  }
+}
+
+@keyframes activePillThrum {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.98);
+  }
+
+  55% {
+    transform: translate3d(0, -3px, 0) scale(1.03);
+  }
+
+  100% {
+    transform: translate3d(0, -2px, 0) scale(1);
+  }
+}
+
+@keyframes cueLunge {
+  0% {
+    transform: translate3d(-14px, 10px, 0) scale(0.96);
+    opacity: 0.72;
+  }
+
+  55% {
+    transform: translate3d(0, -4px, 0) scale(1.02);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+}
+
 @container (max-width: 44rem) {
   .statusStrip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -281,6 +441,7 @@
 }
 
 .shell[data-motion="reduced"]::before,
+.shell[data-motion="reduced"]::after,
 .shell[data-motion="reduced"] .statusPill,
 .shell[data-motion="reduced"] .copyCluster {
   animation: none;
@@ -289,6 +450,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .shell::before,
+  .shell::after,
   .statusPill,
   .copyCluster {
     animation: none;

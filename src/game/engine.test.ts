@@ -164,6 +164,47 @@ describe("engine", () => {
     expect(world.fairies).toHaveLength(0);
   });
 
+  it("countdown touches do not leak mobile escape movement onto the first live frame", () => {
+    const world = createWorld("mobile", 800, 540, {
+      ...createDeterministicOptions(92),
+      rules: {
+        baseMaxSpeed: 1,
+        speedBonusPerCollect: 0,
+        directionChangeRate: 0,
+        crawlAmplitude: 0.5,
+        crawlPhaseIncrement: 0,
+      },
+    });
+    const worm = world.worms[0];
+
+    if (!worm) {
+      throw new Error("expected a worm");
+    }
+
+    worm.x = 400;
+    worm.y = 200;
+    worm.vx = 0;
+    worm.vy = 0;
+    worm.direction = 0;
+    worm.crawlPhase = Math.PI / 2;
+
+    triggerTouchRush(world, { x: 390, y: 200 });
+    stepWorld(world, world.countdownMs);
+
+    expect(world.rushTriggered).toBe(false);
+    expect(worm.x).toBe(400);
+    expect(worm.y).toBe(200);
+    expect(worm.vx).toBe(0);
+    expect(worm.vy).toBe(0);
+
+    stepWorld(world, 16);
+
+    expect(worm.vx).toBeCloseTo(1, 4);
+    expect(worm.vy).toBeCloseTo(0.5, 4);
+    expect(worm.x).toBeCloseTo(401, 4);
+    expect(worm.y).toBeCloseTo(200.5, 4);
+  });
+
   it("countdown blocks mobile rush arming", () => {
     const world = createWorld("mobile", 800, 540, createDeterministicOptions(53));
 
@@ -304,6 +345,40 @@ describe("engine", () => {
     expect(worm.vy).toBeCloseTo(0.5, 4);
     expect(worm.x).toBeCloseTo(401, 4);
     expect(worm.y).toBeCloseTo(200.5, 4);
+  });
+
+  it("worms directly under the pointer still escape instead of stalling", () => {
+    const world = createWorld("desktop", 800, 540, {
+      ...createDeterministicOptions(163),
+      rules: {
+        baseMaxSpeed: 1,
+        speedBonusPerCollect: 0,
+        directionChangeRate: 0,
+        crawlAmplitude: 0,
+        crawlPhaseIncrement: 0,
+        cursorThreatRadius: 140,
+        cursorEscapeMultiplier: 2.2,
+      },
+    });
+    const worm = world.worms[0];
+
+    if (!worm) {
+      throw new Error("expected a worm");
+    }
+
+    startRound(world);
+
+    worm.x = 400;
+    worm.y = 200;
+    worm.direction = Math.PI / 2;
+    setPointer(world, { x: 400, y: 200 });
+
+    stepWorld(world, 16);
+
+    expect(worm.vx).toBeCloseTo(0, 4);
+    expect(worm.vy).toBeCloseTo(2.2, 4);
+    expect(worm.x).toBeCloseTo(400, 4);
+    expect(worm.y).toBeCloseTo(202.2, 4);
   });
 
   it("desktop captures add 0.1 speed and unlock exactly one blink charge at 50 captures", () => {
