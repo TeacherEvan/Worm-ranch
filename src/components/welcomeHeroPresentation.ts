@@ -28,8 +28,8 @@ export type WelcomeHeroPresentationOptions = {
 const HERO_VARIANTS: Record<WelcomeHeroLayout, WelcomeHeroVariant> = {
   desktop: {
     layout: "desktop",
-    src: "/art/worm-ranch-launch-poster.png",
-    introVideoSrc: "/art/worm-ranch-launch-intro.mp4",
+    src: "/art/welcome-memory-desktop.webp",
+    introVideoSrc: null,
     imageObjectPosition: "34% 46%",
     videoObjectPosition: "34% 46%",
     cropIntent: "preserve-rider-silhouette-and-copy-safe-zone",
@@ -38,8 +38,8 @@ const HERO_VARIANTS: Record<WelcomeHeroLayout, WelcomeHeroVariant> = {
   },
   mobile: {
     layout: "mobile",
-    src: "/art/worm-ranch-launch-poster.png",
-    introVideoSrc: "/art/worm-ranch-launch-intro.mp4",
+    src: "/art/welcome-memory-mobile.webp",
+    introVideoSrc: null,
     imageObjectPosition: "58% 22%",
     videoObjectPosition: "56% 20%",
     cropIntent: "preserve-rider-silhouette-and-copy-safe-zone",

@@ -3,6 +3,7 @@ import {
   getWelcomeLaunchLoaderPhase,
   getWelcomeLaunchLoaderProgress,
   getNextWelcomeLaunchLoaderDisplayProgress,
+  shouldShowWelcomeLaunchLoader,
   type WelcomeLaunchLoaderSnapshot,
 } from "./welcomeLaunchLoader";
 
@@ -43,6 +44,21 @@ describe("welcomeLaunchLoader", () => {
     expect(getWelcomeLaunchLoaderProgress(snapshot)).toBe(18);
   });
 
+  it("marks the image-only launch path ready once the poster has loaded", () => {
+    const snapshot = createSnapshot({
+      posterLoaded: true,
+      introVideoExpected: false,
+      launchMediaState: "image",
+    });
+
+    expect(getWelcomeLaunchLoaderPhase(snapshot)).toMatchObject({
+      title: "Gate ready",
+      detail: "All ranch glass locked. Step through when ready.",
+    });
+    expect(getWelcomeLaunchLoaderProgress(snapshot)).toBe(100);
+    expect(shouldShowWelcomeLaunchLoader(snapshot)).toBe(false);
+  });
+
   it("advances as poster and video resources become ready", () => {
     expect(getWelcomeLaunchLoaderProgress(createSnapshot({ posterLoaded: true }))).toBe(52);
     expect(
@@ -55,18 +71,6 @@ describe("welcomeLaunchLoader", () => {
   it("switches to a release phase once the launch media is handing off or settled", () => {
     expect(getWelcomeLaunchLoaderPhase(createSnapshot({ posterLoaded: true, launchMediaState: "handoff" }))).toMatchObject({
       title: "Dropping the blast shield",
-    });
-    expect(
-      getWelcomeLaunchLoaderPhase(
-        createSnapshot({
-          posterLoaded: true,
-          reducedMotion: true,
-          introVideoExpected: false,
-          launchMediaState: "image",
-        }),
-      ),
-    ).toMatchObject({
-      title: "Gate ready",
     });
   });
 
