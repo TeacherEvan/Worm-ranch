@@ -2,6 +2,7 @@
 
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import styles from "./GameStage.module.css";
+import badgeStyles from "./GameStagePhaseBadge.module.css";
 import {
   areSummariesEqual,
   createInitialSummary,
@@ -371,6 +372,13 @@ export function GameStage({
       </div>
       <div className={styles.overlay}>
         <div key={copyKey} className={styles.copyCluster}>
+          <div
+            className={`${styles.phaseBadge} ${badgeStyles.phaseBadgeMotion}`}
+            data-phase-cue={motionCue}
+            data-phase-motion={reducedMotion ? "reduced" : "full"}
+          >
+            {stagePresentation.phaseChipLabel}
+          </div>
           <div className={styles.message}>
             <strong>{stagePresentation.copy.title}</strong>
             {stagePresentation.copy.body}

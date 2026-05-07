@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 
 import styles from "./WelcomeScreen.module.css";
@@ -7,6 +7,10 @@ import {
   getWelcomeHeroPresentation,
   getWelcomeHeroVariant,
 } from "./welcomeHeroPresentation";
+import {
+  getInitialWelcomeLaunchMediaState,
+  getNextWelcomeLaunchMediaState,
+} from "./welcomeLaunchMedia";
 
 type WelcomeMetric = {
   label: string;
@@ -42,6 +46,7 @@ export function WelcomeScreen({ metrics, onOpenGate, onRigTack, reducedMotion }:
   const presentation = getWelcomeHeroPresentation({ reducedMotion });
   const viewportWidth = useSyncExternalStore(subscribeToViewport, getViewportWidthSnapshot, () => undefined);
   const heroVariant = getWelcomeHeroVariant(viewportWidth);
+  const launchMediaKey = `${heroVariant.layout}:${reducedMotion ? "reduced" : "full"}`;
 
   return (
     <section className={styles.welcomeScreen}>
@@ -52,19 +57,7 @@ export function WelcomeScreen({ metrics, onOpenGate, onRigTack, reducedMotion }:
         data-safe-zone={heroVariant.textSafeZone}
         data-overlay-strength={heroVariant.overlayStrength}
       >
-        <div className={styles.welcomeVisual} aria-hidden="true">
-          <div className={styles.heroImageLayer}>
-            <Image
-              alt=""
-              aria-hidden="true"
-              className={styles.heroImage}
-              fill
-              preload
-              sizes={HERO_IMAGE_SIZES}
-              src={heroVariant.src}
-            />
-          </div>
-        </div>
+        <WelcomeHeroMedia key={launchMediaKey} heroVariant={heroVariant} reducedMotion={reducedMotion} />
         <div className={styles.heroCopy}>
           <p className={styles.heroDeck}>
             Cold light, loose dust, and one bad rider cutting across the pasture. Open the gate to step into it, or
@@ -89,5 +82,57 @@ export function WelcomeScreen({ metrics, onOpenGate, onRigTack, reducedMotion }:
         ))}
       </div>
     </section>
+  );
+}
+
+type WelcomeHeroMediaProps = {
+  heroVariant: ReturnType<typeof getWelcomeHeroVariant>;
+  reducedMotion: boolean;
+};
+
+function WelcomeHeroMedia({ heroVariant, reducedMotion }: WelcomeHeroMediaProps) {
+  const [launchMediaState, setLaunchMediaState] = useState(() =>
+    getInitialWelcomeLaunchMediaState({ reducedMotion, introVideoSrc: heroVariant.introVideoSrc }),
+  );
+  const showIntroVideo = launchMediaState !== "image" && Boolean(heroVariant.introVideoSrc);
+
+  return (
+    <div className={styles.welcomeVisual} aria-hidden="true" data-launch-media={launchMediaState}>
+      <div className={styles.heroImageLayer}>
+        <Image
+          alt=""
+          aria-hidden="true"
+          className={styles.heroImage}
+          fill
+          preload
+          sizes={HERO_IMAGE_SIZES}
+          src={heroVariant.src}
+        />
+      </div>
+      {showIntroVideo && heroVariant.introVideoSrc ? (
+        <div
+          className={styles.heroVideoLayer}
+          data-launch-state={launchMediaState}
+          onAnimationEnd={() => {
+            if (launchMediaState === "handoff") {
+              setLaunchMediaState((currentState) => getNextWelcomeLaunchMediaState(currentState, "handoff-finished"));
+            }
+          }}
+        >
+          <video
+            aria-hidden="true"
+            autoPlay
+            className={styles.heroVideo}
+            muted
+            onEnded={() => setLaunchMediaState((currentState) => getNextWelcomeLaunchMediaState(currentState, "video-ended"))}
+            onError={() => setLaunchMediaState((currentState) => getNextWelcomeLaunchMediaState(currentState, "video-error"))}
+            playsInline
+            poster={heroVariant.src}
+            preload="metadata"
+            src={heroVariant.introVideoSrc}
+          />
+        </div>
+      ) : null}
+    </div>
   );
 }

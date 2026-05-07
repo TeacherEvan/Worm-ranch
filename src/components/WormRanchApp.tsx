@@ -5,7 +5,6 @@ import styles from "./WormRanchApp.module.css";
 import { GameStage } from "@/components/GameStage";
 import { HomeScreen } from "@/components/HomeScreen";
 import { ResultsScreen } from "@/components/ResultsScreen";
-import { SettingsScreen } from "@/components/SettingsScreen";
 import { WormRanchInstallPrompt } from "@/components/WormRanchInstallPrompt";
 import { WormRanchGameExit } from "@/components/WormRanchGameExit";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
@@ -325,16 +324,69 @@ export function WormRanchApp() {
       )}
 
       {screen === "settings" && (
-        <SettingsScreen
-          displayMode={settings.displayMode}
-          reducedMotion={settings.reducedMotion}
-          analyticsEnabled={settings.analyticsEnabled}
-          onDisplayModeChange={(value) => updateSetting("displayMode", value)}
-          onReducedMotionChange={(value) => updateSetting("reducedMotion", value)}
-          onAnalyticsEnabledChange={(value) => updateSetting("analyticsEnabled", value)}
-          onBack={() => setScreen("home")}
-          onStart={beginRun}
-        />
+        <section className={styles.panel}>
+          <h2>Ranch settings</h2>
+          <div className={styles.settingsGrid}>
+            <div className={styles.toggleRow}>
+              <strong>Display mode</strong>
+              <label>
+                <input
+                  type="radio"
+                  name="displayMode"
+                  checked={settings.displayMode === "auto"}
+                  onChange={() => updateSetting("displayMode", "auto")}
+                />
+                Auto scout
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="displayMode"
+                  checked={settings.displayMode === "desktop"}
+                  onChange={() => updateSetting("displayMode", "desktop")}
+                />
+                Force desktop corral
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="displayMode"
+                  checked={settings.displayMode === "mobile"}
+                  onChange={() => updateSetting("displayMode", "mobile")}
+                />
+                Force pocket corral
+              </label>
+            </div>
+
+            <div className={styles.toggleRow}>
+              <strong>Preferences</strong>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={settings.reducedMotion}
+                  onChange={(event) => updateSetting("reducedMotion", event.target.checked)}
+                />
+                Reduced motion
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={settings.analyticsEnabled}
+                  onChange={(event) => updateSetting("analyticsEnabled", event.target.checked)}
+                />
+                Silent analytics
+              </label>
+            </div>
+          </div>
+          <div className={styles.actions}>
+            <button className={styles.primary} onClick={() => setScreen("home")}>
+              Back to yard
+            </button>
+            <button className={styles.secondary} onClick={beginRun}>
+              Ride this setup
+            </button>
+          </div>
+        </section>
       )}
 
       {screen === "game" && (

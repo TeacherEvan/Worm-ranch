@@ -8,6 +8,7 @@ export type WelcomeHeroTextSafeZone = "right-copy-column" | "lower-copy-band";
 export type WelcomeHeroVariant = {
   layout: WelcomeHeroLayout;
   src: string;
+  introVideoSrc: string | null;
   cropIntent: WelcomeHeroCropIntent;
   overlayStrength: WelcomeHeroOverlayStrength;
   textSafeZone: WelcomeHeroTextSafeZone;
@@ -25,14 +26,16 @@ export type WelcomeHeroPresentationOptions = {
 const HERO_VARIANTS: Record<WelcomeHeroLayout, WelcomeHeroVariant> = {
   desktop: {
     layout: "desktop",
-    src: "/art/welcome-memory-desktop.webp",
+    src: "/art/worm-ranch-launch-poster.png",
+    introVideoSrc: "/art/worm-ranch-launch-intro.mp4",
     cropIntent: "preserve-rider-silhouette-and-copy-safe-zone",
     overlayStrength: "strong",
     textSafeZone: "right-copy-column",
   },
   mobile: {
     layout: "mobile",
-    src: "/art/welcome-memory-mobile.webp",
+    src: "/art/worm-ranch-launch-poster.png",
+    introVideoSrc: "/art/worm-ranch-launch-intro.mp4",
     cropIntent: "preserve-rider-silhouette-and-copy-safe-zone",
     overlayStrength: "strong",
     textSafeZone: "lower-copy-band",

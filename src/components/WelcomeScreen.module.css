@@ -188,7 +188,26 @@
   inset: 0;
 }
 
+.heroVideoLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  animation: introMediaReveal 360ms var(--ease-out-quart) both;
+}
+
+.heroVideoLayer[data-launch-state="handoff"] {
+  animation: introMediaFadeOut 240ms var(--ease-out-quart) both;
+}
+
 .heroImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1.02) contrast(1.03);
+}
+
+.heroVideo {
   display: block;
   width: 100%;
   height: 100%;
@@ -200,7 +219,15 @@
   object-position: 34% 46%;
 }
 
+.heroCard[data-safe-zone="right-copy-column"] .heroVideo {
+  object-position: 34% 46%;
+}
+
 .heroCard[data-crop-intent="preserve-rider-silhouette-and-copy-safe-zone"][data-safe-zone="lower-copy-band"] .heroImage {
+  object-position: center 18%;
+}
+
+.heroCard[data-crop-intent="preserve-rider-silhouette-and-copy-safe-zone"][data-safe-zone="lower-copy-band"] .heroVideo {
   object-position: center 18%;
 }
 
@@ -247,6 +274,26 @@
 
   to {
     opacity: 1;
+  }
+}
+
+@keyframes introMediaReveal {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes introMediaFadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
   }
 }
 
@@ -359,7 +406,8 @@
 :global([data-motion="reduced"]) .welcomeScreen,
 :global([data-motion="reduced"]) .heroCopy > *,
 :global([data-motion="reduced"]) .metricCard,
-:global([data-motion="reduced"]) .heroCard[data-ambient-motion="enabled"] .welcomeVisual::after {
+:global([data-motion="reduced"]) .heroCard[data-ambient-motion="enabled"] .welcomeVisual::after,
+:global([data-motion="reduced"]) .heroVideoLayer {
   animation: none;
 }
 

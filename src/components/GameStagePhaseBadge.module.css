@@ -1,0 +1,94 @@
+.phaseBadgeMotion {
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translate3d(0, 0, 0);
+  transition:
+    transform 220ms var(--ease-out-quart),
+    border-color 220ms var(--ease-out-quart),
+    background-color 220ms var(--ease-out-quart),
+    color 220ms var(--ease-out-quart),
+    box-shadow 220ms var(--ease-out-quart);
+}
+
+.phaseBadgeMotion[data-phase-cue="round-live"] {
+  animation: badgePop 340ms var(--ease-out-quint) both;
+  border-color: rgba(199, 243, 107, 0.4);
+  background: rgba(22, 38, 24, 0.84);
+  box-shadow: 0 0 0 1px rgba(199, 243, 107, 0.12);
+}
+
+.phaseBadgeMotion[data-phase-cue="rush-start"] {
+  animation: badgePop 380ms var(--ease-out-quint) both;
+  border-color: rgba(240, 126, 67, 0.42);
+  background: rgba(44, 22, 16, 0.84);
+  color: color-mix(in srgb, var(--text) 78%, rgba(240, 126, 67, 1) 22%);
+  box-shadow: 0 0 0 1px rgba(240, 126, 67, 0.14);
+}
+
+.phaseBadgeMotion[data-phase-cue="blink-armed"] {
+  animation: badgePop 360ms var(--ease-out-quint) both;
+  border-color: rgba(199, 243, 107, 0.46);
+  background: rgba(24, 35, 20, 0.84);
+  box-shadow: 0 0 0 1px rgba(199, 243, 107, 0.16);
+}
+
+.phaseBadgeMotion[data-phase-cue="final-outlaw"] {
+  animation: badgePop 400ms var(--ease-out-quint) both;
+  border-color: rgba(240, 126, 67, 0.5);
+  background: rgba(53, 24, 17, 0.88);
+  color: color-mix(in srgb, var(--text) 72%, rgba(240, 126, 67, 1) 28%);
+  box-shadow: 0 0 0 1px rgba(240, 126, 67, 0.18);
+}
+
+.phaseBadgeMotion[data-phase-cue="clock-critical"] {
+  animation: badgeAlarm 420ms var(--ease-out-quart) both;
+  border-color: rgba(255, 127, 116, 0.52);
+  background: rgba(59, 24, 24, 0.86);
+  color: color-mix(in srgb, var(--text) 68%, rgba(255, 127, 116, 1) 32%);
+  box-shadow: 0 0 0 1px rgba(255, 127, 116, 0.18);
+}
+
+.phaseBadgeMotion[data-phase-motion="reduced"] {
+  animation: none;
+  transform: none;
+}
+
+@keyframes badgePop {
+  0% {
+    transform: translate3d(0, 8px, 0) scale(0.96);
+  }
+
+  58% {
+    transform: translate3d(0, -2px, 0) scale(1.03);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes badgeAlarm {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.98);
+  }
+
+  34% {
+    transform: translate3d(0, -1px, 0) scale(1.04);
+  }
+
+  70% {
+    transform: translate3d(0, 0, 0) scale(0.99);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phaseBadgeMotion {
+    animation: none;
+    transform: none;
+    transition-duration: 0.01ms;
+  }
+}
