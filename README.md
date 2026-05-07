@@ -4,10 +4,11 @@ Worm Ranch is a display-aware chase toy built with Next.js. The game keeps separ
 
 ## Current Experience
 
-- Welcome opens with the launch intro video, then hands off to the poster image behind a themed loader with real progress.
-- Home stays title-first with essential actions only: start, settings, back, and the optional install prompt.
-- Mobile rounds keep a persistent `Beat bell` timer in the HUD so the countdown feels like pressure, not buried admin data.
-- Early-round touch play is slightly easier with a larger worm target radius and a slower opening speed.
+- Welcome stays separate from gameplay theming; gameplay backdrops now belong to the in-round field, not the startup flow.
+- Gameplay runs advance through deterministic numbered levels with backdrop-by-level selection instead of random round art.
+- Each new level raises pressure through profile-specific rule overrides such as more worms, shorter clocks, faster movement, or stricter mobile bag rules.
+- Results now show the level that was just played, and replay advances to the next gameplay level.
+- Mobile rounds still keep a persistent `Beat bell` timer in the HUD so the countdown feels like pressure, not buried admin data.
 
 ## Development
 

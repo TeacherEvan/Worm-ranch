@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { GAMEPLAY_BACKDROP_URLS, getNextGameplayBackdropRotation, type GameplayBackdropRotation } from "./gameStageBackdropRotation";
+import { GAMEPLAY_BACKDROP_URLS, getGameplayBackdropUrlForLevel } from "./gameStageBackdropRotation";
 
 const COMPONENT_DIR = dirname(fileURLToPath(import.meta.url));
 
@@ -16,35 +16,15 @@ describe("gameStageBackdropRotation", () => {
     }
   });
 
-  it("cycles through every gameplay backdrop before reshuffling and avoids immediate repeats between rounds", () => {
-    let state: GameplayBackdropRotation | null = null;
-    const random = createDeterministicRandom([0.81, 0.13, 0.54, 0.22, 0.67, 0.41, 0.09, 0.73]);
+  it("maps gameplay levels to deterministic backdrops and only loops after the full theme set", () => {
+    const openingBackdrop = getGameplayBackdropUrlForLevel(1);
+    const secondBackdrop = getGameplayBackdropUrlForLevel(2);
+    const wrappedBackdrop = getGameplayBackdropUrlForLevel(GAMEPLAY_BACKDROP_URLS.length + 1);
 
-    const seen: string[] = [];
-
-    for (let round = 0; round < GAMEPLAY_BACKDROP_URLS.length; round += 1) {
-      state = getNextGameplayBackdropRotation(state, random);
-      seen.push(state.activeBackdropUrl);
-    }
-
-    expect(new Set(seen)).toEqual(new Set(GAMEPLAY_BACKDROP_URLS));
-    expect(seen[0]).not.toBe(seen[1]);
-    expect(seen[1]).not.toBe(seen[2]);
-
-    const previousBackdrop = state?.activeBackdropUrl ?? null;
-    state = getNextGameplayBackdropRotation(state, createDeterministicRandom([0, 0, 0]));
-
-    expect(state.activeBackdropUrl).not.toBe(previousBackdrop);
-    expect(GAMEPLAY_BACKDROP_URLS).toContain(state.activeBackdropUrl);
+    expect(openingBackdrop).toBe(GAMEPLAY_BACKDROP_URLS[0]);
+    expect(secondBackdrop).toBe(GAMEPLAY_BACKDROP_URLS[1]);
+    expect(getGameplayBackdropUrlForLevel(1)).toBe(openingBackdrop);
+    expect(wrappedBackdrop).toBe(openingBackdrop);
+    expect(getGameplayBackdropUrlForLevel(0)).toBe(openingBackdrop);
   });
 });
-
-function createDeterministicRandom(sequence: number[]) {
-  let index = 0;
-
-  return () => {
-    const value = sequence[index] ?? 0;
-    index += 1;
-    return value;
-  };
-}

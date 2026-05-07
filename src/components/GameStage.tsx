@@ -1,16 +1,10 @@
 "use client";
 
-import { type CSSProperties, useEffect, useId, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useId, useMemo, useRef, useState } from "react";
 import styles from "./GameStage.module.css";
 import badgeStyles from "./GameStagePhaseBadge.module.css";
 import { getKeyboardStatus, getKeyboardTargetId, type KeyboardTargetMode } from "@/components/gameStageKeyboard";
-import {
-  areSummariesEqual,
-  createInitialSummary,
-  renderStage,
-  stepFeedback,
-  type StageFeedback,
-} from "@/components/gameStagePresentation";
+import { areSummariesEqual, renderStage, stepFeedback, type StageFeedback } from "@/components/gameStagePresentation";
 import { getMotionFeedback, type StageMotionCue } from "@/components/gameStageMotion";
 import { getStagePresentation } from "@/components/gameStagePhasePresentation";
 import { getFairyLifecycleEvents, getRoundEndedDetails, getRoundTransitionEvents } from "@/lib/analytics";
@@ -25,11 +19,13 @@ import {
   triggerTouchRush,
 } from "@/game/engine";
 import type { DisplayProfile } from "@/game/detection";
+import { getGameplayLevelRules } from "@/game/levels";
 import type { ActionResult, FairyState, GameSummary, RoundResult } from "@/game/types";
 import type { EventName } from "@/lib/logger";
 
 type GameStageProps = {
   backdropUrl?: string | null;
+  level: number;
   profile: DisplayProfile;
   reducedMotion: boolean;
   onSummaryChange: (summary: GameSummary) => void;
@@ -41,14 +37,16 @@ const SUMMARY_INTERVAL_MS = 120;
 
 export function GameStage({
   backdropUrl = null,
+  level,
   profile,
   reducedMotion,
   onSummaryChange,
   onRoundEnd,
   onEvent,
 }: GameStageProps) {
+  const levelRules = useMemo(() => getGameplayLevelRules(profile, level), [level, profile]);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const worldRef = useRef(createWorld(profile, 800, 540));
+  const worldRef = useRef(createWorld(profile, 800, 540, { rules: levelRules }));
   const frameRef = useRef<number | null>(null);
   const summaryRef = useRef(0);
   const feedbackRef = useRef<StageFeedback[]>([]);
@@ -67,13 +65,13 @@ export function GameStage({
   const onEventRef = useRef(onEvent);
   const keyboardHelpId = useId();
   const keyboardStatusId = useId();
-  const [stageSummary, setStageSummary] = useState<GameSummary>(() => createInitialSummary(profile));
+  const [stageSummary, setStageSummary] = useState<GameSummary>(() => getSummary(createWorld(profile, 800, 540, { rules: levelRules })));
   const [keyboardTargetId, setKeyboardTargetId] = useState<string | null>(() => {
-    const initialWorld = createWorld(profile, 800, 540);
+    const initialWorld = createWorld(profile, 800, 540, { rules: levelRules });
     return getKeyboardTargetId(initialWorld, null, "first");
   });
   const [motionCue, setMotionCue] = useState<StageMotionCue>("none");
-  const stagePresentation = getStagePresentation(stageSummary, profile);
+  const stagePresentation = getStagePresentation(stageSummary, profile, level);
   const copyKey = stagePresentation.overlayKey;
   const keyboardStatus = getKeyboardStatus(stagePresentation.copy.title, stageSummary, keyboardTargetId);
 
@@ -125,7 +123,7 @@ export function GameStage({
   }, [reducedMotion, stageSummary]);
 
   useEffect(() => {
-    worldRef.current = createWorld(profile, 800, 540);
+    worldRef.current = createWorld(profile, 800, 540, { rules: levelRules });
     feedbackRef.current = [];
     finishedRef.current = false;
     lastTimestampRef.current = null;
@@ -260,6 +258,7 @@ export function GameStage({
         reducedMotionRef.current,
         feedbackRef.current,
         keyboardTargetRef.current,
+        level,
       );
       updateSummary();
 
@@ -399,6 +398,7 @@ export function GameStage({
       reducedMotionRef.current,
       feedbackRef.current,
       keyboardTargetRef.current,
+      level,
     );
     frameRef.current = window.requestAnimationFrame(loop);
 
@@ -424,7 +424,7 @@ export function GameStage({
         window.cancelAnimationFrame(frameRef.current);
       }
     };
-  }, [profile]);
+  }, [level, levelRules, profile]);
 
   return (
     <div

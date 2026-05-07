@@ -3,13 +3,14 @@ import styles from "./ResultsScreen.module.css";
 type ResultsScreenProps = {
   outcome: string;
   bagged: number;
+  level: number;
   leftLoose: number;
   note: string;
   onReplay: () => void;
   onReturnHome: () => void;
 };
 
-export function ResultsScreen({ outcome, bagged, leftLoose, note, onReplay, onReturnHome }: ResultsScreenProps) {
+export function ResultsScreen({ outcome, bagged, level, leftLoose, note, onReplay, onReturnHome }: ResultsScreenProps) {
   return (
     <section className={styles.shell} data-layout="compact-replay">
       <div className={styles.headlineRow}>
@@ -30,6 +31,10 @@ export function ResultsScreen({ outcome, bagged, leftLoose, note, onReplay, onRe
         <div className={styles.tallyItem}>
           <span className={styles.tallyLabel}>Outcome</span>
           <strong className={styles.tallyValue}>{outcome}</strong>
+        </div>
+        <div className={styles.tallyItem}>
+          <span className={styles.tallyLabel}>Level</span>
+          <strong className={styles.tallyValue}>{`Level ${level}`}</strong>
         </div>
         <div className={styles.tallyItem}>
           <span className={styles.tallyLabel}>Bagged</span>

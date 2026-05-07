@@ -1,5 +1,5 @@
 import type { DisplayProfile } from "@/game/detection";
-import { getProfileRules } from "@/game/rules";
+import { getGameplayLevelRules, normalizeGameplayLevel } from "@/game/levels";
 import type { GameSummary } from "@/game/types";
 
 type StatusItem = {
@@ -28,20 +28,24 @@ export type StagePresentation = {
   fieldBanner: string | null;
 };
 
-export function getPhaseLabel(profile: DisplayProfile, summary: GameSummary) {
-  return getStagePresentation(summary, profile).phaseLabel;
+export function getPhaseLabel(profile: DisplayProfile, summary: GameSummary, level = 1) {
+  return getStagePresentation(summary, profile, level).phaseLabel;
 }
 
-export function getPhaseChipLabel(profile: DisplayProfile, summary: GameSummary) {
-  return getStagePresentation(summary, profile).phaseChipLabel;
+export function getPhaseChipLabel(profile: DisplayProfile, summary: GameSummary, level = 1) {
+  return getStagePresentation(summary, profile, level).phaseChipLabel;
 }
 
-export function getStagePresentation(summary: GameSummary, profile: DisplayProfile = summary.profile): StagePresentation {
-  const rules = getProfileRules(profile);
+export function getStagePresentation(
+  summary: GameSummary,
+  profile: DisplayProfile = summary.profile,
+  level = 1,
+): StagePresentation {
+  const rules = getGameplayLevelRules(profile, level);
   const viewSummary = profile === summary.profile ? summary : { ...summary, profile };
   const phaseLabel = getPhaseLabelText(viewSummary);
   const phaseChipLabel = getPhaseChipText(viewSummary, rules);
-  const copy = getStageCopyData(viewSummary, phaseLabel);
+  const copy = getStageCopyData(viewSummary, phaseLabel, level, rules);
 
   return {
     phaseLabel,
@@ -86,7 +90,7 @@ function getPhaseLabelText(summary: GameSummary) {
   }
 }
 
-function getPhaseChipText(summary: GameSummary, rules: ReturnType<typeof getProfileRules>) {
+function getPhaseChipText(summary: GameSummary, rules: ReturnType<typeof getGameplayLevelRules>) {
   if (summary.phase === "introCountdown") {
     return "Countdown";
   }
@@ -120,7 +124,7 @@ function getPhaseChipText(summary: GameSummary, rules: ReturnType<typeof getProf
 
 function buildStatusItemsForSummary(
   summary: GameSummary,
-  rules: ReturnType<typeof getProfileRules>,
+  rules: ReturnType<typeof getGameplayLevelRules>,
 ): StatusItem[] {
   const isCountdown = summary.phase === "introCountdown";
   const isResolved = summary.phase === "resolved";
@@ -164,24 +168,36 @@ function buildStatusItemsForSummary(
     {
       id: "mechanic",
       label: summary.rushTriggered ? "Rush" : "Bag rule",
-      value: isCountdown ? "waiting" : summary.rushTriggered ? "live" : `${rules.touchBurstsToCapture} taps`,
+      value:
+        isCountdown
+          ? "waiting"
+          : summary.rushTriggered
+            ? `${rules.touchBurstsToCapture} taps live`
+            : `${rules.touchBurstsToCapture} taps`,
       active: !isCountdown && !isResolved,
     },
   ];
 }
 
-function getStageCopyData(summary: GameSummary, phaseLabel: string): StageCopy {
+function getStageCopyData(
+  summary: GameSummary,
+  phaseLabel: string,
+  level: number,
+  rules: ReturnType<typeof getGameplayLevelRules>,
+): StageCopy {
+  const title = `Level ${normalizeGameplayLevel(level)} · ${phaseLabel}`;
+
   if (summary.phase === "introCountdown") {
     if (summary.profile === "mobile") {
       return {
-        title: phaseLabel,
+        title,
         body: "Bell is up. The herd breaks when the countdown clears.",
         hint: "Pick your lane before the first tap.",
       };
     }
 
     return {
-      title: phaseLabel,
+      title,
       body: "The corral is lit, but the herd does not break until the bell clears.",
       hint:
         summary.profile === "desktop"
@@ -193,14 +209,14 @@ function getStageCopyData(summary: GameSummary, phaseLabel: string): StageCopy {
   if (summary.phase === "resolved") {
     if (summary.profile === "mobile") {
       return {
-        title: phaseLabel,
+        title,
         body: "Round closed. Check the tally.",
         hint: "Bagged count and escape state are final.",
       };
     }
 
     return {
-      title: phaseLabel,
+        title,
       body: "The round has closed and the ranch is settling.",
       hint: "Check the tally for the final bagged count and escape state.",
     };
@@ -209,7 +225,7 @@ function getStageCopyData(summary: GameSummary, phaseLabel: string): StageCopy {
   if (summary.profile === "desktop") {
     if (summary.phase === "ghostFinale") {
       return {
-        title: phaseLabel,
+        title,
         body: "The last outlaw only bolts now.",
         hint: "You needed the pen fuller before it turned ghost.",
       };
@@ -217,14 +233,14 @@ function getStageCopyData(summary: GameSummary, phaseLabel: string): StageCopy {
 
     if (summary.phase === "blinkBand") {
       return {
-        title: phaseLabel,
+        title,
         body: "Every loose worm gets one blink before the bag sticks.",
         hint: "Watch for the pale halo, then click again after the flash.",
       };
     }
 
     return {
-      title: phaseLabel,
+      title,
       body: "Mouse roundup is live and every bagged worm spikes the herd.",
       hint: "Sweep, click, recover, then cut back in.",
     };
@@ -232,7 +248,7 @@ function getStageCopyData(summary: GameSummary, phaseLabel: string): StageCopy {
 
   if (summary.profile === "mobile" && summary.phase === "ghostFinale") {
     return {
-      title: phaseLabel,
+      title,
       body: "The last outlaw only bolts now.",
       hint: "Cut off the lane and finish the bag.",
     };
@@ -240,27 +256,27 @@ function getStageCopyData(summary: GameSummary, phaseLabel: string): StageCopy {
 
   if (summary.rushTriggered) {
     return {
-      title: phaseLabel,
+      title,
       body:
         summary.profile === "mobile"
-          ? "Tagged worms need one more clean tap."
+          ? `Tagged worms now need ${rules.touchBurstsToCapture} clean taps total.`
           : "A branded worm only needs one more clean tap.",
       hint:
         summary.profile === "mobile"
-          ? "Stay on that same worm and cash it out fast."
+          ? `Stay on that same worm until all ${rules.touchBurstsToCapture} taps land.`
           : "Stay on that same worm and finish fast.",
     };
   }
 
   return {
-    title: phaseLabel,
+    title,
     body:
       summary.profile === "mobile"
-        ? "First touch wakes the herd. Tap once to brand, again to bag."
+        ? `First touch wakes the herd. Tagged worms need ${rules.touchBurstsToCapture} clean taps total.`
         : "The first touch wakes the herd. One clean tap brands and the next one bags.",
     hint:
       summary.profile === "mobile"
-        ? "Wake one worm, stay on it, and finish fast."
+        ? `Wake one worm, stay on it, and land all ${rules.touchBurstsToCapture} taps.`
         : "Wake them up, pick one worm, and finish the second tap before drifting off.",
   };
 }

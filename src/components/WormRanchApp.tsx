@@ -7,16 +7,18 @@ import { HomeScreen } from "@/components/HomeScreen";
 import { ResultsScreen } from "@/components/ResultsScreen";
 import { WormRanchInstallPrompt } from "@/components/WormRanchInstallPrompt";
 import { WormRanchGameExit } from "@/components/WormRanchGameExit";
-import {
-  GAMEPLAY_BACKDROP_URLS,
-  getNextGameplayBackdropRotation,
-  type GameplayBackdropRotation,
-} from "@/components/gameStageBackdropRotation";
 import { SettingsScreen } from "@/components/SettingsScreen";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { WormRanchShellHeader } from "@/components/WormRanchShellHeader";
+import {
+  getGameplayRunPlan,
+  getInitialGameplayRunPlan,
+  getGameplayRoundTransition,
+  getPlayedRoundLevelResult,
+} from "@/components/wormRanchLevelFlow";
 import { areDisplaySnapshotsEqual, getProfileDetectedDetails } from "@/lib/analytics";
 import { detectDisplayProfile, type DisplayProfile, type DisplaySnapshot } from "@/game/detection";
+import { getGameplayLevelRules } from "@/game/levels";
 import { PROFILE_RULES } from "@/game/rules";
 import {
   areSettingsEqual,
@@ -35,18 +37,19 @@ type DeferredInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 };
+type PlayedRoundResult = ReturnType<typeof getPlayedRoundLevelResult>;
 
-const MOBILE_ROUNDUP_COPY = "The first touch wakes the herd. Land one clean tap to tag a worm, then another on that same worm to bag it.";
 const FAIRY_LIFT_COPY = "Clean catches still lift into fairies and drift out of the ranch glow.";
 
 export function WormRanchApp() {
   const [screen, setScreen] = useState<AppScreen>("welcome");
   const [detectedDisplay, setDetectedDisplay] = useState<DisplaySnapshot | null>(null);
   const [runProfile, setRunProfile] = useState<DisplayProfile | null>(null);
-  const [result, setResult] = useState<RoundResult | null>(null);
+  const [result, setResult] = useState<PlayedRoundResult | null>(null);
   const [installPromptEvent, setInstallPromptEvent] = useState<DeferredInstallPromptEvent | null>(null);
   const [installPromptDismissed, setInstallPromptDismissed] = useState(false);
-  const [gameplayBackdropRotation, setGameplayBackdropRotation] = useState<GameplayBackdropRotation | null>(null);
+  const [currentLevel, setCurrentLevel] = useState(getInitialGameplayRunPlan().level);
+  const [nextRunPlan, setNextRunPlan] = useState(getInitialGameplayRunPlan);
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
   const [logger] = useState(() => createSilentLogger("/api/events"));
   const hasLoggedOpenRef = useRef(false);
@@ -70,6 +73,7 @@ export function WormRanchApp() {
   const settingsRef = useRef(settings);
   const effectiveProfileRef = useRef<DisplayProfile>(effectiveProfile);
   const runProfileRef = useRef<DisplayProfile | null>(runProfile);
+  const currentLevelRef = useRef(currentLevel);
   const detectedDisplayRef = useRef<DisplaySnapshot | null>(null);
 
   const logEvent = useCallback(
@@ -109,7 +113,9 @@ export function WormRanchApp() {
   );
 
   const handleRoundEnd = useCallback((roundResult: RoundResult) => {
-    setResult(roundResult);
+    const roundTransition = getGameplayRoundTransition(currentLevelRef.current, roundResult);
+    setResult(roundTransition.playedRoundResult);
+    setNextRunPlan(roundTransition.nextRunPlan);
     setScreen("results");
   }, []);
 
@@ -134,16 +140,13 @@ export function WormRanchApp() {
   }, [runProfile]);
 
   useEffect(() => {
+    currentLevelRef.current = currentLevel;
+  }, [currentLevel]);
+
+  useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
-
-    const warmedBackdropImages = GAMEPLAY_BACKDROP_URLS.map((backdropUrl) => {
-      const image = new window.Image();
-      image.decoding = "async";
-      image.src = backdropUrl;
-      return image;
-    });
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => undefined);
@@ -168,10 +171,6 @@ export function WormRanchApp() {
     window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
-      for (const image of warmedBackdropImages) {
-        image.src = "";
-      }
-
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt as EventListener);
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
@@ -263,51 +262,33 @@ export function WormRanchApp() {
 
   const beginRun = async () => {
     const nextRunProfile = effectiveProfile;
+    const runPlan = screenRef.current === "results" ? nextRunPlan : getInitialGameplayRunPlan();
+    const nextRunLevel = runPlan.level;
     const nextSessionId = crypto.randomUUID();
-    const nextGameplayBackdropRotation = getNextGameplayBackdropRotation(gameplayBackdropRotation);
+    const nextBackdropUrl = runPlan.backdropUrl;
 
-    await preloadGameplayBackdrop(nextGameplayBackdropRotation.activeBackdropUrl);
+    await preloadGameplayBackdrop(nextBackdropUrl);
 
     sessionIdRef.current = nextSessionId;
     runProfileRef.current = nextRunProfile;
+    currentLevelRef.current = nextRunLevel;
 
-
-function preloadGameplayBackdrop(backdropUrl: string) {
-  if (typeof window === "undefined") {
-    return Promise.resolve();
-  }
-
-  return new Promise<void>((resolve) => {
-    const image = new window.Image();
-    let settled = false;
-
-    const finish = () => {
-      if (settled) {
-        return;
-      }
-
-      settled = true;
-      resolve();
-    };
-
-    image.decoding = "async";
-    image.onload = finish;
-    image.onerror = finish;
-    image.src = backdropUrl;
-
-    if (image.complete) {
-      finish();
-      return;
-    }
-
-    image.decode?.().then(finish, finish);
-  });
-}
-    setGameplayBackdropRotation(nextGameplayBackdropRotation);
+    setCurrentLevel(nextRunLevel);
+    setNextRunPlan(runPlan);
     setSessionId(nextSessionId);
     setRunProfile(nextRunProfile);
     setResult(null);
     setScreen("game");
+  };
+
+  const returnHome = () => {
+    const initialRunPlan = getInitialGameplayRunPlan();
+
+    currentLevelRef.current = initialRunPlan.level;
+    setCurrentLevel(initialRunPlan.level);
+    setNextRunPlan(initialRunPlan);
+    setResult(null);
+    setScreen("home");
   };
 
   const updateSetting = <K extends keyof SettingsState>(key: K, value: SettingsState[K]) => {
@@ -317,7 +298,11 @@ function preloadGameplayBackdrop(backdropUrl: string) {
   const shellProfile = screen === "game" || screen === "results" ? runProfile ?? effectiveProfile : effectiveProfile;
   const shellScanProfile: DisplayProfile | "scanning" =
     screen === "game" || screen === "results" ? shellProfile : detectedDisplay?.profile ?? "scanning";
-  const profileRules = PROFILE_RULES[shellProfile];
+  const activeShellLevel = screen === "results" && result ? result.level : currentLevel;
+  const profileRules =
+    screen === "game" || screen === "results"
+      ? getGameplayLevelRules(shellProfile, activeShellLevel)
+      : PROFILE_RULES[shellProfile];
   const installPromptVisible = installPromptEvent !== null && !installPromptDismissed;
   const welcomeMetrics = [
     { label: "Pasture", value: "moonlit" },
@@ -383,15 +368,16 @@ function preloadGameplayBackdrop(backdropUrl: string) {
       {screen === "game" && (
         <section className={`${styles.screen} ${styles.gameScreen}`}>
           <GameStage
-            backdropUrl={gameplayBackdropRotation?.activeBackdropUrl ?? null}
+            backdropUrl={getGameplayRunPlan(currentLevel).backdropUrl}
             key={sessionId}
+            level={currentLevel}
             profile={runProfile ?? effectiveProfile}
             reducedMotion={settings.reducedMotion}
             onSummaryChange={() => undefined}
             onEvent={handleStageEvent}
             onRoundEnd={handleRoundEnd}
           />
-          <WormRanchGameExit profile={runProfile ?? effectiveProfile} onLeave={() => setScreen("home")} />
+          <WormRanchGameExit profile={runProfile ?? effectiveProfile} onLeave={returnHome} />
         </section>
       )}
 
@@ -399,14 +385,47 @@ function preloadGameplayBackdrop(backdropUrl: string) {
         <ResultsScreen
           outcome={formatReason(result.reason)}
           bagged={result.collected}
+          level={result.level}
           leftLoose={result.remaining}
-          note={`${FAIRY_LIFT_COPY} On desktop, the last outlaw is designed to escape. On mobile, ${MOBILE_ROUNDUP_COPY.toLowerCase()}`}
+          note={getResultsNote(result.level)}
           onReplay={beginRun}
-          onReturnHome={() => setScreen("home")}
+          onReturnHome={returnHome}
         />
       )}
     </main>
   );
+}
+
+function preloadGameplayBackdrop(backdropUrl: string) {
+  if (typeof window === "undefined") {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve) => {
+    const image = new window.Image();
+    let settled = false;
+
+    const finish = () => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      resolve();
+    };
+
+    image.decoding = "async";
+    image.onload = finish;
+    image.onerror = finish;
+    image.src = backdropUrl;
+
+    if (image.complete) {
+      finish();
+      return;
+    }
+
+    image.decode?.().then(finish, finish);
+  });
 }
 
 function formatReason(reason: RoundResult["reason"]) {
@@ -419,6 +438,13 @@ function formatReason(reason: RoundResult["reason"]) {
   }
 
   return "Clock ran dry";
+}
+
+function getResultsNote(level: number) {
+  const mobileRules = getGameplayLevelRules("mobile", level);
+  const tapLabel = mobileRules.touchBurstsToCapture === 1 ? "tap" : "taps";
+
+  return `${FAIRY_LIFT_COPY} On desktop, the last outlaw is designed to escape. On mobile, the first touch wakes the herd. Tagged worms need ${mobileRules.touchBurstsToCapture} clean ${tapLabel} total.`;
 }
 
 function isDeferredInstallPromptEvent(event: Event): event is DeferredInstallPromptEvent {

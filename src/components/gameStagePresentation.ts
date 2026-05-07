@@ -2,6 +2,7 @@ import type { DisplayProfile } from "@/game/detection";
 import { drawFairyMorph } from "@/components/gameStageFairyPresentation";
 import { getStagePresentation } from "@/components/gameStagePhasePresentation";
 import { createWorld, getSummary } from "@/game/engine";
+import { getGameplayLevelRules } from "@/game/levels";
 import { isWormActive, type GameSummary, type GameWorld, type Worm } from "@/game/types";
 
 export type StageFeedback = {
@@ -33,6 +34,7 @@ export function renderStage(
   reducedMotion: boolean,
   feedback: StageFeedback[],
   selectedWormId: string | null,
+  level = 1,
 ) {
   context.clearRect(0, 0, world.width, world.height);
   const frameNow = performance.now();
@@ -50,7 +52,7 @@ export function renderStage(
   }
 
   const summary = getSummary(world);
-  const stagePresentation = getStagePresentation(summary, world.profile);
+  const stagePresentation = getStagePresentation(summary, world.profile, level);
   const activeWorms = world.worms.filter(isWormActive);
   const ghostWormId = activeWorms.find((worm) => worm.state === "ghost")?.id ?? null;
 
@@ -117,16 +119,16 @@ export function areSummariesEqual(left: GameSummary, right: GameSummary) {
   );
 }
 
-export function createInitialSummary(profile: DisplayProfile) {
-  return getSummary(createWorld(profile, 800, 540));
+export function createInitialSummary(profile: DisplayProfile, level = 1) {
+  return getSummary(createWorld(profile, 800, 540, { rules: getGameplayLevelRules(profile, level) }));
 }
 
-export function buildStatusItems(profile: DisplayProfile, summary: GameSummary): StatusItem[] {
-  return getStagePresentation(summary, profile).statusItems;
+export function buildStatusItems(profile: DisplayProfile, summary: GameSummary, level = 1): StatusItem[] {
+  return getStagePresentation(summary, profile, level).statusItems;
 }
 
-export function getStageCopy(profile: DisplayProfile, summary: GameSummary): StageCopy {
-  return getStagePresentation(summary, profile).copy;
+export function getStageCopy(profile: DisplayProfile, summary: GameSummary, level = 1): StageCopy {
+  return getStagePresentation(summary, profile, level).copy;
 }
 
 function drawCorralBackdrop(context: CanvasRenderingContext2D, width: number, height: number) {

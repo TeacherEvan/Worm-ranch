@@ -8,6 +8,7 @@ describe("ResultsScreen", () => {
     const html = renderToStaticMarkup(
       createElement(ResultsScreen, {
         bagged: 8,
+        level: 3,
         leftLoose: 2,
         note: "Fairy lift stays active after clean catches.",
         onReplay: vi.fn(),
@@ -19,6 +20,7 @@ describe("ResultsScreen", () => {
     expect(html).toContain('data-layout="compact-replay"');
     expect(html).toContain('data-role="tally-strip"');
     expect(html).toContain("Ride again");
+    expect(html).toContain("Level 3");
     expect(html).toContain("8 bagged");
     expect(html.indexOf("Ride again")).toBeLessThan(html.indexOf("Fairy lift stays active after clean catches."));
   });
