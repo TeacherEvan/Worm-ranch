@@ -155,8 +155,8 @@ describe("engine", () => {
     expect(findWormIdAtPoint(world, point)).toBe(worm.id);
   });
 
-  it("cuts the default opening pace in half for both desktop and mobile profiles", () => {
-    expect(DESKTOP_RULES.baseMaxSpeed).toBe(0.5);
+  it("cuts the default opening pace in half for desktop while leaving mobile unchanged", () => {
+    expect(DESKTOP_RULES.baseMaxSpeed).toBe(0.25);
     expect(MOBILE_RULES.baseMaxSpeed).toBe(0.5);
   });
 

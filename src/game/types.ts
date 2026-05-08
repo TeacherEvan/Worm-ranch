@@ -105,7 +105,7 @@ export type GameWorld = {
   elapsedMs: number;
   timerMs: number;
   countdownMs: number;
-  activeRoundMisses: number;
+  missStreak: number;
   rushTriggered: boolean;
   teleportsUnlocked: boolean;
   psychedelicWormSpawned: boolean;

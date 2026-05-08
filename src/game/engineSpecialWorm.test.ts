@@ -49,39 +49,71 @@ function countActiveWorms(world: ReturnType<typeof createActiveWorld>) {
 }
 
 describe("engine special worm", () => {
-  it("tracks misses only during an active round", () => {
+  it("tracks miss streak only during an active round", () => {
     const world = createWorld("desktop", 800, 540, createDeterministicOptions(11));
 
     expect(applyMiss(world)).toEqual({ kind: "ignored" });
-    expect(world.activeRoundMisses).toBe(0);
+    expect(world.missStreak).toBe(0);
 
     startRound(world);
 
     expect(applyMiss(world)).toEqual({ kind: "miss" });
     expect(applyMiss(world)).toEqual({ kind: "miss" });
-    expect(world.activeRoundMisses).toBe(2);
+    expect(world.missStreak).toBe(2);
   });
 
-  it("does not spawn a psychedelic worm during the first four active misses", () => {
+  it("resets the miss streak after a successful active click", () => {
+    const world = createActiveWorld("desktop", 13);
+    const openingWorm = world.worms[0];
+
+    if (!openingWorm) {
+      throw new Error("expected an opening worm");
+    }
+
+    applyMisses(world, 4);
+
+    expect(world.missStreak).toBe(4);
+    expect(applyAccuratePress(world, openingWorm.id)).toMatchObject({ wormId: openingWorm.id });
+    expect(world.missStreak).toBe(0);
+    expect(countPsychedelicWorms(world)).toBe(0);
+  });
+
+  it("does not spawn a psychedelic worm during the first four consecutive misses", () => {
     const world = createActiveWorld("desktop", 17);
 
     applyMisses(world, 4);
 
-    expect(world.activeRoundMisses).toBe(4);
+    expect(world.missStreak).toBe(4);
     expect(countPsychedelicWorms(world)).toBe(0);
     expect(world.psychedelicWormSpawned).toBe(false);
   });
 
-  it("spawns exactly one psychedelic worm on the fifth active miss", () => {
+  it("spawns exactly one psychedelic worm on the fifth consecutive miss", () => {
     const world = createActiveWorld("desktop", 23);
     const initialCount = world.worms.length;
 
     applyMisses(world, 5);
 
-    expect(world.activeRoundMisses).toBe(5);
+    expect(world.missStreak).toBe(5);
     expect(world.psychedelicWormSpawned).toBe(true);
     expect(world.worms).toHaveLength(initialCount + 1);
     expect(countPsychedelicWorms(world)).toBe(1);
+  });
+
+  it("does not spawn when the miss streak is broken before the fifth miss", () => {
+    const world = createActiveWorld("desktop", 29);
+    const openingWorm = world.worms[0];
+
+    if (!openingWorm) {
+      throw new Error("expected an opening worm");
+    }
+
+    applyMisses(world, 4);
+    expect(applyAccuratePress(world, openingWorm.id)).toMatchObject({ wormId: openingWorm.id });
+    applyMisses(world, 4);
+
+    expect(world.missStreak).toBe(4);
+    expect(countPsychedelicWorms(world)).toBe(0);
   });
 
   it("does not spawn another psychedelic worm after later misses in the same round", () => {
@@ -89,11 +121,10 @@ describe("engine special worm", () => {
 
     applyMisses(world, 8);
 
-    expect(world.activeRoundMisses).toBe(8);
     expect(countPsychedelicWorms(world)).toBe(1);
   });
 
-  it("does not spawn a psychedelic worm or restart the desktop finale after five misses", () => {
+  it("does not spawn a psychedelic worm or restart the desktop finale after five consecutive misses", () => {
     const world = createActiveWorld("desktop", 35, {
       rules: {
         totalWorms: 2,

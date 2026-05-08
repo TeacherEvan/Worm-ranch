@@ -1,6 +1,7 @@
 import type { Fairy } from "@/game/types";
 
 const ORBIT_SPARKLE_COUNT = 8;
+export const FAIRY_MORPH_EMOJI = "🧚";
 
 export type FairyMorphFrame = {
   fairyOpacity: number;
@@ -48,24 +49,12 @@ export function drawFairyMorph(context: CanvasRenderingContext2D, fairy: Fairy, 
   }
 
   if (frame.fairyFadeIn > 0) {
-    const wingPulse = reducedMotion ? 1 : 0.92 + Math.sin(fairy.lifeMs * 0.018 + fairy.hue) * 0.08;
     context.save();
     context.globalAlpha = frame.fairyFadeIn;
-    context.fillStyle = `hsla(${fairy.hue}, 96%, 80%, 0.86)`;
-    context.beginPath();
-    context.ellipse(-8, 0, 7.5 * wingPulse, 4.5, -0.45, 0, Math.PI * 2);
-    context.ellipse(8, 0, 7.5 * wingPulse, 4.5, 0.45, 0, Math.PI * 2);
-    context.fill();
-    context.fillStyle = "rgba(255, 252, 240, 0.96)";
-    context.beginPath();
-    context.arc(0, 0, 4, 0, Math.PI * 2);
-    context.fill();
-    context.strokeStyle = `hsla(${fairy.hue}, 96%, 86%, 0.5)`;
-    context.lineWidth = 1.2;
-    context.beginPath();
-    context.moveTo(0, 2);
-    context.quadraticCurveTo(-2, 9, 0, 15);
-    context.stroke();
+    context.font = `${reducedMotion ? 20 : 24}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(FAIRY_MORPH_EMOJI, 0, 0);
     context.restore();
   }
 

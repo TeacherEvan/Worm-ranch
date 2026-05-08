@@ -1,20 +1,17 @@
 import type { ActionResult } from "@/game/types";
-import type { DisplayProfile } from "@/game/detection";
 
 export const GAME_STAGE_AUDIO_CYCLE_LENGTH = 9;
 const GUNSHOT_CYCLE_LENGTH = 6;
 const GAME_STAGE_AUDIO_ASSET_PATHS = {
   gunshot: "/audio/gameplay/western-gunshot.mp3",
   whip: "/audio/gameplay/whip-crack.mp3",
-  dinosaur: "/audio/gameplay/dinosaur-roar.mp3",
 } satisfies Record<GameStageAudioCue, string>;
 const GAME_STAGE_AUDIO_POOL_SIZES = {
   gunshot: 6,
   whip: 3,
-  dinosaur: 1,
 } satisfies Record<GameStageAudioCue, number>;
 
-export type GameStageAudioCue = "gunshot" | "whip" | "dinosaur";
+export type GameStageAudioCue = "gunshot" | "whip";
 
 export type GameStageAudioResolution = {
   cue: GameStageAudioCue | null;
@@ -30,7 +27,6 @@ type AudioElementFactory = (src: string) => GameStageAudioPlayer | null;
 type GameStageAudioControllerOptions = {
   initialCycleStep?: number;
   audioElementFactory?: AudioElementFactory;
-  profile?: DisplayProfile;
 };
 
 export type GameStageAudioController = {
@@ -46,7 +42,6 @@ export function normalizeGameStageAudioCycleStep(cycleStep: number) {
 export function resolveNextGameStageAudioCue(
   actionResult: ActionResult,
   cycleStep: number,
-  profile: DisplayProfile = "desktop",
 ): GameStageAudioResolution {
   const normalizedCycleStep = normalizeGameStageAudioCycleStep(cycleStep);
 
@@ -58,7 +53,7 @@ export function resolveNextGameStageAudioCue(
   }
 
   return {
-    cue: getAudioCueForAction(actionResult, normalizedCycleStep, profile),
+    cue: getCycleCue(normalizedCycleStep),
     nextCycleStep: normalizeGameStageAudioCycleStep(normalizedCycleStep + 1),
   };
 }
@@ -67,7 +62,6 @@ export function createGameStageAudioController(
   options: GameStageAudioControllerOptions = {},
 ): GameStageAudioController {
   const audioElementFactory = options.audioElementFactory ?? createBrowserAudioElement;
-  const profile = options.profile ?? "desktop";
   let cycleStep = normalizeGameStageAudioCycleStep(options.initialCycleStep ?? 0);
   const playerPools = new Map<GameStageAudioCue, GameStageAudioPlayer[]>();
   const nextPlayerIndexes = new Map<GameStageAudioCue, number>();
@@ -101,7 +95,7 @@ export function createGameStageAudioController(
       return cycleStep;
     },
     play(actionResult) {
-      const resolution = resolveNextGameStageAudioCue(actionResult, cycleStep, profile);
+      const resolution = resolveNextGameStageAudioCue(actionResult, cycleStep);
       cycleStep = resolution.nextCycleStep;
 
       if (resolution.cue) {
@@ -123,20 +117,8 @@ export function createGameStageAudioController(
   };
 }
 
-function getCycleCue(cycleStep: number): Exclude<GameStageAudioCue, "dinosaur"> {
+function getCycleCue(cycleStep: number): GameStageAudioCue {
   return cycleStep < GUNSHOT_CYCLE_LENGTH ? "gunshot" : "whip";
-}
-
-function getAudioCueForAction(
-  actionResult: Exclude<ActionResult, { kind: "ignored" } | { kind: "miss" }>,
-  cycleStep: number,
-  profile: DisplayProfile,
-): GameStageAudioCue {
-  if (actionResult.kind === "collect" && profile === "mobile") {
-    return "dinosaur";
-  }
-
-  return getCycleCue(cycleStep);
 }
 
 function createBrowserAudioElement(src: string): GameStageAudioPlayer | null {

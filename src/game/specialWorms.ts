@@ -24,7 +24,7 @@ export function createStandardWorm(
 
 export function createPsychedelicWorm(world: GameWorld): Worm {
   return createWorm({
-    id: `worm-psychedelic-${world.runtime.now()}-${world.activeRoundMisses}`,
+    id: `worm-psychedelic-${world.runtime.now()}-${world.missStreak}`,
     rules: world.rules,
     width: world.width,
     height: world.height,
@@ -40,7 +40,7 @@ export function shouldSpawnPsychedelicWorm(world: GameWorld) {
     return false;
   }
 
-  return !world.psychedelicWormSpawned && world.activeRoundMisses >= SPECIAL_WORM_SPAWN_MISS_COUNT;
+  return !world.psychedelicWormSpawned && world.missStreak >= SPECIAL_WORM_SPAWN_MISS_COUNT;
 }
 
 type CreateWormOptions = {

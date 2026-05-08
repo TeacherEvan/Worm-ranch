@@ -1,6 +1,6 @@
 # Stage Audio Source References
 
-`src/components/gameStageAudio.ts` now plays bundled local MP3 assets from `public/audio/gameplay/` using pooled `HTMLAudioElement` instances. The shipped files and their upstream SoundBible references are listed below.
+`src/components/gameStageAudio.ts` now plays bundled local MP3 assets from `public/audio/gameplay/` using pooled `HTMLAudioElement` instances. The currently active stage cues are listed below.
 
 ## Gunshot
 
@@ -18,13 +18,4 @@
 - Clip title: `Whip`
 - Author: `Mike Koenig`
 - Download endpoint used for the bundled asset: <http://soundbible.com/grab.php?id=1150&type=mp3>
-- License shown on source page: `Attribution 3.0`
-
-## Dinosaur
-
-- Bundled file: `public/audio/gameplay/dinosaur-roar.mp3`
-- Source page: <https://soundbible.com/1165-Dinosaur-Roar.html>
-- Clip title: `Dinosaur Roar`
-- Author: `Mike Koenig`
-- Download endpoint used for the bundled asset: <http://soundbible.com/grab.php?id=1165&type=mp3>
 - License shown on source page: `Attribution 3.0`

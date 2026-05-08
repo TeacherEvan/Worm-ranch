@@ -19,7 +19,7 @@ describe("levels", () => {
       rules: {
         totalWorms: 100,
         timeLimitMs: 95_000,
-        baseMaxSpeed: 0.5,
+        baseMaxSpeed: 0.25,
         teleportUnlockCount: 50,
       },
     });

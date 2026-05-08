@@ -76,23 +76,23 @@ describe("gameStageAudio", () => {
     expect(wrappedGunshot).toEqual({ cue: "gunshot", nextCycleStep: 1 });
   });
 
-  it("uses dinosaur for mobile collect actions and still advances the cycle", () => {
-    expect(resolveNextGameStageAudioCue({ kind: "collect", wormId: "worm-1", collected: 3 }, 5, "mobile")).toEqual({
-      cue: "dinosaur",
+  it("uses the gunshot-whip cycle for mobile collect actions", () => {
+    expect(resolveNextGameStageAudioCue({ kind: "collect", wormId: "worm-1", collected: 3 }, 5)).toEqual({
+      cue: "gunshot",
       nextCycleStep: 6,
     });
-    expect(resolveNextGameStageAudioCue({ kind: "collect", wormId: "worm-1", collected: 4 }, 8, "mobile")).toEqual({
-      cue: "dinosaur",
+    expect(resolveNextGameStageAudioCue({ kind: "collect", wormId: "worm-1", collected: 4 }, 8)).toEqual({
+      cue: "whip",
       nextCycleStep: 0,
     });
   });
 
   it("uses the gunshot-whip cycle for desktop collect actions", () => {
-    expect(resolveNextGameStageAudioCue({ kind: "collect", wormId: "worm-1", collected: 3 }, 5, "desktop")).toEqual({
+    expect(resolveNextGameStageAudioCue({ kind: "collect", wormId: "worm-1", collected: 3 }, 5)).toEqual({
       cue: "gunshot",
       nextCycleStep: 6,
     });
-    expect(resolveNextGameStageAudioCue({ kind: "collect", wormId: "worm-1", collected: 4 }, 8, "desktop")).toEqual({
+    expect(resolveNextGameStageAudioCue({ kind: "collect", wormId: "worm-1", collected: 4 }, 8)).toEqual({
       cue: "whip",
       nextCycleStep: 0,
     });
@@ -105,13 +105,12 @@ describe("gameStageAudio", () => {
 
   it("creates a safe no-op controller when browser audio is unavailable", () => {
     const controller = createGameStageAudioController({
-      profile: "mobile",
       audioElementFactory: () => null,
     });
 
     expect(() => controller.play({ kind: "tag", wormId: "worm-1", bursts: 1 })).not.toThrow();
     expect(controller.play({ kind: "collect", wormId: "worm-1", collected: 1 })).toEqual({
-      cue: "dinosaur",
+      cue: "gunshot",
       nextCycleStep: 2,
     });
   });
@@ -120,7 +119,6 @@ describe("gameStageAudio", () => {
     const { createdPlayers, factory } = createAudioFactory();
     const controller = createGameStageAudioController({
       audioElementFactory: factory,
-      profile: "mobile",
     });
 
     expect(controller.play({ kind: "tag", wormId: "worm-1", bursts: 1 })).toEqual({
@@ -132,7 +130,7 @@ describe("gameStageAudio", () => {
       nextCycleStep: 2,
     });
     expect(controller.play({ kind: "collect", wormId: "worm-1", collected: 1 })).toEqual({
-      cue: "dinosaur",
+      cue: "gunshot",
       nextCycleStep: 3,
     });
 
@@ -142,7 +140,7 @@ describe("gameStageAudio", () => {
     expect(createdPlayers.map((player) => player.src)).toEqual([
       "/audio/gameplay/western-gunshot.mp3",
       "/audio/gameplay/western-gunshot.mp3",
-      "/audio/gameplay/dinosaur-roar.mp3",
+      "/audio/gameplay/western-gunshot.mp3",
     ]);
     expect(createdPlayers[0]?.play).toHaveBeenCalledTimes(1);
     expect(createdPlayers[1]?.play).toHaveBeenCalledTimes(1);
@@ -154,7 +152,6 @@ describe("gameStageAudio", () => {
     const { createdPlayers, factory } = createAudioFactory();
     const controller = createGameStageAudioController({
       audioElementFactory: factory,
-      profile: "desktop",
     });
 
     for (let index = 0; index < 6; index += 1) {
@@ -180,7 +177,6 @@ describe("gameStageAudio", () => {
     const failure = new Error("boom");
 
     const failingController = createGameStageAudioController({
-      profile: "desktop",
       audioElementFactory(src) {
         const player = factory(src) as unknown as FakeAudio;
         player.play.mockRejectedValueOnce(failure);
@@ -199,7 +195,6 @@ describe("gameStageAudio", () => {
     const { createdPlayers, factory } = createAudioFactory();
     const controller = createGameStageAudioController({
       audioElementFactory: factory,
-      profile: "mobile",
     });
 
     controller.play({ kind: "tag", wormId: "worm-1", bursts: 1 });

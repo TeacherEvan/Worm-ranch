@@ -36,7 +36,7 @@ export const DESKTOP_RULES: DesktopRules = {
   profile: "desktop",
   totalWorms: 100,
   baseRadius: 10,
-  baseMaxSpeed: 0.5,
+  baseMaxSpeed: 0.25,
   rushSpeed: 4.4,
   crawlAmplitude: 0.5,
   directionChangeRate: 0.1,

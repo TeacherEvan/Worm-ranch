@@ -59,7 +59,7 @@ export function createWorld(
     elapsedMs: 0,
     timerMs: rules.timeLimitMs,
     countdownMs: rules.introCountdownMs,
-    activeRoundMisses: 0,
+    missStreak: 0,
     rushTriggered: false,
     teleportsUnlocked: false,
     psychedelicWormSpawned: false,
@@ -181,7 +181,7 @@ export function applyMiss(world: GameWorld): ActionResult {
     return { kind: "ignored" };
   }
 
-  world.activeRoundMisses += 1;
+  world.missStreak += 1;
 
   if (shouldSpawnPsychedelicWorm(world)) {
     world.psychedelicWormSpawned = true;
@@ -203,6 +203,8 @@ export function applyAccuratePress(world: GameWorld, wormId: string): ActionResu
   if (!worm) {
     return { kind: "miss" };
   }
+
+  world.missStreak = 0;
 
   const rules = world.rules;
   const remaining = getRemainingWorms(world);

@@ -162,7 +162,7 @@ export function GameStage({
       return undefined;
     }
 
-    const audioController = createGameStageAudioController({ profile });
+    const audioController = createGameStageAudioController();
 
     const updateCanvasBounds = () => {
       const rect = canvas.getBoundingClientRect();

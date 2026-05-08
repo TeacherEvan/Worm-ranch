@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { getFairyMorphFrame } from "./gameStageFairyPresentation";
+import { describe, expect, it, vi } from "vitest";
+import { FAIRY_MORPH_EMOJI, drawFairyMorph, getFairyMorphFrame } from "./gameStageFairyPresentation";
 import type { Fairy } from "@/game/types";
 
 function createFairy(overrides: Partial<Fairy> = {}): Fairy {
@@ -24,6 +24,10 @@ function createFairy(overrides: Partial<Fairy> = {}): Fairy {
 }
 
 describe("gameStageFairyPresentation", () => {
+  it("uses the standard fairy emoji as the final morph glyph", () => {
+    expect(FAIRY_MORPH_EMOJI).toBe("🧚");
+  });
+
   it("keeps morphing fairies anchored at the capture point", () => {
     const frame = getFairyMorphFrame(createFairy({ lifeMs: 600, state: "morphing" }), false);
 
@@ -48,5 +52,38 @@ describe("gameStageFairyPresentation", () => {
     expect(frame.orbitSparkleCount).toBe(0);
     expect(frame.trailSparkleCount).toBe(4);
     expect(frame.fairyOpacity).toBeLessThan(1);
+  });
+
+  it("draws the fairy emoji once the morph reveal is visible", () => {
+    const fillText = vi.fn();
+    const context = {
+      save: vi.fn(),
+      restore: vi.fn(),
+      translate: vi.fn(),
+      scale: vi.fn(),
+      rotate: vi.fn(),
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      quadraticCurveTo: vi.fn(),
+      stroke: vi.fn(),
+      fill: vi.fn(),
+      ellipse: vi.fn(),
+      arc: vi.fn(),
+      fillText,
+      globalAlpha: 1,
+      shadowBlur: 0,
+      shadowColor: "",
+      lineCap: "round",
+      lineWidth: 0,
+      strokeStyle: "",
+      fillStyle: "",
+      font: "",
+      textAlign: "left",
+      textBaseline: "alphabetic",
+    } as unknown as CanvasRenderingContext2D;
+
+    drawFairyMorph(context, createFairy({ lifeMs: 1_500, state: "morphing" }), false);
+
+    expect(fillText).toHaveBeenCalledWith(FAIRY_MORPH_EMOJI, 0, 0);
   });
 });
