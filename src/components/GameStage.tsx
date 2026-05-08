@@ -4,6 +4,7 @@ import { type CSSProperties, useEffect, useId, useMemo, useRef, useState } from 
 import styles from "./GameStage.module.css";
 import badgeStyles from "./GameStagePhaseBadge.module.css";
 import { createGameStageAudioController } from "@/components/gameStageAudio";
+import { useLatestValue, useStageActionEcho } from "./gameStageActionEcho";
 import { getKeyboardStatus, getKeyboardTargetId, type KeyboardTargetMode } from "@/components/gameStageKeyboard";
 import { areSummariesEqual, renderStage, stepFeedback, type StageFeedback } from "@/components/gameStagePresentation";
 import { getMotionFeedback, type StageMotionCue } from "@/components/gameStageMotion";
@@ -37,15 +38,6 @@ type GameStageProps = {
 
 const SUMMARY_INTERVAL_MS = 120;
 
-function playStageActionAudio(
-  audioController: ReturnType<typeof createGameStageAudioController>,
-  result: ActionResult,
-) {
-  if (result.kind === "tag" || result.kind === "teleport" || result.kind === "collect") {
-    audioController.play(result);
-  }
-}
-
 export function GameStage({
   backdropUrl = null,
   level,
@@ -71,39 +63,25 @@ export function GameStage({
   const previousSummaryRef = useRef<GameSummary | null>(null);
   const fairyStatesRef = useRef<Map<string, FairyState>>(new Map());
   const cueTimerRef = useRef<number | null>(null);
-  const reducedMotionRef = useRef(reducedMotion);
-  const keyboardTargetRef = useRef<string | null>(null);
-  const onSummaryChangeRef = useRef(onSummaryChange);
-  const onRoundEndRef = useRef(onRoundEnd);
-  const onEventRef = useRef(onEvent);
   const keyboardHelpId = useId();
   const keyboardStatusId = useId();
   const [stageSummary, setStageSummary] = useState<GameSummary>(() => getSummary(initialWorld));
   const [keyboardTargetId, setKeyboardTargetId] = useState<string | null>(() => getKeyboardTargetId(initialWorld, null, "first"));
   const [motionCue, setMotionCue] = useState<StageMotionCue>("none");
+  const reducedMotionRef = useLatestValue(reducedMotion);
+  const keyboardTargetRef = useLatestValue(keyboardTargetId);
+  const onSummaryChangeRef = useLatestValue(onSummaryChange);
+  const onRoundEndRef = useLatestValue(onRoundEnd);
+  const onEventRef = useLatestValue(onEvent);
   const stagePresentation = getStagePresentation(stageSummary, profile, level);
-  const copyKey = stagePresentation.overlayKey;
+  const { phaseChipLabel, statusItems, overlayCopy, overlayKey, showActionEchoRef } = useStageActionEcho(
+    stagePresentation.phaseChipLabel,
+    stagePresentation.statusItems,
+    stagePresentation.copy,
+    stagePresentation.overlayKey,
+    profile,
+  );
   const keyboardStatus = getKeyboardStatus(stagePresentation.copy.title, stageSummary, keyboardTargetId);
-
-  useEffect(() => {
-    reducedMotionRef.current = reducedMotion;
-  }, [reducedMotion]);
-
-  useEffect(() => {
-    keyboardTargetRef.current = keyboardTargetId;
-  }, [keyboardTargetId]);
-
-  useEffect(() => {
-    onSummaryChangeRef.current = onSummaryChange;
-  }, [onSummaryChange]);
-
-  useEffect(() => {
-    onRoundEndRef.current = onRoundEnd;
-  }, [onRoundEnd]);
-
-  useEffect(() => {
-    onEventRef.current = onEvent;
-  }, [onEvent]);
 
   useEffect(() => {
     return () => {
@@ -301,7 +279,10 @@ export function GameStage({
     };
 
     const handleAction = (result: ActionResult) => {
-      playStageActionAudio(audioController, result);
+      if (result.kind === "tag" || result.kind === "teleport" || result.kind === "collect") {
+        audioController.play(result);
+      }
+      showActionEchoRef.current(result);
 
       if (result.kind === "collect") {
         pushFeedback(result);
@@ -442,7 +423,7 @@ export function GameStage({
       }
       audioController.dispose();
     };
-  }, [level, levelRules, profile]);
+  }, [keyboardTargetRef, level, levelRules, onEventRef, onRoundEndRef, onSummaryChangeRef, profile, reducedMotionRef, showActionEchoRef]);
 
   return (
     <div
@@ -467,7 +448,7 @@ export function GameStage({
         tabIndex={0}
       />
       <div className={styles.statusStrip} aria-live="off">
-        {stagePresentation.statusItems.map((item, index) => (
+        {statusItems.map((item, index) => (
           <div
             key={item.id}
             className={`${styles.statusPill} ${item.active ? styles.statusPillActive : ""}`.trim()}
@@ -479,19 +460,19 @@ export function GameStage({
         ))}
       </div>
       <div className={styles.overlay}>
-        <div key={copyKey} className={styles.copyCluster}>
+        <div key={overlayKey} className={styles.copyCluster}>
           <div
             className={`${styles.phaseBadge} ${badgeStyles.phaseBadgeMotion}`}
             data-phase-cue={motionCue}
             data-phase-motion={reducedMotion ? "reduced" : "full"}
           >
-            {stagePresentation.phaseChipLabel}
+            {phaseChipLabel}
           </div>
           <div className={styles.message}>
-            <strong>{stagePresentation.copy.title}</strong>
-            {stagePresentation.copy.body}
+            <strong>{overlayCopy.title}</strong>
+            {overlayCopy.body}
           </div>
-          <div className={styles.hint}>{stagePresentation.copy.hint}</div>
+          <div className={styles.hint}>{overlayCopy.hint}</div>
         </div>
       </div>
     </div>
