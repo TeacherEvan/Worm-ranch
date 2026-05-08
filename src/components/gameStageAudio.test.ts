@@ -76,13 +76,24 @@ describe("gameStageAudio", () => {
     expect(wrappedGunshot).toEqual({ cue: "gunshot", nextCycleStep: 1 });
   });
 
-  it("uses dinosaur for collect actions and still advances the cycle", () => {
-    expect(resolveNextGameStageAudioCue({ kind: "collect", wormId: "worm-1", collected: 3 }, 5)).toEqual({
+  it("uses dinosaur for mobile collect actions and still advances the cycle", () => {
+    expect(resolveNextGameStageAudioCue({ kind: "collect", wormId: "worm-1", collected: 3 }, 5, "mobile")).toEqual({
       cue: "dinosaur",
       nextCycleStep: 6,
     });
-    expect(resolveNextGameStageAudioCue({ kind: "collect", wormId: "worm-1", collected: 4 }, 8)).toEqual({
+    expect(resolveNextGameStageAudioCue({ kind: "collect", wormId: "worm-1", collected: 4 }, 8, "mobile")).toEqual({
       cue: "dinosaur",
+      nextCycleStep: 0,
+    });
+  });
+
+  it("uses the gunshot-whip cycle for desktop collect actions", () => {
+    expect(resolveNextGameStageAudioCue({ kind: "collect", wormId: "worm-1", collected: 3 }, 5, "desktop")).toEqual({
+      cue: "gunshot",
+      nextCycleStep: 6,
+    });
+    expect(resolveNextGameStageAudioCue({ kind: "collect", wormId: "worm-1", collected: 4 }, 8, "desktop")).toEqual({
+      cue: "whip",
       nextCycleStep: 0,
     });
   });
@@ -94,6 +105,7 @@ describe("gameStageAudio", () => {
 
   it("creates a safe no-op controller when browser audio is unavailable", () => {
     const controller = createGameStageAudioController({
+      profile: "mobile",
       audioElementFactory: () => null,
     });
 
@@ -108,6 +120,7 @@ describe("gameStageAudio", () => {
     const { createdPlayers, factory } = createAudioFactory();
     const controller = createGameStageAudioController({
       audioElementFactory: factory,
+      profile: "mobile",
     });
 
     expect(controller.play({ kind: "tag", wormId: "worm-1", bursts: 1 })).toEqual({
@@ -127,9 +140,9 @@ describe("gameStageAudio", () => {
 
     expect(createdPlayers).toHaveLength(3);
     expect(createdPlayers.map((player) => player.src)).toEqual([
-      "/audio/gameplay/western-gunshot.wav",
-      "/audio/gameplay/western-gunshot.wav",
-      "/audio/gameplay/dinosaur-roar.wav",
+      "/audio/gameplay/western-gunshot.mp3",
+      "/audio/gameplay/western-gunshot.mp3",
+      "/audio/gameplay/dinosaur-roar.mp3",
     ]);
     expect(createdPlayers[0]?.play).toHaveBeenCalledTimes(1);
     expect(createdPlayers[1]?.play).toHaveBeenCalledTimes(1);
@@ -141,6 +154,7 @@ describe("gameStageAudio", () => {
     const { createdPlayers, factory } = createAudioFactory();
     const controller = createGameStageAudioController({
       audioElementFactory: factory,
+      profile: "desktop",
     });
 
     for (let index = 0; index < 6; index += 1) {
@@ -157,7 +171,7 @@ describe("gameStageAudio", () => {
     expect(createdPlayers).toHaveLength(9);
     expect(createdPlayers[0]?.play).toHaveBeenCalledTimes(2);
     expect(createdPlayers[0]?.currentTime).toBe(0);
-    expect(createdPlayers[6]?.src).toBe("/audio/gameplay/whip-crack.wav");
+    expect(createdPlayers[6]?.src).toBe("/audio/gameplay/whip-crack.mp3");
     expect(controller.getCycleStep()).toBe(1);
   });
 
@@ -166,6 +180,7 @@ describe("gameStageAudio", () => {
     const failure = new Error("boom");
 
     const failingController = createGameStageAudioController({
+      profile: "desktop",
       audioElementFactory(src) {
         const player = factory(src) as unknown as FakeAudio;
         player.play.mockRejectedValueOnce(failure);
@@ -184,6 +199,7 @@ describe("gameStageAudio", () => {
     const { createdPlayers, factory } = createAudioFactory();
     const controller = createGameStageAudioController({
       audioElementFactory: factory,
+      profile: "mobile",
     });
 
     controller.play({ kind: "tag", wormId: "worm-1", bursts: 1 });

@@ -1,22 +1,22 @@
 Worm Ranch bundled gameplay audio attribution
 
-1. western-gunshot.wav
+1. western-gunshot.mp3
 Title: 9mm Glock 17
 Author: JKirsch
 Source page: https://soundbible.com/1382-9mm-Glock-17.html
-Download endpoint: http://soundbible.com/grab.php?id=1382&type=wav
+Download endpoint: http://soundbible.com/grab.php?id=1382&type=mp3
 License: SoundBible Attribution 3.0
 
-2. whip-crack.wav
+2. whip-crack.mp3
 Title: Whip
 Author: Mike Koenig
 Source page: https://soundbible.com/1150-Whip.html
-Download endpoint: http://soundbible.com/grab.php?id=1150&type=wav
+Download endpoint: http://soundbible.com/grab.php?id=1150&type=mp3
 License: SoundBible Attribution 3.0
 
-3. dinosaur-roar.wav
+3. dinosaur-roar.mp3
 Title: Dinosaur Roar
 Author: Mike Koenig
 Source page: https://soundbible.com/1165-Dinosaur-Roar.html
-Download endpoint: http://soundbible.com/grab.php?id=1165&type=wav
+Download endpoint: http://soundbible.com/grab.php?id=1165&type=mp3
 License: SoundBible Attribution 3.0

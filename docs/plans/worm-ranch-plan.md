@@ -56,7 +56,7 @@ Move backdrop theming decisively into gameplay, add deterministic level progress
 
 ## Shipped Follow-up
 
-1. Added stage-action audio cadence so successful non-collect worm clicks play six gunshots, then three whip cracks, while bagged worms trigger a dinosaur roar and still advance the cycle.
+1. Added stage-action audio cadence so successful desktop worm clicks play six gunshots, then three whip cracks, while mobile bagging keeps the dinosaur roar cue.
 2. Added active-round miss tracking so the fifth miss spawns one psychedelic blinking worm that follows the same desktop and mobile bagging rules as the standard targets.
 3. Bundled gameplay audio as local WAV files and documented the upstream sources and attribution trail.
 4. Extended focused regression coverage for stage audio playback, miss-triggered special-worm spawning, and psychedelic worm rendering.
@@ -73,5 +73,5 @@ Expected outcome: the full repo gameplay/component tests, lint, and production b
 1. Desktop gameplay pass: the level HUD, bagged tally, and leave action remained readable over the gameplay backdrop while the staged art stayed decorative behind active worms.
 2. Mobile gameplay pass: the `Beat bell` timer, bag rule chip, and level copy all fit cleanly in the compact HUD without obscuring the active play space.
 3. Backdrop check: the gameplay backdrop stayed subdued enough that worms, target rings, and feedback cues remained easy to pick out at a glance.
-4. Audio-feedback check: the six-gunshot and three-whip cadence read as deliberate feedback, the dinosaur bag cue stayed distinct, and the WAV assets played cleanly from the shipped public bundle.
+4. Audio-feedback check: the six-gunshot and three-whip cadence read as deliberate feedback on desktop, the dinosaur bag cue stayed distinct on mobile, and the MP3 assets played cleanly from the shipped public bundle.
 5. Miss-pressure check: after five failed clicks in an active round, the psychedelic worm appeared once, stayed visually readable, and used the same capture rules as the other worms.

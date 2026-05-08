@@ -9,8 +9,8 @@ Worm Ranch is a display-aware chase toy built with Next.js. The game keeps separ
 - Each new level raises pressure through profile-specific rule overrides such as more worms, shorter clocks, faster movement, or stricter mobile bag rules.
 - Results now show the level that was just played, and replay advances to the next gameplay level.
 - Mobile rounds still keep a persistent `Beat bell` timer in the HUD so the countdown feels like pressure, not buried admin data.
-- Successful non-collect worm actions now follow a fixed stage-audio cadence: six western gunshots, then three whip cracks, then the pattern repeats.
-- Bagged worms trigger a dinosaur roar without breaking the underlying nine-step action-sound cycle.
+- Successful desktop hits now follow a fixed stage-audio cadence: six western gunshots, then three whip cracks, then the pattern repeats.
+- Mobile bagging keeps the dinosaur roar cue, while desktop first-click captures stay on the gunshot-whip cycle so the cadence remains audible.
 - After five misses in an active round, one psychedelic blinking worm spawns as an extra target and obeys the same desktop and mobile bagging rules as the other worms.
 
 ## Development
