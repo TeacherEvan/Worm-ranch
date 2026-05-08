@@ -1,6 +1,7 @@
 import type { DisplayProfile } from "@/game/detection";
 import { drawFairyMorph } from "@/components/gameStageFairyPresentation";
 import { getStagePresentation } from "@/components/gameStagePhasePresentation";
+import { getPsychedelicWormVisualFrame } from "@/components/gameStageWormVisuals";
 import { createWorld, getSummary } from "@/game/engine";
 import { getGameplayLevelRules } from "@/game/levels";
 import { isWormActive, type GameSummary, type GameWorld, type Worm } from "@/game/types";
@@ -225,6 +226,8 @@ function drawWorm(
   const pulse = reducedMotion ? 1 : 0.72 + (Math.sin(frameNow * 0.01 + worm.wave) + 1) * 0.14;
   const isBlinkCharged = world.profile === "desktop" && worm.state === "blinkCharged";
   const isTagged = world.profile === "mobile" && worm.state === "tagged";
+  const psychedelicFrame =
+    worm.visualVariant === "psychedelic" ? getPsychedelicWormVisualFrame(worm, reducedMotion, frameNow) : null;
 
   context.save();
   context.translate(worm.x, worm.y);
@@ -287,6 +290,10 @@ function drawWorm(
     context.stroke();
   }
 
+  if (psychedelicFrame) {
+    drawPsychedelicWormAccent(context, worm, bodyLength, squirm, psychedelicFrame, reducedMotion);
+  }
+
   context.lineCap = "round";
   context.lineWidth = isGhostWorm ? worm.radius * 1.7 : worm.radius * 1.5;
   context.strokeStyle = isGhostWorm
@@ -307,6 +314,10 @@ function drawWorm(
   context.ellipse(bodyLength * 0.48, 0, worm.radius * 0.92, worm.radius * 0.82, 0, 0, Math.PI * 2);
   context.fill();
 
+  if (psychedelicFrame) {
+    drawPsychedelicWormBands(context, worm, bodyLength, squirm, psychedelicFrame);
+  }
+
   context.fillStyle = "rgba(16, 17, 20, 0.82)";
   context.beginPath();
   context.arc(bodyLength * 0.72, -worm.radius * 0.16, worm.radius * 0.12, 0, Math.PI * 2);
@@ -322,6 +333,50 @@ function drawWorm(
   }
 
   context.restore();
+}
+
+function drawPsychedelicWormAccent(
+  context: CanvasRenderingContext2D,
+  worm: Worm,
+  bodyLength: number,
+  squirm: number,
+  frame: ReturnType<typeof getPsychedelicWormVisualFrame>,
+  reducedMotion: boolean,
+) {
+  context.save();
+  context.shadowBlur = frame.shadowBlur;
+  context.shadowColor = `hsla(${frame.auraHue}, 95%, 72%, ${Math.min(frame.auraStrokeAlpha, 0.42)})`;
+  context.fillStyle = `hsla(${frame.auraHue}, 96%, ${reducedMotion ? 74 : 78}%, ${frame.auraFillAlpha})`;
+  context.strokeStyle = `hsla(${frame.auraHue}, 100%, 84%, ${frame.auraStrokeAlpha})`;
+  context.lineWidth = reducedMotion ? 2 : 2.4;
+  context.beginPath();
+  context.ellipse(0, squirm * 0.05, bodyLength * 0.46, worm.radius * frame.auraRadiusScale, 0, 0, Math.PI * 2);
+  context.fill();
+  context.stroke();
+  context.restore();
+}
+
+function drawPsychedelicWormBands(
+  context: CanvasRenderingContext2D,
+  worm: Worm,
+  bodyLength: number,
+  squirm: number,
+  frame: ReturnType<typeof getPsychedelicWormVisualFrame>,
+) {
+  for (const [index, hue] of frame.bandHues.entries()) {
+    const offset = frame.bandOffsets[index] ?? 0;
+    const bandYOffset = frame.bandYOffsets[index] ?? 0;
+    const x = bodyLength * offset;
+    const y = bandYOffset * worm.radius + squirm * 0.08;
+    const alpha = frame.bandAlpha * (0.94 - index * 0.12);
+
+    context.save();
+    context.fillStyle = `hsla(${hue}, 98%, ${70 + index * 3}%, ${alpha})`;
+    context.beginPath();
+    context.ellipse(x, y, worm.radius * (0.3 + index * 0.04), worm.radius * 0.88, 0, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+  }
 }
 
 function clamp01(value: number) {

@@ -28,7 +28,8 @@ The current dark arcade baseline is acceptable only if it keeps evolving into so
 
 1. Design for replay pressure. Every surface should support fast re-entry, score-chase energy, and clear next-action momentum.
 2. Keep the world strange and specific. Lean into the farm-meets-space premise so the game feels authored, not theme-swapped.
-3. Make motion earn its place. Animation should heighten tension, mischief, and field readability, not just decorate the screen.
+3. Make motion and sound earn their place. Animation and action audio should heighten tension, mischief, and field readability, not just decorate the screen.
 4. Favor interactive stimulation over static polish. Feedback, state shifts, and responsive surfaces matter more than ornamental chrome.
 5. Reject childish sweetness and generic AI-looking UI. The interface should feel rowdy, odd, and competitive instead of cute, glossy, or templated.
 6. Keep launch surfaces title-first. Teach rules in motion, HUD cues, and play-state feedback instead of long explanatory copy.
+7. Use escalation cues sparingly but clearly. Surprise states like a psychedelic bonus worm should feel readable and intentional instead of noisy or arbitrary.

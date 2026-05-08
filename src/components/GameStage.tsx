@@ -3,6 +3,7 @@
 import { type CSSProperties, useEffect, useId, useMemo, useRef, useState } from "react";
 import styles from "./GameStage.module.css";
 import badgeStyles from "./GameStagePhaseBadge.module.css";
+import { createGameStageAudioController } from "@/components/gameStageAudio";
 import { getKeyboardStatus, getKeyboardTargetId, type KeyboardTargetMode } from "@/components/gameStageKeyboard";
 import { areSummariesEqual, renderStage, stepFeedback, type StageFeedback } from "@/components/gameStagePresentation";
 import { getMotionFeedback, type StageMotionCue } from "@/components/gameStageMotion";
@@ -10,6 +11,7 @@ import { getStagePresentation } from "@/components/gameStagePhasePresentation";
 import { getFairyLifecycleEvents, getRoundEndedDetails, getRoundTransitionEvents } from "@/lib/analytics";
 import {
   applyAccuratePress,
+  applyMiss,
   createWorld,
   findWormIdAtPoint,
   getSummary,
@@ -35,6 +37,15 @@ type GameStageProps = {
 
 const SUMMARY_INTERVAL_MS = 120;
 
+function playStageActionAudio(
+  audioController: ReturnType<typeof createGameStageAudioController>,
+  result: ActionResult,
+) {
+  if (result.kind === "tag" || result.kind === "teleport" || result.kind === "collect") {
+    audioController.play(result);
+  }
+}
+
 export function GameStage({
   backdropUrl = null,
   level,
@@ -45,14 +56,16 @@ export function GameStage({
   onEvent,
 }: GameStageProps) {
   const levelRules = useMemo(() => getGameplayLevelRules(profile, level), [level, profile]);
+  const [initialWorld] = useState(() => createWorld(profile, 800, 540, { rules: levelRules }));
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const worldRef = useRef(createWorld(profile, 800, 540, { rules: levelRules }));
+  const worldRef = useRef(initialWorld);
   const frameRef = useRef<number | null>(null);
   const summaryRef = useRef(0);
   const feedbackRef = useRef<StageFeedback[]>([]);
   const feedbackIdRef = useRef(0);
   const finishedRef = useRef(false);
   const lastTimestampRef = useRef<number | null>(null);
+  const hasMountedRef = useRef(false);
   const canvasBoundsRef = useRef<{ left: number; top: number; width: number; height: number } | null>(null);
   const summaryAnalyticsRef = useRef<GameSummary | null>(null);
   const previousSummaryRef = useRef<GameSummary | null>(null);
@@ -65,11 +78,8 @@ export function GameStage({
   const onEventRef = useRef(onEvent);
   const keyboardHelpId = useId();
   const keyboardStatusId = useId();
-  const [stageSummary, setStageSummary] = useState<GameSummary>(() => getSummary(createWorld(profile, 800, 540, { rules: levelRules })));
-  const [keyboardTargetId, setKeyboardTargetId] = useState<string | null>(() => {
-    const initialWorld = createWorld(profile, 800, 540, { rules: levelRules });
-    return getKeyboardTargetId(initialWorld, null, "first");
-  });
+  const [stageSummary, setStageSummary] = useState<GameSummary>(() => getSummary(initialWorld));
+  const [keyboardTargetId, setKeyboardTargetId] = useState<string | null>(() => getKeyboardTargetId(initialWorld, null, "first"));
   const [motionCue, setMotionCue] = useState<StageMotionCue>("none");
   const stagePresentation = getStagePresentation(stageSummary, profile, level);
   const copyKey = stagePresentation.overlayKey;
@@ -106,11 +116,9 @@ export function GameStage({
   useEffect(() => {
     const motionFeedback = getMotionFeedback(previousSummaryRef.current, stageSummary);
     previousSummaryRef.current = stageSummary;
-
     if (motionFeedback.stageCue === "none") {
       return;
     }
-
     if (cueTimerRef.current !== null) {
       window.clearTimeout(cueTimerRef.current);
     }
@@ -123,7 +131,11 @@ export function GameStage({
   }, [reducedMotion, stageSummary]);
 
   useEffect(() => {
-    worldRef.current = createWorld(profile, 800, 540, { rules: levelRules });
+    const nextWorld = hasMountedRef.current
+      ? createWorld(profile, 800, 540, { rules: levelRules })
+      : worldRef.current;
+    hasMountedRef.current = true;
+    worldRef.current = nextWorld;
     feedbackRef.current = [];
     finishedRef.current = false;
     lastTimestampRef.current = null;
@@ -149,6 +161,8 @@ export function GameStage({
     if (!context) {
       return undefined;
     }
+
+    const audioController = createGameStageAudioController();
 
     const updateCanvasBounds = () => {
       const rect = canvas.getBoundingClientRect();
@@ -287,6 +301,8 @@ export function GameStage({
     };
 
     const handleAction = (result: ActionResult) => {
+      playStageActionAudio(audioController, result);
+
       if (result.kind === "collect") {
         pushFeedback(result);
         onEventRef.current("worm_collected", { wormId: result.wormId, collected: result.collected });
@@ -347,6 +363,7 @@ export function GameStage({
 
       const wormId = findWormIdAtPoint(worldRef.current, point);
       if (!wormId) {
+        handleAction(applyMiss(worldRef.current));
         return;
       }
 
@@ -423,6 +440,7 @@ export function GameStage({
       if (frameRef.current !== null) {
         window.cancelAnimationFrame(frameRef.current);
       }
+      audioController.dispose();
     };
   }, [level, levelRules, profile]);
 

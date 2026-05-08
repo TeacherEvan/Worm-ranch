@@ -21,6 +21,8 @@ export type Point = {
   y: number;
 };
 
+export type WormVisualVariant = "standard" | "psychedelic";
+
 export type Worm = {
   id: string;
   x: number;
@@ -32,6 +34,7 @@ export type Worm = {
   radius: number;
   hue: number;
   wave: number;
+  visualVariant: WormVisualVariant;
   teleportsRemaining: number;
   touchBursts: number;
   state: WormState;
@@ -102,8 +105,10 @@ export type GameWorld = {
   elapsedMs: number;
   timerMs: number;
   countdownMs: number;
+  activeRoundMisses: number;
   rushTriggered: boolean;
   teleportsUnlocked: boolean;
+  psychedelicWormSpawned: boolean;
   finaleStartedAt: number | null;
   roundResult: RoundResult | null;
   runtime: EngineRuntime;

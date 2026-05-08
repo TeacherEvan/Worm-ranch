@@ -1,6 +1,6 @@
 # Worm Ranch Plan
 
-Status: implemented, smoke-checked, and verified
+Status: implemented, smoke-checked, and verified, with follow-up gameplay feedback updates also shipped and verified
 
 ## Goal
 
@@ -24,19 +24,26 @@ Move backdrop theming decisively into gameplay, add deterministic level progress
 
 - `src/game/levels.ts`
 - `src/game/levels.test.ts`
+- `src/game/specialWorms.ts`
 - `src/components/gameStageBackdropRotation.ts`
 - `src/components/gameStageBackdropRotation.test.ts`
+- `src/components/gameStageAudio.ts`
+- `src/components/gameStageAudio.test.ts`
+- `src/components/gameStageWormVisuals.ts`
+- `src/components/gameStageWormVisuals.test.ts`
 - `src/components/wormRanchLevelFlow.ts`
 - `src/components/wormRanchLevelFlow.test.ts`
 - `src/components/WormRanchApp.tsx`
 - `src/components/WormRanchApp.test.ts`
 - `src/components/GameStage.tsx`
 - `src/components/GameStage.test.ts`
+- `src/components/gameStagePresentation.ts`
 - `src/components/gameStagePhasePresentation.ts`
 - `src/components/gameStagePhasePresentation.test.ts`
 - `src/components/ResultsScreen.tsx`
 - `src/components/ResultsScreen.test.ts`
 - `README.md`
+- `docs/audio-sources.md`
 - `docs/jobcard.md`
 
 ## Implemented Slice
@@ -46,6 +53,13 @@ Move backdrop theming decisively into gameplay, add deterministic level progress
 3. Threaded the played level through gameplay copy, results, and replay progression.
 4. Added focused regression coverage for level rules, backdrop mapping, stage presentation, app-shell level handoff, and results.
 5. Updated docs to match the shipped gameplay-level behavior.
+
+## Shipped Follow-up
+
+1. Added stage-action audio cadence so successful non-collect worm clicks play six gunshots, then three whip cracks, while bagged worms trigger a dinosaur roar and still advance the cycle.
+2. Added active-round miss tracking so the fifth miss spawns one psychedelic blinking worm that follows the same desktop and mobile bagging rules as the standard targets.
+3. Bundled gameplay audio as local WAV files and documented the upstream sources and attribution trail.
+4. Extended focused regression coverage for stage audio playback, miss-triggered special-worm spawning, and psychedelic worm rendering.
 
 ## Validation
 
@@ -59,3 +73,5 @@ Expected outcome: the full repo gameplay/component tests, lint, and production b
 1. Desktop gameplay pass: the level HUD, bagged tally, and leave action remained readable over the gameplay backdrop while the staged art stayed decorative behind active worms.
 2. Mobile gameplay pass: the `Beat bell` timer, bag rule chip, and level copy all fit cleanly in the compact HUD without obscuring the active play space.
 3. Backdrop check: the gameplay backdrop stayed subdued enough that worms, target rings, and feedback cues remained easy to pick out at a glance.
+4. Audio-feedback check: the six-gunshot and three-whip cadence read as deliberate feedback, the dinosaur bag cue stayed distinct, and the WAV assets played cleanly from the shipped public bundle.
+5. Miss-pressure check: after five failed clicks in an active round, the psychedelic worm appeared once, stayed visually readable, and used the same capture rules as the other worms.

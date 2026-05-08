@@ -1,6 +1,7 @@
 import type { DisplayProfile } from "./detection";
 import { stepWormMovement } from "./movement";
 import { getProfileRules, type ProfileRules } from "./rules";
+import { createPsychedelicWorm, createStandardWorm, shouldSpawnPsychedelicWorm } from "./specialWorms";
 import { isFairyVisible, isWormActive, type ActionResult, type EngineRuntime, type Fairy, type GameSummary, type GameWorld, type Point, type RoundResult, type Worm } from "./types";
 
 const BLINK_RECOVER_MS = 220;
@@ -20,6 +21,7 @@ export type {
   RoundResult,
   Worm,
   WormState,
+  WormVisualVariant,
 } from "./types";
 
 export type CreateWorldOptions = {
@@ -50,15 +52,17 @@ export function createWorld(
     phase: "introCountdown",
     width,
     height,
-    worms: Array.from({ length: rules.totalWorms }, (_, index) => createWorm(index, rules, width, height, runtime)),
+    worms: Array.from({ length: rules.totalWorms }, (_, index) => createStandardWorm(index, rules, width, height, runtime)),
     fairies: [],
     pointer: null,
     collected: 0,
     elapsedMs: 0,
     timerMs: rules.timeLimitMs,
     countdownMs: rules.introCountdownMs,
+    activeRoundMisses: 0,
     rushTriggered: false,
     teleportsUnlocked: false,
+    psychedelicWormSpawned: false,
     finaleStartedAt: null,
     roundResult: null,
     runtime,
@@ -172,6 +176,23 @@ export function findWormIdAtPoint(world: GameWorld, point: Point): string | null
   return null;
 }
 
+export function applyMiss(world: GameWorld): ActionResult {
+  if (world.roundResult || world.countdownMs > 0) {
+    return { kind: "ignored" };
+  }
+
+  world.activeRoundMisses += 1;
+
+  if (shouldSpawnPsychedelicWorm(world)) {
+    world.psychedelicWormSpawned = true;
+    world.worms.push(createPsychedelicWorm(world));
+    syncWormStates(world);
+    updateRoundPhase(world);
+  }
+
+  return { kind: "miss" };
+}
+
 export function applyAccuratePress(world: GameWorld, wormId: string): ActionResult {
   if (world.roundResult || world.countdownMs > 0) {
     return { kind: "ignored" };
@@ -245,37 +266,6 @@ export function getSummary(world: GameWorld): GameSummary {
     countdownMs: world.countdownMs,
     finalWormActive: world.profile === "desktop" && remaining === 1,
     rushTriggered: world.rushTriggered,
-  };
-}
-
-function createWorm(
-  index: number,
-  rules: ReturnType<typeof getProfileRules>,
-  width: number,
-  height: number,
-  runtime: EngineRuntime,
-): Worm {
-  const hue = (index * 17) % 360;
-  const initialVx = randomBetween(runtime, -rules.baseMaxSpeed, rules.baseMaxSpeed);
-  const initialVy = randomBetween(runtime, -rules.baseMaxSpeed, rules.baseMaxSpeed);
-  const direction = Math.atan2(initialVy, initialVx || 0.0001);
-  const crawlPhase = randomBetween(runtime, 0, Math.PI * 2);
-
-  return {
-    id: `worm-${index + 1}`,
-    x: randomBetween(runtime, rules.baseRadius + 20, width - rules.baseRadius - 20),
-    y: randomBetween(runtime, rules.baseRadius + 20, height - rules.baseRadius - 20),
-    vx: initialVx,
-    vy: initialVy,
-    direction,
-    crawlPhase,
-    radius: rules.baseRadius + (index % 3),
-    hue,
-    wave: crawlPhase,
-    teleportsRemaining: 0,
-    touchBursts: 0,
-    state: "roaming",
-    stateTimerMs: 0,
   };
 }
 
