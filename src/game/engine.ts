@@ -7,6 +7,12 @@ import { isFairyVisible, isWormActive, type ActionResult, type EngineRuntime, ty
 const BLINK_RECOVER_MS = 220;
 const WORM_HIT_RADIUS_FACTOR = 3.1;
 
+// Continuous mode tuning
+const CONTINUOUS_MAX_SPAWN = 10; // max active worms to spawn in continuous mode
+const CONTINUOUS_SPAWN_INTERVAL_MS = 1200; // base spawn interval
+const SPEED_MULTIPLIER_CAP = 2.5; // maximum speed multiplier relative to base
+const SPEED_RAMP_PER_SECOND = 0.12; // increase multiplier per second
+
 export { PROFILE_RULES } from "./rules";
 export type {
   ActionResult,
@@ -66,7 +72,34 @@ export function createWorld(
     finaleStartedAt: null,
     roundResult: null,
     runtime,
+    continuousMode: {
+      active: false,
+      elapsedMs: 0,
+      speedMultiplier: 1,
+      spawnTimerMs: 0,
+      spawnIntervalMs: CONTINUOUS_SPAWN_INTERVAL_MS,
+    },
   };
+}
+
+export function startContinuousMode(world: GameWorld) {
+  world.continuousMode ??= {
+    active: false,
+    elapsedMs: 0,
+    speedMultiplier: 1,
+    spawnTimerMs: 0,
+    spawnIntervalMs: CONTINUOUS_SPAWN_INTERVAL_MS,
+  };
+  world.continuousMode.active = true;
+  world.continuousMode.elapsedMs = 0;
+  world.continuousMode.spawnTimerMs = 0;
+  world.continuousMode.speedMultiplier = 1;
+}
+
+export function stopContinuousMode(world: GameWorld) {
+  if (!world.continuousMode) return;
+  world.continuousMode.active = false;
+  world.continuousMode.spawnTimerMs = 0;
 }
 
 export function startRound(world: GameWorld) {
@@ -107,6 +140,30 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
 
   world.elapsedMs += deltaMs;
   advanceWormTimers(world, deltaMs);
+
+  // Continuous mode: ramp speed and spawn worms up to cap
+  if (world.continuousMode?.active) {
+    world.continuousMode.elapsedMs += deltaMs;
+    // ramp speed multiplier gradually
+    const inc = (SPEED_RAMP_PER_SECOND * deltaMs) / 1000;
+    world.continuousMode.speedMultiplier = Math.min(
+      SPEED_MULTIPLIER_CAP,
+      (world.continuousMode.speedMultiplier || 1) + inc,
+    );
+
+    // spawn timer
+    world.continuousMode.spawnTimerMs += deltaMs;
+    while (world.continuousMode.spawnTimerMs >= (world.continuousMode.spawnIntervalMs || CONTINUOUS_SPAWN_INTERVAL_MS)) {
+      world.continuousMode.spawnTimerMs -= world.continuousMode.spawnIntervalMs || CONTINUOUS_SPAWN_INTERVAL_MS;
+      const activeCount = world.worms.filter(isWormActive).length;
+      if (activeCount < CONTINUOUS_MAX_SPAWN) {
+        // create a new standard worm and add to world
+        world.worms.push(createStandardWorm(world.worms.length, world.rules, world.width, world.height, world.runtime));
+        syncWormStates(world);
+        updateRoundPhase(world);
+      }
+    }
+  }
 
   if (world.countdownMs > 0) {
     world.countdownMs = Math.max(0, world.countdownMs - deltaMs);
@@ -315,7 +372,9 @@ function getRemainingWorms(world: GameWorld) {
 function getWormSpeed(world: GameWorld) {
   const rules = world.rules;
   const base = rules.baseMaxSpeed + world.collected * rules.speedBonusPerCollect;
-  return clamp(base, 0, rules.rushSpeed);
+  const multiplier = world.continuousMode?.speedMultiplier ?? 1;
+  const speed = base * multiplier;
+  return clamp(speed, 0, rules.rushSpeed);
 }
 
 function teleportWorm(world: GameWorld, worm: Worm, immortal: boolean) {

@@ -112,6 +112,17 @@ export type GameWorld = {
   finaleStartedAt: number | null;
   roundResult: RoundResult | null;
   runtime: EngineRuntime;
+  continuousMode?: {
+    active: boolean;
+    // elapsed ms since continuous mode started (for deterministic tests)
+    elapsedMs: number;
+    // current speed multiplier applied to worm base speed
+    speedMultiplier: number;
+    // accumulated spawn timer (ms)
+    spawnTimerMs: number;
+    // desired spawn interval in ms
+    spawnIntervalMs: number;
+  };
 };
 
 export function isWormActive(worm: Worm) {

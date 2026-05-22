@@ -67,6 +67,7 @@ export function GameStage({
   const keyboardStatusId = useId();
   const [stageSummary, setStageSummary] = useState<GameSummary>(() => getSummary(initialWorld));
   const [keyboardTargetId, setKeyboardTargetId] = useState<string | null>(() => getKeyboardTargetId(initialWorld, null, "first"));
+  const [continuousActive, setContinuousActive] = useState<boolean>(() => initialWorld.continuousMode?.active ?? false);
   const [motionCue, setMotionCue] = useState<StageMotionCue>("none");
   const reducedMotionRef = useLatestValue(reducedMotion);
   const keyboardTargetRef = useLatestValue(keyboardTargetId);
@@ -256,6 +257,13 @@ export function GameStage({
 
       const roundResult = worldRef.current.roundResult;
       if (roundResult && !finishedRef.current) {
+        // stop continuous mode when round finishes
+        if (worldRef.current.continuousMode) {
+          worldRef.current.continuousMode.active = false;
+          worldRef.current.continuousMode.spawnTimerMs = 0;
+          worldRef.current.continuousMode.speedMultiplier = 1;
+        }
+        setContinuousActive(false);
         finishedRef.current = true;
         emitFairyLifecycleEvents(true);
         const finalSummary = getSummary(worldRef.current);
@@ -421,6 +429,13 @@ export function GameStage({
       if (frameRef.current !== null) {
         window.cancelAnimationFrame(frameRef.current);
       }
+      // Ensure continuous mode is stopped when the stage unmounts
+      if (worldRef.current.continuousMode) {
+        worldRef.current.continuousMode.active = false;
+        worldRef.current.continuousMode.spawnTimerMs = 0;
+        worldRef.current.continuousMode.speedMultiplier = 1;
+      }
+      setContinuousActive(false);
       audioController.dispose();
     };
   }, [keyboardTargetRef, level, levelRules, onEventRef, onRoundEndRef, onSummaryChangeRef, profile, reducedMotionRef, showActionEchoRef]);
@@ -434,6 +449,43 @@ export function GameStage({
       data-overlay-density={stagePresentation.overlayDensity}
     >
       <div className={styles.backdropLayer} style={{ backgroundImage: backdropUrl ? `url("${backdropUrl}")` : "none" }} />
+      <button
+        type="button"
+        className={styles.continuousToggle}
+        onClick={() => {
+          const active = worldRef.current.continuousMode?.active;
+          if (active) {
+            if (worldRef.current.continuousMode) {
+              worldRef.current.continuousMode.active = false;
+              worldRef.current.continuousMode.spawnTimerMs = 0;
+              worldRef.current.continuousMode.speedMultiplier = 1;
+            }
+            setContinuousActive(false);
+          } else {
+            if (!worldRef.current.continuousMode) {
+              worldRef.current.continuousMode = {
+                active: true,
+                elapsedMs: 0,
+                speedMultiplier: 1,
+                spawnTimerMs: 0,
+                spawnIntervalMs: 1200,
+              };
+            } else {
+              worldRef.current.continuousMode.active = true;
+              worldRef.current.continuousMode.elapsedMs = 0;
+              worldRef.current.continuousMode.spawnTimerMs = 0;
+              worldRef.current.continuousMode.speedMultiplier = 1;
+            }
+            setContinuousActive(true);
+          }
+          // update summary/UI immediately
+          const nextSummary = getSummary(worldRef.current);
+          setStageSummary(nextSummary);
+          onSummaryChangeRef.current(nextSummary);
+        }}
+      >
+        {continuousActive ? "Stop" : "Continuous"}
+      </button>
       <p id={keyboardHelpId} className={styles.srOnly}>
         Use arrow keys to move the target between worms. Press Enter or Space to act on the selected worm.
       </p>
