@@ -9,6 +9,7 @@ import { getKeyboardStatus, getKeyboardTargetId, type KeyboardTargetMode } from 
 import { areSummariesEqual, renderStage, stepFeedback, type StageFeedback } from "@/components/gameStagePresentation";
 import { getMotionFeedback, type StageMotionCue } from "@/components/gameStageMotion";
 import { getStagePresentation } from "@/components/gameStagePhasePresentation";
+import GameHUD from "./GameHUD";
 import { getFairyLifecycleEvents, getRoundEndedDetails, getRoundTransitionEvents } from "@/lib/analytics";
 import {
   applyAccuratePress,
@@ -108,6 +109,13 @@ export function GameStage({
       cueTimerRef.current = null;
     }, reducedMotion ? 140 : 760);
   }, [reducedMotion, stageSummary]);
+
+  function formatTimeMs(ms: number) {
+    const totalSeconds = Math.max(0, Math.round(ms / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  }
 
   useEffect(() => {
     const nextWorld = hasMountedRef.current
@@ -499,6 +507,7 @@ export function GameStage({
         aria-label="Worm Ranch game field"
         tabIndex={0}
       />
+      <GameHUD time={formatTimeMs(stageSummary.timerMs)} kills={stageSummary.collected} />
       <div className={styles.statusStrip} aria-live="off">
         {statusItems.map((item, index) => (
           <div
