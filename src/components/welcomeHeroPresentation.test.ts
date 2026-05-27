@@ -12,14 +12,14 @@ describe("welcomeHeroPresentation", () => {
     const variant = getWelcomeHeroVariant(1280);
 
     expect(getWelcomeHeroLayout(1280)).toBe("desktop");
-    expect(variant.src).toBe("/art/welcome-memory-desktop.webp");
-    expect(variant.introVideoSrc).toBeNull();
-    expect(presentation.variants.desktop.src).toBe("/art/welcome-memory-desktop.webp");
-    expect(presentation.variants.desktop.introVideoSrc).toBeNull();
-    expect(presentation.variants.mobile.src).toBe("/art/welcome-memory-mobile.webp");
-    expect(presentation.variants.mobile.introVideoSrc).toBeNull();
-    expect(variant.imageObjectPosition).toBe("34% 46%");
-    expect(variant.videoObjectPosition).toBe("34% 46%");
+    expect(variant.src).toBe("/art/worm-ranch-launch-poster.png");
+    expect(variant.introVideoSrc).toBe("/art/worm-ranch-launch-intro.mp4");
+    expect(presentation.variants.desktop.src).toBe("/art/worm-ranch-launch-poster.png");
+    expect(presentation.variants.desktop.introVideoSrc).toBe("/art/worm-ranch-launch-intro.mp4");
+    expect(presentation.variants.mobile.src).toBe("/art/worm-ranch-launch-poster.png");
+    expect(presentation.variants.mobile.introVideoSrc).toBe("/art/worm-ranch-launch-intro.mp4");
+    expect(variant.imageObjectPosition).toBe("50% 50%");
+    expect(variant.videoObjectPosition).toBe("50% 50%");
     expect(variant.overlayStrength).toBe("strong");
     expect(presentation.ambientMotionLayersEnabled).toBe(true);
   });
@@ -28,10 +28,10 @@ describe("welcomeHeroPresentation", () => {
     const variant = getWelcomeHeroVariant(390);
 
     expect(getWelcomeHeroLayout(390)).toBe("mobile");
-    expect(variant.src).toBe("/art/welcome-memory-mobile.webp");
-    expect(variant.introVideoSrc).toBeNull();
-    expect(variant.imageObjectPosition).toBe("58% 22%");
-    expect(variant.videoObjectPosition).toBe("56% 20%");
+    expect(variant.src).toBe("/art/worm-ranch-launch-poster.png");
+    expect(variant.introVideoSrc).toBe("/art/worm-ranch-launch-intro.mp4");
+    expect(variant.imageObjectPosition).toBe("50% 50%");
+    expect(variant.videoObjectPosition).toBe("50% 50%");
     expect(variant.cropIntent).toBe("preserve-rider-silhouette-and-copy-safe-zone");
   });
 

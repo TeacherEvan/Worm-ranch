@@ -128,6 +128,7 @@ function buildStatusItemsForSummary(
 ): StatusItem[] {
   const isCountdown = summary.phase === "introCountdown";
   const isResolved = summary.phase === "resolved";
+  const showClock = !summary.continuousActive;
 
   if (summary.profile === "desktop") {
     return [
@@ -137,12 +138,16 @@ function buildStatusItemsForSummary(
         value: `${summary.collected}/${rules.totalWorms}`,
         active: !isResolved && summary.collected > 0,
       },
-      {
-        id: "clock",
-        label: "Clock",
-        value: `${Math.ceil(summary.timerMs / 1000)}s`,
-        active: !isCountdown && !isResolved && summary.timerMs <= 15_000,
-      },
+      ...(showClock
+        ? [
+            {
+              id: "clock",
+              label: "Clock",
+              value: `${Math.ceil(summary.timerMs / 1000)}s`,
+              active: !isCountdown && !isResolved && summary.timerMs <= 15_000,
+            },
+          ]
+        : []),
       {
         id: "mechanic",
         label: summary.phase === "ghostFinale" ? "Ghost" : "Blink gate",
@@ -159,12 +164,16 @@ function buildStatusItemsForSummary(
       value: `${summary.collected}/${rules.totalWorms}`,
       active: !isResolved && summary.collected > 0,
     },
-    {
-      id: "clock",
-      label: "Beat bell",
-      value: `${Math.ceil(summary.timerMs / 1000)}s left`,
-      active: !isCountdown && !isResolved,
-    },
+    ...(showClock
+      ? [
+          {
+            id: "clock",
+            label: "Beat bell",
+            value: `${Math.ceil(summary.timerMs / 1000)}s left`,
+            active: !isCountdown && !isResolved,
+          },
+        ]
+      : []),
     {
       id: "mechanic",
       label: summary.rushTriggered ? "Rush" : "Bag rule",

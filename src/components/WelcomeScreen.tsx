@@ -146,7 +146,6 @@ function WelcomeHeroMedia({ heroVariant, reducedMotion }: WelcomeHeroMediaProps)
             onError={() => setLaunchMediaState((currentState) => getNextWelcomeLaunchMediaState(currentState, "video-error"))}
             onLoadedMetadata={() => setIntroVideoMetadataLoaded(true)}
             playsInline
-            poster={heroVariant.src}
             preload="metadata"
             src={heroVariant.introVideoSrc}
             style={{ objectPosition: heroVariant.videoObjectPosition }}

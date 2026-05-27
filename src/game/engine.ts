@@ -100,6 +100,7 @@ export function stopContinuousMode(world: GameWorld) {
   if (!world.continuousMode) return;
   world.continuousMode.active = false;
   world.continuousMode.spawnTimerMs = 0;
+  world.continuousMode.speedMultiplier = 1;
 }
 
 export function startRound(world: GameWorld) {
@@ -157,8 +158,7 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
       world.continuousMode.spawnTimerMs -= world.continuousMode.spawnIntervalMs || CONTINUOUS_SPAWN_INTERVAL_MS;
       const activeCount = world.worms.filter(isWormActive).length;
       if (activeCount < CONTINUOUS_MAX_SPAWN) {
-        // create a new standard worm and add to world
-        world.worms.push(createStandardWorm(world.worms.length, world.rules, world.width, world.height, world.runtime));
+        spawnContinuousWorm(world);
         syncWormStates(world);
         updateRoundPhase(world);
       }
@@ -171,11 +171,13 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
     return;
   }
 
-  world.timerMs = Math.max(0, world.timerMs - deltaMs);
+  if (!world.continuousMode?.active) {
+    world.timerMs = Math.max(0, world.timerMs - deltaMs);
 
-  if (world.timerMs === 0) {
-    finishWorld(world, "time");
-    return;
+    if (world.timerMs === 0) {
+      finishWorld(world, "time");
+      return;
+    }
   }
 
   for (const worm of world.worms) {
@@ -320,6 +322,7 @@ export function getSummary(world: GameWorld): GameSummary {
     remaining,
     fairies: world.fairies.filter(isFairyVisible).length,
     timerMs: world.timerMs,
+    continuousActive: world.continuousMode?.active ?? false,
     speedBonus: world.collected * rules.speedBonusPerCollect,
     teleportsUnlocked: world.teleportsUnlocked,
     countdownMs: world.countdownMs,
@@ -375,6 +378,19 @@ function getWormSpeed(world: GameWorld) {
   const multiplier = world.continuousMode?.speedMultiplier ?? 1;
   const speed = base * multiplier;
   return clamp(speed, 0, rules.rushSpeed);
+}
+
+function spawnContinuousWorm(world: GameWorld) {
+  const inactiveIndex = world.worms.findIndex((worm) => !isWormActive(worm));
+  const spawnIndex = inactiveIndex >= 0 ? inactiveIndex : world.worms.length;
+  const worm = createStandardWorm(spawnIndex, world.rules, world.width, world.height, world.runtime);
+
+  if (inactiveIndex >= 0) {
+    world.worms[inactiveIndex] = worm;
+    return;
+  }
+
+  world.worms.push(worm);
 }
 
 function teleportWorm(world: GameWorld, worm: Worm, immortal: boolean) {

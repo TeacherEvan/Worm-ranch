@@ -6,7 +6,13 @@ import badgeStyles from "./GameStagePhaseBadge.module.css";
 import { createGameStageAudioController } from "@/components/gameStageAudio";
 import { useLatestValue, useStageActionEcho } from "./gameStageActionEcho";
 import { getKeyboardStatus, getKeyboardTargetId, type KeyboardTargetMode } from "@/components/gameStageKeyboard";
-import { areSummariesEqual, renderStage, stepFeedback, type StageFeedback } from "@/components/gameStagePresentation";
+import {
+  areSummariesEqual,
+  drawStaticStageBackdrop,
+  renderStage,
+  stepFeedback,
+  type StageFeedback,
+} from "@/components/gameStagePresentation";
 import { getMotionFeedback, type StageMotionCue } from "@/components/gameStageMotion";
 import { getStagePresentation } from "@/components/gameStagePhasePresentation";
 import GameHUD from "./GameHUD";
@@ -19,7 +25,9 @@ import {
   getSummary,
   resizeWorld,
   setPointer,
+  startContinuousMode,
   stepWorld,
+  stopContinuousMode,
   triggerTouchRush,
 } from "@/game/engine";
 import type { DisplayProfile } from "@/game/detection";
@@ -38,6 +46,28 @@ type GameStageProps = {
 };
 
 const SUMMARY_INTERVAL_MS = 120;
+
+type StaticBackdropCache = {
+  canvas: HTMLCanvasElement;
+  context: CanvasRenderingContext2D;
+  dpr: number;
+  height: number;
+  width: number;
+};
+
+export function getCappedCanvasDpr(devicePixelRatio: number, profile: DisplayProfile, reducedMotion: boolean) {
+  const safeDpr = Number.isFinite(devicePixelRatio) && devicePixelRatio > 0 ? devicePixelRatio : 1;
+  const maxDpr = profile === "mobile" || reducedMotion ? 1.5 : 2;
+  return Math.min(safeDpr, maxDpr);
+}
+
+export function getVisibleSummary(summary: GameSummary): GameSummary {
+  return {
+    ...summary,
+    timerMs: quantizeVisibleMs(summary.timerMs),
+    countdownMs: quantizeVisibleMs(summary.countdownMs),
+  };
+}
 
 export function GameStage({
   backdropUrl = null,
@@ -61,12 +91,14 @@ export function GameStage({
   const hasMountedRef = useRef(false);
   const canvasBoundsRef = useRef<{ left: number; top: number; width: number; height: number } | null>(null);
   const summaryAnalyticsRef = useRef<GameSummary | null>(null);
+  const displayedSummaryRef = useRef<GameSummary | null>(null);
   const previousSummaryRef = useRef<GameSummary | null>(null);
   const fairyStatesRef = useRef<Map<string, FairyState>>(new Map());
+  const staticBackdropRef = useRef<StaticBackdropCache | null>(null);
   const cueTimerRef = useRef<number | null>(null);
   const keyboardHelpId = useId();
   const keyboardStatusId = useId();
-  const [stageSummary, setStageSummary] = useState<GameSummary>(() => getSummary(initialWorld));
+  const [stageSummary, setStageSummary] = useState<GameSummary>(() => getVisibleSummary(getSummary(initialWorld)));
   const [keyboardTargetId, setKeyboardTargetId] = useState<string | null>(() => getKeyboardTargetId(initialWorld, null, "first"));
   const [continuousActive, setContinuousActive] = useState<boolean>(() => initialWorld.continuousMode?.active ?? false);
   const [motionCue, setMotionCue] = useState<StageMotionCue>("none");
@@ -130,8 +162,10 @@ export function GameStage({
     canvasBoundsRef.current = null;
     fairyStatesRef.current = new Map();
 
-    const initialSummary = getSummary(worldRef.current);
-    summaryAnalyticsRef.current = initialSummary;
+    const initialRawSummary = getSummary(worldRef.current);
+    const initialSummary = getVisibleSummary(initialRawSummary);
+    summaryAnalyticsRef.current = initialRawSummary;
+    displayedSummaryRef.current = initialSummary;
     previousSummaryRef.current = initialSummary;
     setStageSummary(initialSummary);
     setKeyboardTargetId(getKeyboardTargetId(worldRef.current, null, "first"));
@@ -162,13 +196,54 @@ export function GameStage({
       return rect;
     };
 
+    const prepareStaticBackdrop = (width: number, height: number, dpr: number) => {
+      if (typeof document === "undefined") {
+        staticBackdropRef.current = null;
+        return null;
+      }
+
+      let cachedBackdrop = staticBackdropRef.current;
+      if (!cachedBackdrop) {
+        const cacheCanvas = document.createElement("canvas");
+        const cacheContext = cacheCanvas.getContext("2d");
+        if (!cacheContext) {
+          staticBackdropRef.current = null;
+          return null;
+        }
+
+        cachedBackdrop = {
+          canvas: cacheCanvas,
+          context: cacheContext,
+          dpr: 0,
+          height: 0,
+          width: 0,
+        };
+        staticBackdropRef.current = cachedBackdrop;
+      }
+
+      if (cachedBackdrop.width === width && cachedBackdrop.height === height && cachedBackdrop.dpr === dpr) {
+        return cachedBackdrop.canvas;
+      }
+
+      cachedBackdrop.width = width;
+      cachedBackdrop.height = height;
+      cachedBackdrop.dpr = dpr;
+      cachedBackdrop.canvas.width = Math.round(width * dpr);
+      cachedBackdrop.canvas.height = Math.round(height * dpr);
+      cachedBackdrop.context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cachedBackdrop.context.clearRect(0, 0, width, height);
+      drawStaticStageBackdrop(cachedBackdrop.context, width, height);
+      return cachedBackdrop.canvas;
+    };
+
     const resize = () => {
       const rect = updateCanvasBounds();
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = getCappedCanvasDpr(window.devicePixelRatio || 1, profile, reducedMotionRef.current);
       canvas.width = Math.round(rect.width * dpr);
       canvas.height = Math.round(rect.height * dpr);
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
       resizeWorld(worldRef.current, rect.width, rect.height);
+      prepareStaticBackdrop(rect.width, rect.height, dpr);
     };
 
     const emitSummaryTransitionEvents = (nextSummary: GameSummary) => {
@@ -187,13 +262,15 @@ export function GameStage({
       }
 
       summaryRef.current = now;
-      const nextSummary = getSummary(worldRef.current);
-      emitSummaryTransitionEvents(nextSummary);
-      setStageSummary((currentSummary) =>
-        areSummariesEqual(currentSummary, nextSummary) ? currentSummary : nextSummary,
-      );
+      const nextRawSummary = getSummary(worldRef.current);
+      const nextSummary = getVisibleSummary(nextRawSummary);
+      emitSummaryTransitionEvents(nextRawSummary);
+      if (!displayedSummaryRef.current || !areSummariesEqual(displayedSummaryRef.current, nextSummary)) {
+        displayedSummaryRef.current = nextSummary;
+        setStageSummary(nextSummary);
+        onSummaryChangeRef.current(nextSummary);
+      }
       setKeyboardTargetId((currentTargetId) => getKeyboardTargetId(worldRef.current, currentTargetId, "preserve"));
-      onSummaryChangeRef.current(nextSummary);
     };
 
     const emitFairyLifecycleEvents = (flushMorphing = false) => {
@@ -260,22 +337,20 @@ export function GameStage({
         feedbackRef.current,
         keyboardTargetRef.current,
         level,
+        staticBackdropRef.current?.canvas ?? null,
       );
       updateSummary();
 
       const roundResult = worldRef.current.roundResult;
       if (roundResult && !finishedRef.current) {
-        // stop continuous mode when round finishes
-        if (worldRef.current.continuousMode) {
-          worldRef.current.continuousMode.active = false;
-          worldRef.current.continuousMode.spawnTimerMs = 0;
-          worldRef.current.continuousMode.speedMultiplier = 1;
-        }
+        stopContinuousMode(worldRef.current);
         setContinuousActive(false);
         finishedRef.current = true;
         emitFairyLifecycleEvents(true);
-        const finalSummary = getSummary(worldRef.current);
-        emitSummaryTransitionEvents(finalSummary);
+        const finalRawSummary = getSummary(worldRef.current);
+        const finalSummary = getVisibleSummary(finalRawSummary);
+        emitSummaryTransitionEvents(finalRawSummary);
+        displayedSummaryRef.current = finalSummary;
         setStageSummary(finalSummary);
         onSummaryChangeRef.current(finalSummary);
         onEventRef.current("round_ended", getRoundEndedDetails(roundResult));
@@ -413,6 +488,7 @@ export function GameStage({
       feedbackRef.current,
       keyboardTargetRef.current,
       level,
+      staticBackdropRef.current?.canvas ?? null,
     );
     frameRef.current = window.requestAnimationFrame(loop);
 
@@ -437,12 +513,7 @@ export function GameStage({
       if (frameRef.current !== null) {
         window.cancelAnimationFrame(frameRef.current);
       }
-      // Ensure continuous mode is stopped when the stage unmounts
-      if (worldRef.current.continuousMode) {
-        worldRef.current.continuousMode.active = false;
-        worldRef.current.continuousMode.spawnTimerMs = 0;
-        worldRef.current.continuousMode.speedMultiplier = 1;
-      }
+      stopContinuousMode(worldRef.current);
       setContinuousActive(false);
       audioController.dispose();
     };
@@ -463,31 +534,15 @@ export function GameStage({
         onClick={() => {
           const active = worldRef.current.continuousMode?.active;
           if (active) {
-            if (worldRef.current.continuousMode) {
-              worldRef.current.continuousMode.active = false;
-              worldRef.current.continuousMode.spawnTimerMs = 0;
-              worldRef.current.continuousMode.speedMultiplier = 1;
-            }
+            stopContinuousMode(worldRef.current);
             setContinuousActive(false);
           } else {
-            if (!worldRef.current.continuousMode) {
-              worldRef.current.continuousMode = {
-                active: true,
-                elapsedMs: 0,
-                speedMultiplier: 1,
-                spawnTimerMs: 0,
-                spawnIntervalMs: 1200,
-              };
-            } else {
-              worldRef.current.continuousMode.active = true;
-              worldRef.current.continuousMode.elapsedMs = 0;
-              worldRef.current.continuousMode.spawnTimerMs = 0;
-              worldRef.current.continuousMode.speedMultiplier = 1;
-            }
+            startContinuousMode(worldRef.current);
             setContinuousActive(true);
           }
           // update summary/UI immediately
-          const nextSummary = getSummary(worldRef.current);
+          const nextSummary = getVisibleSummary(getSummary(worldRef.current));
+          displayedSummaryRef.current = nextSummary;
           setStageSummary(nextSummary);
           onSummaryChangeRef.current(nextSummary);
         }}
@@ -507,7 +562,7 @@ export function GameStage({
         aria-label="Worm Ranch game field"
         tabIndex={0}
       />
-      <GameHUD time={formatTimeMs(stageSummary.timerMs)} kills={stageSummary.collected} />
+      <GameHUD time={continuousActive ? null : formatTimeMs(stageSummary.timerMs)} kills={stageSummary.collected} />
       <div className={styles.statusStrip} aria-live="off">
         {statusItems.map((item, index) => (
           <div
@@ -538,4 +593,8 @@ export function GameStage({
       </div>
     </div>
   );
+}
+
+function quantizeVisibleMs(ms: number) {
+  return Math.max(0, Math.ceil(ms / 1000) * 1000);
 }

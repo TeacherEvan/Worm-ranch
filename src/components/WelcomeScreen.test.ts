@@ -22,24 +22,25 @@ afterEach(() => {
 });
 
 describe("WelcomeScreen", () => {
-  it("renders the desktop welcome image without an intro video when reduced motion is off", async () => {
+  it("renders the desktop launch poster with the worm intro video when reduced motion is off", async () => {
     const html = await renderWelcomeScreen(false);
 
-    expect(html).not.toContain("<video");
-    expect(html).toContain("welcome-memory-desktop.webp");
-    expect(html).toContain('data-launch-media="image"');
+    expect(html).toContain("<video");
+    expect(html).toContain("worm-ranch-launch-poster.png");
+    expect(html).toContain("worm-ranch-launch-intro.mp4");
+    expect(html).toContain('data-launch-media="video"');
     expect(html).toContain('data-launch-loader-state="loading"');
     expect(html).toContain("Open the gate, or rig the tack first.");
-    expect(html).toContain("Ranch glass coming online");
+    expect(html).toContain("Booting the reclamation rig");
     expect(html).toContain("18%");
   });
 
-  it("uses the same still welcome image contract when reduced motion is on", async () => {
+  it("uses the launch poster without autoplay video when reduced motion is on", async () => {
     const html = await renderWelcomeScreen(true);
 
     expect(html).not.toContain("<video");
     expect(html).toContain('data-launch-media="image"');
-    expect(html).toContain("welcome-memory-desktop.webp");
+    expect(html).toContain("worm-ranch-launch-poster.png");
     expect(html).toContain('data-launch-loader-state="loading"');
     expect(html).toContain("Ranch glass coming online");
   });
@@ -81,7 +82,7 @@ describe("WelcomeScreen", () => {
     expect(matchMedia).toHaveBeenCalledWith("(max-width: 767px)");
     expect(addEventListener).toHaveBeenCalledWith("change", expect.any(Function));
     expect(removeEventListener).toHaveBeenCalledWith("change", expect.any(Function));
-    expect(html).toContain("welcome-memory-mobile.webp");
+    expect(html).toContain("worm-ranch-launch-poster.png");
     expect(html).toContain('data-safe-zone="lower-copy-band"');
   });
 });

@@ -221,6 +221,7 @@
   gap: 2px;
   padding: 6px 8px;
   border-radius: 12px;
+  backdrop-filter: none;
 }
 
 .shell[data-overlay-density="compact"] .statusLabel {
@@ -247,6 +248,10 @@
   padding: 10px;
   gap: 8px;
   align-items: stretch;
+}
+
+.shell[data-overlay-density="compact"] .backdropLayer {
+  filter: brightness(0.96);
 }
 
 .copyCluster {
@@ -296,6 +301,7 @@
   padding: 8px 10px;
   font-size: 0.84rem;
   line-height: 1.28;
+  backdrop-filter: none;
 }
 
 .message strong {
@@ -548,6 +554,16 @@
   transition-duration: 0.01ms;
 }
 
+.shell[data-motion="reduced"]::before,
+.shell[data-motion="reduced"] .backdropLayer {
+  filter: none;
+}
+
+.shell[data-motion="reduced"] .statusPill,
+.shell[data-motion="reduced"] .message {
+  backdrop-filter: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .shell::before,
   .shell::after,
@@ -555,5 +571,15 @@
   .copyCluster {
     animation: none;
     transition-duration: 0.01ms;
+  }
+
+  .shell::before,
+  .backdropLayer {
+    filter: none;
+  }
+
+  .statusPill,
+  .message {
+    backdrop-filter: none;
   }
 }

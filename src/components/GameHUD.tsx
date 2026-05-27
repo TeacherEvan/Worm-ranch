@@ -1,7 +1,7 @@
 import React from "react";
 
 type Props = {
-  time: string;
+  time?: string | null;
   kills: number;
 };
 
@@ -19,9 +19,11 @@ export default function GameHUD({ time, kills }: Props) {
 
   return (
     <>
-      <div aria-label="game time" style={{ ...common, left: 8, top: 8 }}>
-        {time}
-      </div>
+      {time ? (
+        <div aria-label="game time" style={{ ...common, left: 8, top: 8 }}>
+          {time}
+        </div>
+      ) : null}
       <div aria-label="worms killed" style={{ ...common, right: 8, top: 8 }}>
         {kills}
       </div>

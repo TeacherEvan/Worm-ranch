@@ -80,4 +80,24 @@ describe("gameStagePhasePresentation", () => {
     expect(presentation.copy.body).toBe("Tagged worms need 3 taps.");
     expect(presentation.copy.hint).toBe("Stay on one worm until it bags.");
   });
+
+  it("removes clock status while continuous mode is active", () => {
+    const world = createWorld("desktop", 800, 540, {
+      ...createDeterministicOptions(73),
+      rules: getGameplayLevelRules("desktop", 1),
+    });
+
+    startRound(world);
+    world.continuousMode = {
+      active: true,
+      elapsedMs: 0,
+      speedMultiplier: 1,
+      spawnTimerMs: 0,
+      spawnIntervalMs: 1200,
+    };
+
+    const presentation = getStagePresentation(getSummary(world), "desktop", 1);
+
+    expect(presentation.statusItems.map((item) => item.id)).toEqual(["bagged", "mechanic"]);
+  });
 });

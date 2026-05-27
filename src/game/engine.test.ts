@@ -6,6 +6,7 @@ import {
   findWormIdAtPoint,
   getSummary,
   setPointer,
+  startContinuousMode,
   startRound,
   stepWorld,
   triggerTouchRush,
@@ -85,6 +86,41 @@ describe("engine", () => {
     triggerTouchRush(world, { x: 120, y: 140 });
 
     expect(world.rushTriggered).toBe(true);
+  });
+
+  it("pauses the round timer while continuous mode is active", () => {
+    const world = createWorld("desktop", 800, 540, createDeterministicOptions(43));
+    startRound(world);
+    world.timerMs = 1_000;
+
+    startContinuousMode(world);
+    stepWorld(world, 2_000);
+
+    expect(world.timerMs).toBe(1_000);
+    expect(world.roundResult).toBeNull();
+    expect(getSummary(world).continuousActive).toBe(true);
+  });
+
+  it("recycles inactive worm slots during continuous mode spawns", () => {
+    const world = createWorld("mobile", 800, 540, createDeterministicOptions(47));
+    startRound(world);
+    const initialLength = world.worms.length;
+    const firstWorm = world.worms[0];
+
+    if (!firstWorm) {
+      throw new Error("expected a worm");
+    }
+
+    firstWorm.state = "captured";
+    startContinuousMode(world);
+    stepWorld(world, 1_200);
+
+    expect(world.worms).toHaveLength(initialLength);
+    expect(world.worms[0]?.id).toBe("worm-1");
+    expect(world.worms[0]?.state).toBe("roaming");
+    expect(world.worms.filter((worm) => worm.state !== "captured" && worm.state !== "escaped")).toHaveLength(
+      initialLength,
+    );
   });
 
   it("mobile first accurate tap tags a worm without capturing it", () => {
