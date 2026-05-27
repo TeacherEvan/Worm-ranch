@@ -67,6 +67,7 @@ export type GameSummary = {
   remaining: number;
   fairies: number;
   timerMs: number;
+  continuousActive: boolean;
   speedBonus: number;
   teleportsUnlocked: boolean;
   countdownMs: number;

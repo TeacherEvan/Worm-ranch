@@ -112,6 +112,7 @@ export function areSummariesEqual(left: GameSummary, right: GameSummary) {
     left.remaining === right.remaining &&
     left.fairies === right.fairies &&
     left.timerMs === right.timerMs &&
+    left.continuousActive === right.continuousActive &&
     left.speedBonus === right.speedBonus &&
     left.teleportsUnlocked === right.teleportsUnlocked &&
     left.countdownMs === right.countdownMs &&

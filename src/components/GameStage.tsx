@@ -19,7 +19,9 @@ import {
   getSummary,
   resizeWorld,
   setPointer,
+  startContinuousMode,
   stepWorld,
+  stopContinuousMode,
   triggerTouchRush,
 } from "@/game/engine";
 import type { DisplayProfile } from "@/game/detection";
@@ -265,12 +267,7 @@ export function GameStage({
 
       const roundResult = worldRef.current.roundResult;
       if (roundResult && !finishedRef.current) {
-        // stop continuous mode when round finishes
-        if (worldRef.current.continuousMode) {
-          worldRef.current.continuousMode.active = false;
-          worldRef.current.continuousMode.spawnTimerMs = 0;
-          worldRef.current.continuousMode.speedMultiplier = 1;
-        }
+        stopContinuousMode(worldRef.current);
         setContinuousActive(false);
         finishedRef.current = true;
         emitFairyLifecycleEvents(true);
@@ -437,12 +434,7 @@ export function GameStage({
       if (frameRef.current !== null) {
         window.cancelAnimationFrame(frameRef.current);
       }
-      // Ensure continuous mode is stopped when the stage unmounts
-      if (worldRef.current.continuousMode) {
-        worldRef.current.continuousMode.active = false;
-        worldRef.current.continuousMode.spawnTimerMs = 0;
-        worldRef.current.continuousMode.speedMultiplier = 1;
-      }
+      stopContinuousMode(worldRef.current);
       setContinuousActive(false);
       audioController.dispose();
     };
@@ -463,27 +455,10 @@ export function GameStage({
         onClick={() => {
           const active = worldRef.current.continuousMode?.active;
           if (active) {
-            if (worldRef.current.continuousMode) {
-              worldRef.current.continuousMode.active = false;
-              worldRef.current.continuousMode.spawnTimerMs = 0;
-              worldRef.current.continuousMode.speedMultiplier = 1;
-            }
+            stopContinuousMode(worldRef.current);
             setContinuousActive(false);
           } else {
-            if (!worldRef.current.continuousMode) {
-              worldRef.current.continuousMode = {
-                active: true,
-                elapsedMs: 0,
-                speedMultiplier: 1,
-                spawnTimerMs: 0,
-                spawnIntervalMs: 1200,
-              };
-            } else {
-              worldRef.current.continuousMode.active = true;
-              worldRef.current.continuousMode.elapsedMs = 0;
-              worldRef.current.continuousMode.spawnTimerMs = 0;
-              worldRef.current.continuousMode.speedMultiplier = 1;
-            }
+            startContinuousMode(worldRef.current);
             setContinuousActive(true);
           }
           // update summary/UI immediately
@@ -507,7 +482,7 @@ export function GameStage({
         aria-label="Worm Ranch game field"
         tabIndex={0}
       />
-      <GameHUD time={formatTimeMs(stageSummary.timerMs)} kills={stageSummary.collected} />
+      <GameHUD time={continuousActive ? null : formatTimeMs(stageSummary.timerMs)} kills={stageSummary.collected} />
       <div className={styles.statusStrip} aria-live="off">
         {statusItems.map((item, index) => (
           <div

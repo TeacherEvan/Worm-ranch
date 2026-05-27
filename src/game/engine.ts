@@ -100,6 +100,7 @@ export function stopContinuousMode(world: GameWorld) {
   if (!world.continuousMode) return;
   world.continuousMode.active = false;
   world.continuousMode.spawnTimerMs = 0;
+  world.continuousMode.speedMultiplier = 1;
 }
 
 export function startRound(world: GameWorld) {
@@ -171,11 +172,13 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
     return;
   }
 
-  world.timerMs = Math.max(0, world.timerMs - deltaMs);
+  if (!world.continuousMode?.active) {
+    world.timerMs = Math.max(0, world.timerMs - deltaMs);
 
-  if (world.timerMs === 0) {
-    finishWorld(world, "time");
-    return;
+    if (world.timerMs === 0) {
+      finishWorld(world, "time");
+      return;
+    }
   }
 
   for (const worm of world.worms) {
@@ -320,6 +323,7 @@ export function getSummary(world: GameWorld): GameSummary {
     remaining,
     fairies: world.fairies.filter(isFairyVisible).length,
     timerMs: world.timerMs,
+    continuousActive: world.continuousMode?.active ?? false,
     speedBonus: world.collected * rules.speedBonusPerCollect,
     teleportsUnlocked: world.teleportsUnlocked,
     countdownMs: world.countdownMs,

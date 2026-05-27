@@ -6,6 +6,7 @@ import {
   findWormIdAtPoint,
   getSummary,
   setPointer,
+  startContinuousMode,
   startRound,
   stepWorld,
   triggerTouchRush,
@@ -85,6 +86,19 @@ describe("engine", () => {
     triggerTouchRush(world, { x: 120, y: 140 });
 
     expect(world.rushTriggered).toBe(true);
+  });
+
+  it("pauses the round timer while continuous mode is active", () => {
+    const world = createWorld("desktop", 800, 540, createDeterministicOptions(43));
+    startRound(world);
+    world.timerMs = 1_000;
+
+    startContinuousMode(world);
+    stepWorld(world, 2_000);
+
+    expect(world.timerMs).toBe(1_000);
+    expect(world.roundResult).toBeNull();
+    expect(getSummary(world).continuousActive).toBe(true);
   });
 
   it("mobile first accurate tap tags a worm without capturing it", () => {
