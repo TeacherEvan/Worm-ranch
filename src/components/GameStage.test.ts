@@ -272,7 +272,9 @@ async function createInteractionHarness(options: InteractionHarnessOptions = {})
     })),
     resizeWorld: vi.fn(),
     setPointer: vi.fn(),
+    startContinuousMode: vi.fn(),
     stepWorld: vi.fn(),
+    stopContinuousMode: vi.fn(),
     triggerTouchRush: vi.fn(),
   }));
 
@@ -595,7 +597,9 @@ describe("GameStage", () => {
       })),
       resizeWorld: vi.fn(),
       setPointer: vi.fn(),
+      startContinuousMode: vi.fn(),
       stepWorld: vi.fn(),
+      stopContinuousMode: vi.fn(),
       triggerTouchRush: vi.fn(),
     }));
     vi.doMock("@/components/gameStageAudio", () => ({
@@ -837,7 +841,9 @@ describe("GameStage", () => {
       })),
       resizeWorld: vi.fn(),
       setPointer: vi.fn(),
+      startContinuousMode: vi.fn(),
       stepWorld: vi.fn(),
+      stopContinuousMode: vi.fn(),
       triggerTouchRush: vi.fn(),
     }));
     vi.doMock("@/game/levels", () => ({
