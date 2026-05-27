@@ -23,6 +23,8 @@ export type StatusItem = {
   active: boolean;
 };
 
+export type StageStaticBackdrop = CanvasImageSource;
+
 export type StageCopy = {
   title: string;
   body: string;
@@ -36,13 +38,17 @@ export function renderStage(
   feedback: StageFeedback[],
   selectedWormId: string | null,
   level = 1,
+  staticBackdrop: StageStaticBackdrop | null = null,
 ) {
   context.clearRect(0, 0, world.width, world.height);
   const frameNow = performance.now();
 
-  drawStageBaseFill(context, world.width, world.height);
+  if (staticBackdrop) {
+    context.drawImage(staticBackdrop, 0, 0, world.width, world.height);
+  } else {
+    drawStaticStageBackdrop(context, world.width, world.height);
+  }
 
-  drawCorralBackdrop(context, world.width, world.height);
   drawPointerCorral(context, world, reducedMotion, frameNow);
 
   if (world.phase === "ghostFinale") {
@@ -87,6 +93,11 @@ export function renderStage(
   }
 
   drawFeedback(context, feedback, reducedMotion);
+}
+
+export function drawStaticStageBackdrop(context: CanvasRenderingContext2D, width: number, height: number) {
+  drawStageBaseFill(context, width, height);
+  drawCorralBackdrop(context, width, height);
 }
 
 export function stepFeedback(feedback: StageFeedback[], deltaMs: number) {
@@ -300,7 +311,7 @@ function drawWorm(
   context.strokeStyle = isGhostWorm
     ? `hsla(${worm.hue}, 84%, 78%, ${0.72 + pulse * 0.08})`
     : `hsl(${worm.hue}, 72%, 56%)`;
-  context.shadowBlur = isGhostWorm && !reducedMotion ? 18 : 0;
+  context.shadowBlur = isGhostWorm && !reducedMotion && world.profile !== "mobile" ? 18 : 0;
   context.shadowColor = isGhostWorm ? "rgba(245, 206, 166, 0.58)" : "transparent";
   context.beginPath();
   context.moveTo(-bodyLength * 0.55, 0);

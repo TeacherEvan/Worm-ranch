@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { GameStage } from "./GameStage";
+import { GameStage, getCappedCanvasDpr, getVisibleSummary } from "./GameStage";
 import { getStageActionEcho } from "./gameStageActionEcho";
 import styles from "./GameStage.module.css";
 import type { ActionResult } from "@/game/types";
@@ -334,6 +334,32 @@ async function createInteractionHarness(options: InteractionHarnessOptions = {})
 }
 
 describe("GameStage", () => {
+  it("caps canvas DPR on high-density screens with stricter caps for mobile and reduced motion", () => {
+    expect(getCappedCanvasDpr(3, "desktop", false)).toBe(2);
+    expect(getCappedCanvasDpr(3, "mobile", false)).toBe(1.5);
+    expect(getCappedCanvasDpr(3, "desktop", true)).toBe(1.5);
+    expect(getCappedCanvasDpr(1.25, "desktop", false)).toBe(1.25);
+  });
+
+  it("quantizes visible summary timer fields to whole seconds", () => {
+    expect(
+      getVisibleSummary({
+        profile: "desktop",
+        phase: "activeChase",
+        collected: 0,
+        remaining: 4,
+        fairies: 0,
+        timerMs: 12_345,
+        continuousActive: false,
+        speedBonus: 0,
+        teleportsUnlocked: false,
+        countdownMs: 1_120,
+        finalWormActive: false,
+        rushTriggered: false,
+      }),
+    ).toMatchObject({ timerMs: 13_000, countdownMs: 2_000 });
+  });
+
   it("renders a dedicated phase chip so the current round state stays visible above the guidance copy", () => {
     const html = renderToStaticMarkup(
       createElement(GameStage, {

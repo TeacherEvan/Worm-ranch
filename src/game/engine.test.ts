@@ -101,6 +101,28 @@ describe("engine", () => {
     expect(getSummary(world).continuousActive).toBe(true);
   });
 
+  it("recycles inactive worm slots during continuous mode spawns", () => {
+    const world = createWorld("mobile", 800, 540, createDeterministicOptions(47));
+    startRound(world);
+    const initialLength = world.worms.length;
+    const firstWorm = world.worms[0];
+
+    if (!firstWorm) {
+      throw new Error("expected a worm");
+    }
+
+    firstWorm.state = "captured";
+    startContinuousMode(world);
+    stepWorld(world, 1_200);
+
+    expect(world.worms).toHaveLength(initialLength);
+    expect(world.worms[0]?.id).toBe("worm-1");
+    expect(world.worms[0]?.state).toBe("roaming");
+    expect(world.worms.filter((worm) => worm.state !== "captured" && worm.state !== "escaped")).toHaveLength(
+      initialLength,
+    );
+  });
+
   it("mobile first accurate tap tags a worm without capturing it", () => {
     const world = createWorld("mobile", 800, 540, createDeterministicOptions(83));
     const worm = world.worms[0];
