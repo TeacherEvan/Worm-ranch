@@ -306,6 +306,8 @@ function drawWorm(
     drawPsychedelicWormAccent(context, worm, bodyLength, squirm, psychedelicFrame, reducedMotion);
   }
 
+  drawWormSilhouette(context, worm, bodyLength, squirm, isGhostWorm);
+
   context.lineCap = "round";
   context.lineWidth = isGhostWorm ? worm.radius * 1.7 : worm.radius * 1.5;
   context.strokeStyle = isGhostWorm
@@ -313,12 +315,15 @@ function drawWorm(
     : `hsl(${worm.hue}, 72%, 56%)`;
   context.shadowBlur = isGhostWorm && !reducedMotion && world.profile !== "mobile" ? 18 : 0;
   context.shadowColor = isGhostWorm ? "rgba(245, 206, 166, 0.58)" : "transparent";
-  context.beginPath();
-  context.moveTo(-bodyLength * 0.55, 0);
-  context.quadraticCurveTo(-worm.radius * 0.2, squirm, bodyLength * 0.45, 0);
+  traceWormBody(context, worm, bodyLength, squirm);
   context.stroke();
 
   context.shadowBlur = 0;
+  context.fillStyle = isGhostWorm ? "rgba(8, 13, 18, 0.48)" : "rgba(8, 13, 18, 0.56)";
+  context.beginPath();
+  context.ellipse(bodyLength * 0.48, 0, worm.radius * 1.04, worm.radius * 0.94, 0, 0, Math.PI * 2);
+  context.fill();
+
   context.fillStyle = isGhostWorm
     ? `hsla(${worm.hue}, 80%, 84%, ${0.74 + pulse * 0.08})`
     : `hsl(${worm.hue}, 76%, 64%)`;
@@ -336,14 +341,112 @@ function drawWorm(
   context.arc(bodyLength * 0.72, worm.radius * 0.16, worm.radius * 0.12, 0, Math.PI * 2);
   context.fill();
 
-  if (isTagged) {
-    const totalBursts = Math.max(1, world.rules.touchBurstsToCapture);
-    context.fillStyle = "rgba(255, 238, 194, 0.92)";
-    context.font = "600 14px var(--font-mono)";
-    context.textAlign = "center";
-    context.fillText(`${Math.min(worm.touchBursts, totalBursts)}/${totalBursts}`, 0, -worm.radius * 2.75);
+  drawWormStateChip(
+    context,
+    direction,
+    worm,
+    getWormStateChip(world, worm, isGhostWorm, isBlinkCharged, isTagged),
+  );
+
+  context.restore();
+}
+
+function traceWormBody(context: CanvasRenderingContext2D, worm: Worm, bodyLength: number, squirm: number) {
+  context.beginPath();
+  context.moveTo(-bodyLength * 0.55, 0);
+  context.quadraticCurveTo(-worm.radius * 0.2, squirm, bodyLength * 0.45, 0);
+}
+
+function drawWormSilhouette(
+  context: CanvasRenderingContext2D,
+  worm: Worm,
+  bodyLength: number,
+  squirm: number,
+  isGhostWorm: boolean,
+) {
+  context.save();
+  context.lineCap = "round";
+  context.lineWidth = isGhostWorm ? worm.radius * 2.12 : worm.radius * 1.9;
+  context.strokeStyle = isGhostWorm ? "rgba(9, 12, 15, 0.54)" : "rgba(8, 12, 16, 0.72)";
+  traceWormBody(context, worm, bodyLength, squirm);
+  context.stroke();
+  context.restore();
+}
+
+type WormStateChip = {
+  label: string;
+  stripeColor: string;
+  textColor: string;
+};
+
+function getWormStateChip(
+  world: GameWorld,
+  worm: Worm,
+  isGhostWorm: boolean,
+  isBlinkCharged: boolean,
+  isTagged: boolean,
+): WormStateChip | null {
+  if (isGhostWorm) {
+    return {
+      label: "OUTLAW",
+      stripeColor: "rgba(240, 126, 67, 0.96)",
+      textColor: "rgba(255, 237, 214, 0.98)",
+    };
   }
 
+  if (isBlinkCharged) {
+    return {
+      label: "BLINK",
+      stripeColor: "rgba(199, 243, 107, 0.96)",
+      textColor: "rgba(246, 251, 216, 0.98)",
+    };
+  }
+
+  if (isTagged) {
+    const totalBursts = Math.max(1, world.rules.touchBurstsToCapture);
+    return {
+      label: `TAG ${Math.min(worm.touchBursts, totalBursts)}/${totalBursts}`,
+      stripeColor: "rgba(255, 228, 164, 0.96)",
+      textColor: "rgba(255, 242, 212, 0.98)",
+    };
+  }
+
+  if (worm.visualVariant === "psychedelic") {
+    return {
+      label: "WILD",
+      stripeColor: "rgba(154, 225, 255, 0.96)",
+      textColor: "rgba(228, 250, 255, 0.98)",
+    };
+  }
+
+  return null;
+}
+
+function drawWormStateChip(
+  context: CanvasRenderingContext2D,
+  direction: number,
+  worm: Worm,
+  chip: WormStateChip | null,
+) {
+  if (!chip) {
+    return;
+  }
+
+  const width = Math.max(42, chip.label.length * 7.1);
+  const height = 16;
+  const x = -width / 2;
+  const y = -worm.radius * 3.5;
+
+  context.save();
+  context.rotate(-direction);
+  context.fillStyle = "rgba(8, 15, 24, 0.8)";
+  context.fillRect(x, y, width, height);
+  context.fillStyle = chip.stripeColor;
+  context.fillRect(x, y, width, 2.5);
+  context.fillStyle = chip.textColor;
+  context.font = "700 10px var(--font-mono)";
+  context.textAlign = "center";
+  context.fillText(chip.label, 0, y + 11.25);
   context.restore();
 }
 

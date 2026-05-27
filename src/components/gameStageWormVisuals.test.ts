@@ -5,6 +5,7 @@ import {
 } from "./gameStageWormVisuals";
 import { renderStage } from "./gameStagePresentation";
 import { createWorld } from "@/game/engine";
+import type { DisplayProfile } from "@/game/detection";
 import type { Worm } from "@/game/types";
 
 function createWorm(overrides: Partial<Worm> = {}): Worm {
@@ -103,8 +104,18 @@ function createFakeContext() {
   return { context, gradientStops };
 }
 
-function createRenderWorld(visualVariant: Worm["visualVariant"]) {
-  const world = createWorld("desktop", 800, 540, {
+function createRenderWorld({
+  profile = "desktop",
+  state = "roaming",
+  touchBursts = 0,
+  visualVariant,
+}: {
+  profile?: DisplayProfile;
+  state?: Worm["state"];
+  touchBursts?: number;
+  visualVariant: Worm["visualVariant"];
+}) {
+  const world = createWorld(profile, 800, 540, {
     runtime: {
       random: () => 0.5,
       now: () => 1_700_000_000_000,
@@ -118,7 +129,8 @@ function createRenderWorld(visualVariant: Worm["visualVariant"]) {
       visualVariant,
       x: 260,
       y: 220,
-      state: "roaming",
+      state,
+      touchBursts,
     }),
   ];
   world.fairies = [];
@@ -129,12 +141,20 @@ function createRenderWorld(visualVariant: Worm["visualVariant"]) {
 function renderAndCountEllipses(visualVariant: Worm["visualVariant"], reducedMotion: boolean) {
   const { context, gradientStops } = createFakeContext();
 
-  renderStage(context, createRenderWorld(visualVariant), reducedMotion, [], null);
+  renderStage(context, createRenderWorld({ visualVariant }), reducedMotion, [], null);
 
   return {
     ellipseCalls: context.ellipse.mock.calls.length,
     gradientStops,
   };
+}
+
+function renderAndCaptureText(world: ReturnType<typeof createRenderWorld>) {
+  const { context } = createFakeContext();
+
+  renderStage(context, world, false, [], null);
+
+  return context.fillText.mock.calls.map(([label]) => label);
 }
 
 describe("gameStageWormVisuals", () => {
@@ -177,5 +197,41 @@ describe("gameStageWormVisuals", () => {
     expect(earlyFrame.shadowBlur).toBe(0);
     expect(earlyFrame.auraStrokeAlpha).toBeLessThanOrEqual(0.48);
     expect(earlyFrame.bandAlpha).toBeLessThanOrEqual(0.38);
+  });
+
+  it("renders readable state chips for special gameplay worms", () => {
+    const chargedText = renderAndCaptureText(
+      createRenderWorld({
+        profile: "desktop",
+        state: "blinkCharged",
+        visualVariant: "standard",
+      }),
+    );
+    const ghostText = renderAndCaptureText(
+      createRenderWorld({
+        profile: "desktop",
+        state: "ghost",
+        visualVariant: "standard",
+      }),
+    );
+    const taggedWorld = createRenderWorld({
+      profile: "mobile",
+      state: "tagged",
+      touchBursts: 2,
+      visualVariant: "standard",
+    });
+    const taggedText = renderAndCaptureText(taggedWorld);
+    const specialText = renderAndCaptureText(
+      createRenderWorld({
+        profile: "desktop",
+        state: "roaming",
+        visualVariant: "psychedelic",
+      }),
+    );
+
+    expect(chargedText).toContain("BLINK");
+    expect(ghostText).toContain("OUTLAW");
+    expect(taggedText).toContain(`TAG 2/${taggedWorld.rules.touchBurstsToCapture}`);
+    expect(specialText).toContain("WILD");
   });
 });
