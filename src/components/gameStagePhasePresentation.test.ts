@@ -95,9 +95,17 @@ describe("gameStagePhasePresentation", () => {
       spawnTimerMs: 0,
       spawnIntervalMs: 1200,
     };
+    world.targetColor = {
+      colorId: "pond-blue",
+      label: "Pond Blue",
+      progress: 0,
+      goal: 2,
+      visibleUntilMs: world.runtime.now() + 2_000,
+    };
 
     const presentation = getStagePresentation(getSummary(world), "desktop", 1);
 
     expect(presentation.statusItems.map((item) => item.id)).toEqual(["bagged", "mechanic"]);
+    expect(presentation.copy.body).toContain("Remove 2 Pond Blue worms");
   });
 });

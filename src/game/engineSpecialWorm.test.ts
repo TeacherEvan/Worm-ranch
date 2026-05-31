@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { applyAccuratePress, applyMiss, createWorld, startRound, stepWorld, type CreateWorldOptions } from "./engine";
+import { createPsychedelicWorm } from "./specialWorms";
+import { STANDARD_WORM_COLORS } from "./wormColors";
 
 function createDeterministicOptions(seed: number): CreateWorldOptions {
   let state = seed >>> 0;
@@ -49,6 +51,41 @@ function countActiveWorms(world: ReturnType<typeof createActiveWorld>) {
 }
 
 describe("engine special worm", () => {
+  it("assigns standard worms bounded palette ids during world initialization while psychedelic worms stay null", () => {
+    const world = createWorld("desktop", 800, 540, {
+      ...createDeterministicOptions(5),
+      rules: {
+        totalWorms: STANDARD_WORM_COLORS.length * 2 + 1,
+      },
+    });
+    const paletteById = new Map(STANDARD_WORM_COLORS.map((color) => [color.id, color]));
+    const standardWorms = world.worms.filter((worm) => worm.visualVariant === "standard");
+
+    expect(standardWorms).toHaveLength(world.worms.length);
+
+    for (const worm of standardWorms) {
+      const canonicalColor = worm.colorId ? paletteById.get(worm.colorId) : undefined;
+
+      expect(worm.colorId).not.toBeNull();
+      expect(canonicalColor).toBeDefined();
+      expect(worm.hue).toBe(canonicalColor?.hue);
+    }
+
+    const activeWorld = createActiveWorld("desktop", 47);
+
+    applyMisses(activeWorld, 5);
+
+    expect(getPsychedelicWorm(activeWorld)?.colorId).toBeNull();
+  });
+
+  it("keeps psychedelic worms outside the standard color directive loop", () => {
+    const world = createActiveWorld("desktop", 7);
+    const specialWorm = createPsychedelicWorm(world);
+
+    expect(specialWorm.visualVariant).toBe("psychedelic");
+    expect(specialWorm.colorId).toBeNull();
+  });
+
   it("tracks miss streak only during an active round", () => {
     const world = createWorld("desktop", 800, 540, createDeterministicOptions(11));
 

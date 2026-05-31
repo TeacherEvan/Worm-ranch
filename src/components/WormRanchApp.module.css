@@ -1,9 +1,16 @@
 .page {
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  width: min(1220px, calc(100vw - clamp(18px, 4vw, 52px)));
+  width: 100%;
+  min-height: 100svh;
+  padding: clamp(18px, 3vw, 30px) clamp(18px, 4vw, 52px) clamp(40px, 6vw, 72px);
+}
+
+.page[data-screen="welcome"],
+.page[data-screen="home"],
+.page[data-screen="settings"] {
+  max-width: 1220px;
   margin: 0 auto;
-  padding: clamp(18px, 3vw, 30px) 0 clamp(40px, 6vw, 72px);
 }
 
 .screen {
@@ -17,6 +24,7 @@
   min-height: 100svh;
   gap: 0;
   animation: none;
+  isolation: isolate;
 }
 
 .metric {
@@ -72,9 +80,15 @@
 }
 
 .page[data-screen="game"] {
+  max-width: none;
   width: 100vw;
   min-height: 100svh;
+  margin: 0;
   padding: 0;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(199, 243, 107, 0.18), transparent 26%),
+    radial-gradient(circle at 82% 16%, rgba(240, 126, 67, 0.2), transparent 20%),
+    linear-gradient(180deg, rgba(4, 8, 14, 0.14), rgba(4, 8, 14, 0));
 }
 
 @container (max-width: 32rem) {
@@ -85,7 +99,7 @@
 
 @media (max-width: 760px) {
   .page {
-    width: min(100vw - 18px, 100%);
+    padding-inline: 18px;
   }
 }
 

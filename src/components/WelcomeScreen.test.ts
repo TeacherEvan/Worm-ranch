@@ -22,6 +22,16 @@ afterEach(() => {
 });
 
 describe("WelcomeScreen", () => {
+  it("renders the launch media in a full-bleed hero surface instead of the old framed card", async () => {
+    const html = await renderWelcomeScreen(false);
+
+    expect(html).toContain('data-layout="full-bleed-hero"');
+    expect(html).toMatch(
+      /<div[^>]*data-hero-stage="full-bleed"[^>]*>\s*<div[^>]*data-hero-media-surface="full-bleed"[^>]*data-launch-media="video"[^>]*data-launch-loader-state="loading"[^>]*>[\s\S]*<\/div>\s*<div[^>]*data-hero-copy-layer="overlay"[^>]*>/,
+    );
+    expect(html).not.toContain('data-hero-frame="card"');
+  });
+
   it("renders the desktop launch poster with the worm intro video when reduced motion is off", async () => {
     const html = await renderWelcomeScreen(false);
 
@@ -83,6 +93,7 @@ describe("WelcomeScreen", () => {
     expect(addEventListener).toHaveBeenCalledWith("change", expect.any(Function));
     expect(removeEventListener).toHaveBeenCalledWith("change", expect.any(Function));
     expect(html).toContain("worm-ranch-launch-poster.png");
+    expect(html).toContain('data-hero-media-surface="full-bleed"');
     expect(html).toContain('data-safe-zone="lower-copy-band"');
   });
 });

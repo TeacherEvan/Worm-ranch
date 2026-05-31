@@ -54,24 +54,25 @@ export function WelcomeScreen({ metrics, onOpenGate, onRigTack, reducedMotion }:
   const launchMediaKey = `${heroVariant.layout}:${reducedMotion ? "reduced" : "full"}`;
 
   return (
-    <section className={styles.welcomeScreen}>
-      <div
-        className={styles.heroCard}
-        data-ambient-motion={presentation.ambientMotionLayersEnabled ? "enabled" : "disabled"}
-        data-crop-intent={heroVariant.cropIntent}
-        data-safe-zone={heroVariant.textSafeZone}
-        data-overlay-strength={heroVariant.overlayStrength}
-      >
-        <WelcomeHeroMedia key={launchMediaKey} heroVariant={heroVariant} reducedMotion={reducedMotion} />
-        <div className={styles.heroCopy}>
-          <p className={styles.heroDeck}>Open the gate, or rig the tack first.</p>
-          <div className={styles.actions}>
-            <button autoFocus className={`${styles.actionButton} ${styles.primaryButton}`} onClick={onOpenGate}>
-              Open the gate
-            </button>
-            <button className={`${styles.actionButton} ${styles.secondaryButton}`} onClick={onRigTack}>
-              Rig the tack
-            </button>
+    <section className={styles.welcomeScreen} data-layout="full-bleed-hero">
+      <div className={styles.heroStage} data-hero-stage="full-bleed">
+        <WelcomeHeroMedia
+          key={launchMediaKey}
+          ambientMotionEnabled={presentation.ambientMotionLayersEnabled}
+          heroVariant={heroVariant}
+          reducedMotion={reducedMotion}
+        />
+        <div className={styles.heroCopyLayer} data-hero-copy-layer="overlay" data-safe-zone={heroVariant.textSafeZone}>
+          <div className={styles.heroCopy}>
+            <p className={styles.heroDeck}>Open the gate, or rig the tack first.</p>
+            <div className={styles.actions}>
+              <button autoFocus className={`${styles.actionButton} ${styles.primaryButton}`} onClick={onOpenGate}>
+                Open the gate
+              </button>
+              <button className={`${styles.actionButton} ${styles.secondaryButton}`} onClick={onRigTack}>
+                Rig the tack
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -88,11 +89,12 @@ export function WelcomeScreen({ metrics, onOpenGate, onRigTack, reducedMotion }:
 }
 
 type WelcomeHeroMediaProps = {
+  ambientMotionEnabled: boolean;
   heroVariant: ReturnType<typeof getWelcomeHeroVariant>;
   reducedMotion: boolean;
 };
 
-function WelcomeHeroMedia({ heroVariant, reducedMotion }: WelcomeHeroMediaProps) {
+function WelcomeHeroMedia({ ambientMotionEnabled, heroVariant, reducedMotion }: WelcomeHeroMediaProps) {
   const [launchMediaState, setLaunchMediaState] = useState(() =>
     getInitialWelcomeLaunchMediaState({ reducedMotion, introVideoSrc: heroVariant.introVideoSrc }),
   );
@@ -111,7 +113,16 @@ function WelcomeHeroMedia({ heroVariant, reducedMotion }: WelcomeHeroMediaProps)
   const showLaunchLoader = shouldShowWelcomeLaunchLoader(loaderSnapshot);
 
   return (
-    <div className={styles.welcomeVisual} data-launch-media={launchMediaState} data-launch-loader-state={showLaunchLoader ? "loading" : "ready"}>
+    <div
+      className={styles.welcomeVisual}
+      data-ambient-motion={ambientMotionEnabled ? "enabled" : "disabled"}
+      data-crop-intent={heroVariant.cropIntent}
+      data-hero-media-surface="full-bleed"
+      data-launch-media={launchMediaState}
+      data-launch-loader-state={showLaunchLoader ? "loading" : "ready"}
+      data-overlay-strength={heroVariant.overlayStrength}
+      data-safe-zone={heroVariant.textSafeZone}
+    >
       <div className={styles.heroImageLayer}>
         <Image
           alt=""

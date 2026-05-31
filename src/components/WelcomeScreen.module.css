@@ -5,70 +5,37 @@
   animation: screenEnter 560ms var(--ease-out-expo) both;
 }
 
-.heroCard {
+.heroStage {
   position: relative;
-  overflow: hidden;
+  min-height: clamp(360px, 54vw, 560px);
+  container-type: inline-size;
+  isolation: isolate;
+}
+
+.heroCopyLayer {
+  position: relative;
+  z-index: 4;
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.92fr);
+  grid-template-columns: minmax(0, 1.12fr) minmax(19rem, 0.88fr);
   align-items: end;
   gap: clamp(18px, 3vw, 28px);
-  min-height: clamp(320px, 48vw, 470px);
+  min-height: inherit;
   padding: clamp(22px, 4vw, 36px);
-  border-radius: 32px;
-  container-type: inline-size;
-  background: color-mix(in srgb, var(--panel-strong) 90%, transparent);
-  border: 1px solid rgba(199, 243, 107, 0.14);
-  backdrop-filter: blur(16px);
-  box-shadow: var(--shadow);
-}
-
-.heroCard::before,
-.heroCard::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.heroCard[data-overlay-strength="strong"]::before {
-  background:
-    linear-gradient(90deg, rgba(5, 11, 18, 0.1) 0%, rgba(5, 11, 18, 0.24) 36%, rgba(5, 11, 18, 0.78) 68%, rgba(5, 11, 18, 0.94) 100%),
-    linear-gradient(180deg, rgba(7, 14, 22, 0.08), rgba(7, 14, 22, 0.52) 100%);
-}
-
-.heroCard[data-overlay-strength="strong"]::after {
-  background:
-    radial-gradient(circle at 18% 18%, rgba(255, 226, 155, 0.18), transparent 22%),
-    radial-gradient(circle at 82% 18%, rgba(199, 243, 107, 0.16), transparent 20%);
-}
-
-.heroCard[data-ambient-motion="enabled"] .welcomeVisual::after {
-  animation: atmospherePulse 16s ease-in-out infinite alternate;
-}
-
-.heroCard > * {
-  position: relative;
-  z-index: 2;
 }
 
 .heroCopy {
   display: grid;
-  gap: 18px;
+  gap: 16px;
   align-content: end;
   justify-items: start;
   grid-column: 2;
-    gap: 10px;
   justify-self: end;
-  width: min(100%, 30rem);
-  padding: clamp(18px, 2.8vw, 24px);
+  width: min(100%, 31rem);
+  padding: clamp(18px, 3vw, 26px);
   border-radius: 24px;
-  background: linear-gradient(180deg, rgba(7, 15, 24, 0.48), rgba(7, 15, 24, 0.8));
-  border: 1px solid rgba(199, 243, 107, 0.14);
-
-  .actionButton {
-    min-height: 48px;
-  }
-  box-shadow: 0 18px 36px rgba(4, 9, 15, 0.28);
+  background: linear-gradient(180deg, rgba(7, 15, 24, 0.34), rgba(7, 15, 24, 0.62));
+  border: 1px solid rgba(199, 243, 107, 0.1);
+  box-shadow: 0 16px 34px rgba(4, 9, 15, 0.22);
   backdrop-filter: blur(12px);
 }
 
@@ -166,21 +133,35 @@
   position: relative;
   grid-column: 1 / -1;
   grid-row: 1;
-  align-self: stretch;
-  min-height: inherit;
-  margin: calc(clamp(22px, 4vw, 36px) * -1);
-  border-radius: inherit;
-  overflow: hidden;
+  min-height: clamp(360px, 54vw, 560px);
 }
 
+.welcomeVisual::before,
 .welcomeVisual::after {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.welcomeVisual[data-overlay-strength="strong"]::before {
   background:
+    linear-gradient(90deg, rgba(5, 11, 18, 0.04) 0%, rgba(5, 11, 18, 0.14) 34%, rgba(5, 11, 18, 0.42) 68%, rgba(5, 11, 18, 0.62) 100%),
+    linear-gradient(180deg, rgba(7, 14, 22, 0.04), rgba(7, 14, 22, 0.28) 100%);
+}
+
+.welcomeVisual::after {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 226, 155, 0.18), transparent 22%),
+    radial-gradient(circle at 82% 18%, rgba(199, 243, 107, 0.16), transparent 20%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 24%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 28%),
     linear-gradient(0deg, rgba(8, 15, 24, 0.14), rgba(8, 15, 24, 0));
-  pointer-events: none;
+}
+
+.welcomeVisual[data-ambient-motion="enabled"]::after {
+  animation: atmospherePulse 16s ease-in-out infinite alternate;
 }
 
 .heroImageLayer {
@@ -301,15 +282,19 @@
 }
 
 @container (max-width: 46rem) {
-  .heroCard {
-    grid-template-columns: 1fr;
+  .heroStage,
+  .welcomeVisual {
     min-height: clamp(360px, 108vw, 520px);
   }
 
-  .heroCard[data-overlay-strength="strong"]::before {
+  .welcomeVisual[data-overlay-strength="strong"]::before {
     background:
-      linear-gradient(180deg, rgba(5, 11, 18, 0.08) 0%, rgba(5, 11, 18, 0.16) 32%, rgba(5, 11, 18, 0.66) 62%, rgba(5, 11, 18, 0.94) 100%),
-      linear-gradient(90deg, rgba(5, 11, 18, 0.08), rgba(5, 11, 18, 0.34));
+      linear-gradient(180deg, rgba(5, 11, 18, 0.06) 0%, rgba(5, 11, 18, 0.14) 32%, rgba(5, 11, 18, 0.46) 62%, rgba(5, 11, 18, 0.68) 100%),
+      linear-gradient(90deg, rgba(5, 11, 18, 0.04), rgba(5, 11, 18, 0.22));
+  }
+
+  .heroCopyLayer {
+    grid-template-columns: 1fr;
   }
 
   .heroCopy {
@@ -318,7 +303,7 @@
     width: min(100%, 32rem);
   }
 
-  .heroCard[data-safe-zone="lower-copy-band"] .heroCopy {
+  .heroCopyLayer[data-safe-zone="lower-copy-band"] .heroCopy {
     align-self: end;
   }
 
@@ -351,22 +336,22 @@
   .metricsGrid {
     grid-template-columns: 1fr;
   }
-
-  .welcomeVisual {
-    margin: -22px;
-  }
 }
 
 @media (max-height: 780px) {
-  .heroCard {
+  .heroCopyLayer {
     padding: 22px;
   }
 }
 
 @media (max-height: 560px) and (orientation: landscape) {
-  .heroCard {
-    grid-template-columns: minmax(0, 1.1fr) minmax(15rem, 0.85fr);
+  .heroStage,
+  .welcomeVisual {
     min-height: 280px;
+  }
+
+  .heroCopyLayer {
+    grid-template-columns: minmax(0, 1.1fr) minmax(15rem, 0.85fr);
   }
 }
 
@@ -374,7 +359,7 @@
   .welcomeScreen,
   .heroCopy > *,
   .metricCard,
-  .heroCard[data-ambient-motion="enabled"] .welcomeVisual::after {
+  .welcomeVisual[data-ambient-motion="enabled"]::after {
     animation: none;
   }
 
@@ -386,7 +371,7 @@
 :global([data-motion="reduced"]) .welcomeScreen,
 :global([data-motion="reduced"]) .heroCopy > *,
 :global([data-motion="reduced"]) .metricCard,
-:global([data-motion="reduced"]) .heroCard[data-ambient-motion="enabled"] .welcomeVisual::after,
+:global([data-motion="reduced"]) .welcomeVisual[data-ambient-motion="enabled"]::after,
 :global([data-motion="reduced"]) .heroVideoLayer {
   animation: none;
 }

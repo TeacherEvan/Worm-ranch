@@ -1,7 +1,7 @@
 import type { DisplayProfile } from "@/game/detection";
 import { drawFairyMorph } from "@/components/gameStageFairyPresentation";
 import { getStagePresentation } from "@/components/gameStagePhasePresentation";
-import { getPsychedelicWormVisualFrame } from "@/components/gameStageWormVisuals";
+import { getPsychedelicWormVisualFrame, getStandardWormVisualFrame } from "@/components/gameStageWormVisuals";
 import { createWorld, getSummary } from "@/game/engine";
 import { getGameplayLevelRules } from "@/game/levels";
 import { isWormActive, type GameSummary, type GameWorld, type Worm } from "@/game/types";
@@ -128,7 +128,8 @@ export function areSummariesEqual(left: GameSummary, right: GameSummary) {
     left.teleportsUnlocked === right.teleportsUnlocked &&
     left.countdownMs === right.countdownMs &&
     left.finalWormActive === right.finalWormActive &&
-    left.rushTriggered === right.rushTriggered
+    left.rushTriggered === right.rushTriggered &&
+    areTargetColorsEqual(left.targetColor, right.targetColor)
   );
 }
 
@@ -240,6 +241,7 @@ function drawWorm(
   const isTagged = world.profile === "mobile" && worm.state === "tagged";
   const psychedelicFrame =
     worm.visualVariant === "psychedelic" ? getPsychedelicWormVisualFrame(worm, reducedMotion, frameNow) : null;
+  const standardFrame = worm.visualVariant === "standard" ? getStandardWormVisualFrame(worm) : null;
 
   context.save();
   context.translate(worm.x, worm.y);
@@ -312,21 +314,21 @@ function drawWorm(
   context.lineWidth = isGhostWorm ? worm.radius * 1.7 : worm.radius * 1.5;
   context.strokeStyle = isGhostWorm
     ? `hsla(${worm.hue}, 84%, 78%, ${0.72 + pulse * 0.08})`
-    : `hsl(${worm.hue}, 72%, 56%)`;
-  context.shadowBlur = isGhostWorm && !reducedMotion && world.profile !== "mobile" ? 18 : 0;
-  context.shadowColor = isGhostWorm ? "rgba(245, 206, 166, 0.58)" : "transparent";
+    : (standardFrame?.bodyStroke ?? `hsl(${worm.hue}, 72%, 56%)`);
+  context.shadowBlur = isGhostWorm ? (!reducedMotion && world.profile !== "mobile" ? 18 : 0) : (standardFrame?.shadowBlur ?? 0);
+  context.shadowColor = isGhostWorm ? "rgba(245, 206, 166, 0.58)" : (standardFrame?.shadowColor ?? "transparent");
   traceWormBody(context, worm, bodyLength, squirm);
   context.stroke();
 
   context.shadowBlur = 0;
-  context.fillStyle = isGhostWorm ? "rgba(8, 13, 18, 0.48)" : "rgba(8, 13, 18, 0.56)";
+  context.fillStyle = isGhostWorm ? "rgba(8, 13, 18, 0.48)" : (standardFrame?.headShadowFill ?? "rgba(8, 13, 18, 0.56)");
   context.beginPath();
   context.ellipse(bodyLength * 0.48, 0, worm.radius * 1.04, worm.radius * 0.94, 0, 0, Math.PI * 2);
   context.fill();
 
   context.fillStyle = isGhostWorm
     ? `hsla(${worm.hue}, 80%, 84%, ${0.74 + pulse * 0.08})`
-    : `hsl(${worm.hue}, 76%, 64%)`;
+    : (standardFrame?.headFill ?? `hsl(${worm.hue}, 76%, 64%)`);
   context.beginPath();
   context.ellipse(bodyLength * 0.48, 0, worm.radius * 0.92, worm.radius * 0.82, 0, 0, Math.PI * 2);
   context.fill();
@@ -496,6 +498,24 @@ function drawPsychedelicWormBands(
 
 function clamp01(value: number) {
   return Math.max(0, Math.min(1, value));
+}
+
+function areTargetColorsEqual(left: GameSummary["targetColor"], right: GameSummary["targetColor"]) {
+  if (!left && !right) {
+    return true;
+  }
+
+  if (!left || !right) {
+    return false;
+  }
+
+  return (
+    left.colorId === right.colorId &&
+    left.label === right.label &&
+    left.progress === right.progress &&
+    left.goal === right.goal &&
+    left.visible === right.visible
+  );
 }
 
 function drawFeedback(context: CanvasRenderingContext2D, feedback: StageFeedback[], reducedMotion: boolean) {

@@ -1,4 +1,5 @@
 import type { Worm } from "@/game/types";
+import type { WormColorId } from "@/game/wormColors";
 
 export const PSYCHEDELIC_WORM_BLINK_PERIOD_MS = 4_200;
 
@@ -16,6 +17,53 @@ export type PsychedelicWormVisualFrame = {
   bandYOffsets: number[];
   shadowBlur: number;
 };
+
+export type StandardWormVisualFrame = {
+  bodyStroke: string;
+  headFill: string;
+  headShadowFill: string;
+  shadowBlur: number;
+  shadowColor: string;
+};
+
+const STANDARD_WORM_VISUALS: Record<WormColorId, StandardWormVisualFrame> = {
+  "sun-yellow": {
+    bodyStroke: "hsl(48 96% 58%)",
+    headFill: "hsl(47 100% 74%)",
+    headShadowFill: "rgba(66, 52, 12, 0.62)",
+    shadowBlur: 6,
+    shadowColor: "rgba(255, 212, 74, 0.28)",
+  },
+  "fence-red": {
+    bodyStroke: "hsl(8 88% 54%)",
+    headFill: "hsl(10 100% 72%)",
+    headShadowFill: "rgba(72, 18, 15, 0.62)",
+    shadowBlur: 6,
+    shadowColor: "rgba(255, 122, 101, 0.26)",
+  },
+  "pond-blue": {
+    bodyStroke: "hsl(204 90% 54%)",
+    headFill: "hsl(199 100% 74%)",
+    headShadowFill: "rgba(11, 26, 54, 0.66)",
+    shadowBlur: 7,
+    shadowColor: "rgba(103, 195, 255, 0.28)",
+  },
+  "clover-green": {
+    bodyStroke: "hsl(132 64% 42%)",
+    headFill: "hsl(131 72% 62%)",
+    headShadowFill: "rgba(12, 42, 24, 0.64)",
+    shadowBlur: 6,
+    shadowColor: "rgba(123, 221, 135, 0.24)",
+  },
+};
+
+export function getStandardWormVisualFrame(worm: Worm): StandardWormVisualFrame | null {
+  if (worm.visualVariant !== "standard" || !worm.colorId) {
+    return null;
+  }
+
+  return STANDARD_WORM_VISUALS[worm.colorId];
+}
 
 export function getPsychedelicWormVisualFrame(
   worm: Worm,

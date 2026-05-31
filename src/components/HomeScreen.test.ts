@@ -17,6 +17,8 @@ describe("HomeScreen", () => {
     expect(html).toContain('data-layout="compact-launch"');
     expect(html).toContain("Moonlit roundup");
     expect(html).toContain("Install utility");
+    expect(html).toContain("Start roundup");
+    expect(html).toContain("Ranch settings");
     expect(html).toContain("Back to launch");
     expect(html).not.toContain("Tack mode");
     expect(html).not.toContain("Desktop runs stretch the whole pasture.");

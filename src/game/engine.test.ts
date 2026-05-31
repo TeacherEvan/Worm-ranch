@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DESKTOP_RULES, MOBILE_RULES } from "./rules";
+import { STANDARD_WORM_COLORS } from "./wormColors";
 import {
   applyAccuratePress,
   createWorld,
@@ -8,6 +9,7 @@ import {
   setPointer,
   startContinuousMode,
   startRound,
+  stopContinuousMode,
   stepWorld,
   triggerTouchRush,
   type CreateWorldOptions,
@@ -23,6 +25,20 @@ function createDeterministicOptions(seed: number): CreateWorldOptions {
         return state / 0x1_0000_0000;
       },
       now: () => 1_700_000_000_000 + seed,
+    },
+  };
+}
+
+function createFixedRuntime(randomValue = 0, startAt = 1_700_300_000_000) {
+  let nowValue = startAt;
+
+  return {
+    runtime: {
+      random: () => randomValue,
+      now: () => nowValue,
+    },
+    advanceNow: (deltaMs: number) => {
+      nowValue += deltaMs;
     },
   };
 }
@@ -48,6 +64,47 @@ function createActiveDesktopWorld(seed: number) {
   const world = createWorld("desktop", 800, 540, createDeterministicOptions(seed));
   startRound(world);
   return world;
+}
+
+function createContinuousActiveWorld(profile: "desktop" | "mobile", totalWorms: number, randomValue = 0) {
+  const clock = createFixedRuntime(randomValue);
+  const world = createWorld(profile, 800, 540, {
+    runtime: clock.runtime,
+    rules: {
+      totalWorms,
+      introCountdownMs: 1,
+      ghostFinaleDurationMs: 25,
+      touchBurstsToCapture: 1,
+      baseMaxSpeed: 0,
+      directionChangeRate: 0,
+      speedBonusPerCollect: 0,
+    },
+  });
+
+  startRound(world);
+  startContinuousMode(world);
+
+  return {
+    world,
+    advanceNow: clock.advanceNow,
+  };
+}
+
+function getActiveWormCount(world: ReturnType<typeof createWorld>) {
+  return world.worms.filter((worm) => worm.state !== "captured" && worm.state !== "escaped").length;
+}
+
+function getActiveStandardWormIdByColor(world: ReturnType<typeof createWorld>, colorId: string) {
+  const worm = world.worms.find(
+    (candidate) =>
+      candidate.colorId === colorId && candidate.state !== "captured" && candidate.state !== "escaped",
+  );
+
+  if (!worm) {
+    throw new Error(`expected active worm for ${colorId}`);
+  }
+
+  return worm.id;
 }
 
 function captureDesktopWorms(world: ReturnType<typeof createActiveDesktopWorld>, count: number) {
@@ -115,12 +172,310 @@ describe("engine", () => {
     startContinuousMode(world);
     stepWorld(world, 1_200);
 
+    const replacementWorm = world.worms[0];
+
+    if (!replacementWorm) {
+      throw new Error("expected a replacement worm");
+    }
+
+    const canonicalColor = STANDARD_WORM_COLORS.find((color) => color.id === replacementWorm.colorId);
+
     expect(world.worms).toHaveLength(initialLength);
-    expect(world.worms[0]?.id).toBe("worm-1");
-    expect(world.worms[0]?.state).toBe("roaming");
+    expect(replacementWorm.id).toBe("worm-1");
+    expect(replacementWorm.state).toBe("roaming");
+    expect(replacementWorm.visualVariant).toBe("standard");
+    expect(canonicalColor).toBeDefined();
+    expect(replacementWorm.colorId).not.toBeNull();
+    expect(replacementWorm.hue).toBe(canonicalColor?.hue);
     expect(world.worms.filter((worm) => worm.state !== "captured" && worm.state !== "escaped")).toHaveLength(
       initialLength,
     );
+  });
+
+  it("refills active worms immediately when continuous mode starts after captures", () => {
+    const world = createWorld("desktop", 800, 540, createDeterministicOptions(49));
+    startRound(world);
+
+    const capturedIds = world.worms.slice(0, 3).map((worm) => worm.id);
+
+    for (const wormId of capturedIds) {
+      expect(applyAccuratePress(world, wormId)).toMatchObject({
+        kind: "collect",
+        wormId,
+      });
+    }
+
+    expect(getActiveWormCount(world)).toBe(world.rules.totalWorms - 3);
+
+    startContinuousMode(world);
+
+    expect(getActiveWormCount(world)).toBe(world.rules.totalWorms);
+    expect(getSummary(world).targetColor).toMatchObject({
+      colorId: expect.any(String),
+      label: expect.any(String),
+      progress: 0,
+      goal: 2,
+      visible: true,
+    });
+  });
+
+  it("normalizes ghost finale state immediately when continuous mode starts", () => {
+    const world = createWorld("desktop", 800, 540, {
+      runtime: createFixedRuntime(0).runtime,
+      rules: {
+        totalWorms: 2,
+        introCountdownMs: 1,
+        ghostFinaleDurationMs: 25,
+        touchBurstsToCapture: 1,
+        baseMaxSpeed: 0,
+        directionChangeRate: 0,
+        speedBonusPerCollect: 0,
+      },
+    });
+
+    startRound(world);
+
+    const firstWorm = world.worms[0];
+
+    if (!firstWorm) {
+      throw new Error("expected a worm");
+    }
+
+    expect(applyAccuratePress(world, firstWorm.id)).toMatchObject({
+      kind: "collect",
+      wormId: firstWorm.id,
+    });
+    expect(getSummary(world).phase).toBe("ghostFinale");
+    expect(
+      world.worms.some((worm) => worm.state === "ghost" && worm.state !== "captured" && worm.state !== "escaped"),
+    ).toBe(true);
+
+    startContinuousMode(world);
+
+    expect(getSummary(world)).toMatchObject({
+      continuousActive: true,
+      phase: "activeChase",
+    });
+    expect(
+      world.worms
+        .filter((worm) => worm.state !== "captured" && worm.state !== "escaped")
+        .every((worm) => worm.state !== "ghost"),
+    ).toBe(true);
+  });
+
+  it("normalizes ghost finale state immediately when continuous mode stops", () => {
+    const world = createWorld("desktop", 800, 540, {
+      runtime: createFixedRuntime(0).runtime,
+      rules: {
+        totalWorms: 1,
+        introCountdownMs: 1,
+        ghostFinaleDurationMs: 25,
+        touchBurstsToCapture: 1,
+        baseMaxSpeed: 0,
+        directionChangeRate: 0,
+        speedBonusPerCollect: 0,
+      },
+    });
+
+    startRound(world);
+    startContinuousMode(world);
+
+    expect(getSummary(world)).toMatchObject({
+      continuousActive: true,
+      phase: "activeChase",
+      finalWormActive: false,
+      targetColor: expect.any(Object),
+    });
+    expect(
+      world.worms.filter((worm) => worm.state !== "captured" && worm.state !== "escaped"),
+    ).toMatchObject([
+      expect.objectContaining({
+        state: "roaming",
+      }),
+    ]);
+
+    stopContinuousMode(world);
+
+    expect(getSummary(world)).toMatchObject({
+      continuousActive: false,
+      phase: "ghostFinale",
+      finalWormActive: true,
+      targetColor: null,
+    });
+    expect(
+      world.worms.filter((worm) => worm.state !== "captured" && worm.state !== "escaped"),
+    ).toMatchObject([
+      expect.objectContaining({
+        state: "ghost",
+      }),
+    ]);
+  });
+
+  it("announces the active target color for 2 seconds", () => {
+    const { world, advanceNow } = createContinuousActiveWorld("desktop", 4);
+
+    expect(getSummary(world).targetColor).toMatchObject({
+      colorId: "sun-yellow",
+      label: "Sun Yellow",
+      progress: 0,
+      goal: 2,
+      visible: true,
+    });
+
+    advanceNow(1_999);
+    expect(getSummary(world).targetColor?.visible).toBe(true);
+
+    advanceNow(1);
+    expect(getSummary(world).targetColor?.visible).toBe(false);
+  });
+
+  it("starts the target flash when live gameplay begins if continuous mode was enabled during countdown", () => {
+    const clock = createFixedRuntime(0, 1_700_300_000_000);
+    const world = createWorld("desktop", 800, 540, {
+      runtime: clock.runtime,
+      rules: {
+        totalWorms: 4,
+        introCountdownMs: 500,
+        ghostFinaleDurationMs: 25,
+        touchBurstsToCapture: 1,
+        baseMaxSpeed: 0,
+        directionChangeRate: 0,
+        speedBonusPerCollect: 0,
+      },
+    });
+
+    startContinuousMode(world);
+    clock.advanceNow(400);
+    stepWorld(world, 400);
+
+    expect(world.countdownMs).toBe(100);
+    expect(getSummary(world).targetColor).toMatchObject({
+      progress: 0,
+      goal: 2,
+      visible: true,
+    });
+
+    clock.advanceNow(100);
+    stepWorld(world, 100);
+
+    expect(world.countdownMs).toBe(0);
+    expect(getSummary(world).phase).toBe("activeChase");
+
+    clock.advanceNow(1_999);
+    expect(getSummary(world).targetColor?.visible).toBe(true);
+
+    clock.advanceNow(1);
+    expect(getSummary(world).targetColor?.visible).toBe(false);
+  });
+
+  it("increments target progress only when the active color is removed", () => {
+    const { world } = createContinuousActiveWorld("desktop", 4);
+    const initialTarget = getSummary(world).targetColor;
+
+    if (!initialTarget) {
+      throw new Error("expected an active target color");
+    }
+
+    const nonTargetWorm = world.worms.find(
+      (worm) =>
+        worm.colorId !== null &&
+        worm.colorId !== initialTarget.colorId &&
+        worm.state !== "captured" &&
+        worm.state !== "escaped",
+    );
+
+    if (!nonTargetWorm) {
+      throw new Error("expected a non-target worm");
+    }
+
+    expect(applyAccuratePress(world, nonTargetWorm.id)).toMatchObject({
+      kind: "collect",
+      wormId: nonTargetWorm.id,
+    });
+    expect(getSummary(world).targetColor).toMatchObject({
+      colorId: initialTarget.colorId,
+      progress: 0,
+      goal: 2,
+    });
+
+    const targetWormId = getActiveStandardWormIdByColor(world, initialTarget.colorId);
+
+    expect(applyAccuratePress(world, targetWormId)).toMatchObject({
+      kind: "collect",
+      wormId: targetWormId,
+    });
+    expect(getSummary(world).targetColor).toMatchObject({
+      colorId: initialTarget.colorId,
+      progress: 1,
+      goal: 2,
+    });
+  });
+
+  it("retargets after two matching removals", () => {
+    const { world } = createContinuousActiveWorld("desktop", 4);
+
+    expect(getSummary(world).targetColor).toMatchObject({
+      colorId: "sun-yellow",
+      progress: 0,
+      goal: 2,
+    });
+
+    const firstTargetId = getActiveStandardWormIdByColor(world, "sun-yellow");
+    expect(applyAccuratePress(world, firstTargetId)).toMatchObject({
+      kind: "collect",
+      wormId: firstTargetId,
+    });
+
+    const secondTargetId = getActiveStandardWormIdByColor(world, "sun-yellow");
+    expect(applyAccuratePress(world, secondTargetId)).toMatchObject({
+      kind: "collect",
+      wormId: secondTargetId,
+    });
+
+    expect(getSummary(world).targetColor).toMatchObject({
+      colorId: "fence-red",
+      label: "Fence Red",
+      progress: 0,
+      goal: 2,
+      visible: true,
+    });
+  });
+
+  it("spawns replacement worms instead of ending the round", () => {
+    const { world } = createContinuousActiveWorld("mobile", 1);
+    const worm = world.worms[0];
+
+    if (!worm) {
+      throw new Error("expected a worm");
+    }
+
+    expect(applyAccuratePress(world, worm.id)).toEqual({
+      kind: "collect",
+      wormId: worm.id,
+      collected: 1,
+    });
+    expect(world.worms).toHaveLength(1);
+    expect(getActiveWormCount(world)).toBe(1);
+    expect(world.roundResult).toBeNull();
+  });
+
+  it("does not set roundResult during continuous play", () => {
+    const { world } = createContinuousActiveWorld("desktop", 2);
+    const worm = world.worms[0];
+
+    if (!worm) {
+      throw new Error("expected a worm");
+    }
+
+    expect(applyAccuratePress(world, worm.id)).toMatchObject({
+      kind: "collect",
+      wormId: worm.id,
+    });
+
+    stepWorld(world, world.rules.ghostFinaleDurationMs);
+
+    expect(world.roundResult).toBeNull();
+    expect(getSummary(world).phase).toBe("activeChase");
   });
 
   it("mobile first accurate tap tags a worm without capturing it", () => {

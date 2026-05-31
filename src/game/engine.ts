@@ -1,14 +1,32 @@
 import type { DisplayProfile } from "./detection";
+import {
+  createContinuousColorTargetState,
+  isContinuousColorTargetVisible,
+  registerContinuousColorRemoval,
+  resetContinuousColorTargetVisibility,
+} from "./continuousColorTargets";
 import { stepWormMovement } from "./movement";
 import { getProfileRules, type ProfileRules } from "./rules";
 import { createPsychedelicWorm, createStandardWorm, shouldSpawnPsychedelicWorm } from "./specialWorms";
-import { isFairyVisible, isWormActive, type ActionResult, type EngineRuntime, type Fairy, type GameSummary, type GameWorld, type Point, type RoundResult, type Worm } from "./types";
+import {
+  isFairyVisible,
+  isWormActive,
+  type ActionResult,
+  type ContinuousColorTargetState,
+  type EngineRuntime,
+  type Fairy,
+  type GameSummary,
+  type GameSummaryTargetColor,
+  type GameWorld,
+  type Point,
+  type RoundResult,
+  type Worm,
+} from "./types";
 
 const BLINK_RECOVER_MS = 220;
 const WORM_HIT_RADIUS_FACTOR = 3.1;
 
 // Continuous mode tuning
-const CONTINUOUS_MAX_SPAWN = 10; // max active worms to spawn in continuous mode
 const CONTINUOUS_SPAWN_INTERVAL_MS = 1200; // base spawn interval
 const SPEED_MULTIPLIER_CAP = 2.5; // maximum speed multiplier relative to base
 const SPEED_RAMP_PER_SECOND = 0.12; // increase multiplier per second
@@ -20,6 +38,7 @@ export type {
   Fairy,
   FairyState,
   GameSummary,
+  GameSummaryTargetColor,
   GameWorld,
   MobileWormState,
   Point,
@@ -72,6 +91,7 @@ export function createWorld(
     finaleStartedAt: null,
     roundResult: null,
     runtime,
+    targetColor: null,
     continuousMode: {
       active: false,
       elapsedMs: 0,
@@ -94,13 +114,22 @@ export function startContinuousMode(world: GameWorld) {
   world.continuousMode.elapsedMs = 0;
   world.continuousMode.spawnTimerMs = 0;
   world.continuousMode.speedMultiplier = 1;
+  world.finaleStartedAt = null;
+  refillContinuousWorms(world);
+  syncWormStates(world);
+  updateRoundPhase(world);
+  world.targetColor = createContinuousColorTargetState(world.worms, world.runtime);
 }
 
 export function stopContinuousMode(world: GameWorld) {
   if (!world.continuousMode) return;
   world.continuousMode.active = false;
+  world.continuousMode.elapsedMs = 0;
   world.continuousMode.spawnTimerMs = 0;
   world.continuousMode.speedMultiplier = 1;
+  world.targetColor = null;
+  syncWormStates(world);
+  updateRoundPhase(world);
 }
 
 export function startRound(world: GameWorld) {
@@ -144,6 +173,7 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
 
   // Continuous mode: ramp speed and spawn worms up to cap
   if (world.continuousMode?.active) {
+    world.targetColor ??= createContinuousColorTargetState(world.worms, world.runtime);
     world.continuousMode.elapsedMs += deltaMs;
     // ramp speed multiplier gradually
     const inc = (SPEED_RAMP_PER_SECOND * deltaMs) / 1000;
@@ -157,7 +187,7 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
     while (world.continuousMode.spawnTimerMs >= (world.continuousMode.spawnIntervalMs || CONTINUOUS_SPAWN_INTERVAL_MS)) {
       world.continuousMode.spawnTimerMs -= world.continuousMode.spawnIntervalMs || CONTINUOUS_SPAWN_INTERVAL_MS;
       const activeCount = world.worms.filter(isWormActive).length;
-      if (activeCount < CONTINUOUS_MAX_SPAWN) {
+      if (activeCount < world.rules.totalWorms) {
         spawnContinuousWorm(world);
         syncWormStates(world);
         updateRoundPhase(world);
@@ -166,7 +196,13 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
   }
 
   if (world.countdownMs > 0) {
+    const previousCountdownMs = world.countdownMs;
     world.countdownMs = Math.max(0, world.countdownMs - deltaMs);
+
+    if (previousCountdownMs > 0 && world.countdownMs === 0 && world.continuousMode?.active && world.targetColor) {
+      world.targetColor = resetContinuousColorTargetVisibility(world.targetColor, world.runtime);
+    }
+
     updateRoundPhase(world);
     return;
   }
@@ -195,7 +231,7 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
 
   const remaining = getRemainingWorms(world);
 
-  if (world.profile === "desktop" && remaining.length === 1) {
+  if (!world.continuousMode?.active && world.profile === "desktop" && remaining.length === 1) {
     if (world.finaleStartedAt === null) {
       world.finaleStartedAt = world.elapsedMs;
     }
@@ -208,7 +244,7 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
     world.finaleStartedAt = null;
   }
 
-  if (world.profile === "mobile" && remaining.length === 0) {
+  if (!world.continuousMode?.active && world.profile === "mobile" && remaining.length === 0) {
     finishWorld(world, "captured");
     return;
   }
@@ -267,7 +303,11 @@ export function applyAccuratePress(world: GameWorld, wormId: string): ActionResu
 
   const rules = world.rules;
   const remaining = getRemainingWorms(world);
-  const isFinalWorm = world.profile === "desktop" && remaining.length === 1 && remaining[0]?.id === worm.id;
+  const isFinalWorm =
+    !world.continuousMode?.active &&
+    world.profile === "desktop" &&
+    remaining.length === 1 &&
+    remaining[0]?.id === worm.id;
 
   if (isFinalWorm) {
     worm.state = "ghost";
@@ -296,6 +336,11 @@ export function applyAccuratePress(world: GameWorld, wormId: string): ActionResu
   }
 
   captureWorm(world, worm);
+
+  if (world.continuousMode?.active) {
+    refillContinuousWorms(world);
+    world.targetColor = registerContinuousColorRemoval(world.targetColor, worm.colorId, world.worms, world.runtime);
+  }
 
   if (world.profile === "desktop" && !world.teleportsUnlocked && world.collected >= rules.teleportUnlockCount) {
     world.teleportsUnlocked = true;
@@ -326,8 +371,9 @@ export function getSummary(world: GameWorld): GameSummary {
     speedBonus: world.collected * rules.speedBonusPerCollect,
     teleportsUnlocked: world.teleportsUnlocked,
     countdownMs: world.countdownMs,
-    finalWormActive: world.profile === "desktop" && remaining === 1,
+    finalWormActive: world.profile === "desktop" && !world.continuousMode?.active && remaining === 1,
     rushTriggered: world.rushTriggered,
+    targetColor: getTargetColorSummary(world.targetColor, world.continuousMode?.active ?? false, world.runtime.now()),
   };
 }
 
@@ -411,6 +457,30 @@ function captureWorm(world: GameWorld, worm: Worm) {
   world.fairies.push(createFairy(world, worm));
 }
 
+function refillContinuousWorms(world: GameWorld) {
+  while (getRemainingWorms(world).length < world.rules.totalWorms) {
+    spawnContinuousWorm(world);
+  }
+}
+
+function getTargetColorSummary(
+  targetColor: ContinuousColorTargetState | null,
+  continuousActive: boolean,
+  now: number,
+): GameSummaryTargetColor | null {
+  if (!continuousActive || !targetColor) {
+    return null;
+  }
+
+  return {
+    colorId: targetColor.colorId,
+    label: targetColor.label,
+    progress: targetColor.progress,
+    goal: targetColor.goal,
+    visible: isContinuousColorTargetVisible(targetColor, now),
+  };
+}
+
 function getFairyState(fairy: Fairy) {
   if (fairy.lifeMs < fairy.morphDurationMs) {
     return "morphing" as const;
@@ -439,7 +509,10 @@ function advanceWormTimers(world: GameWorld, deltaMs: number) {
 
 function syncWormStates(world: GameWorld) {
   const remaining = getRemainingWorms(world);
-  const finalWormId = world.profile === "desktop" && remaining.length === 1 ? remaining[0]?.id ?? null : null;
+  const finalWormId =
+    world.profile === "desktop" && !world.continuousMode?.active && remaining.length === 1
+      ? remaining[0]?.id ?? null
+      : null;
 
   for (const worm of world.worms) {
     if (!isWormActive(worm)) {
@@ -480,7 +553,7 @@ function updateRoundPhase(world: GameWorld) {
 
   if (world.profile === "desktop") {
     const remaining = getRemainingWorms(world).length;
-    if (remaining === 1) {
+    if (!world.continuousMode?.active && remaining === 1) {
       world.phase = "ghostFinale";
       return;
     }

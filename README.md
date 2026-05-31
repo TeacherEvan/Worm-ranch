@@ -4,10 +4,11 @@ Worm Ranch is a display-aware chase toy built with Next.js. The game keeps separ
 
 ## Current Experience
 
-- Welcome stays separate from gameplay theming; gameplay backdrops now belong to the in-round field, not the startup flow.
-- Gameplay runs advance through deterministic numbered levels with backdrop-by-level selection instead of random round art.
-- Each new level raises pressure through profile-specific rule overrides such as more worms, shorter clocks, faster movement, or stricter mobile bag rules.
-- Results now show the level that was just played, and replay advances to the next gameplay level.
+- Welcome now opens on a full-bleed launch surface instead of the older framed hero card, so the startup art is no longer cropped inside a decorative shell.
+- Gameplay backdrops belong to the in-round field, not the startup flow, and the active play shell now stays full-viewport once a run begins.
+- Runs now default into continuous play: worms keep refilling, the board does not auto-resolve into a results screen, and leaving through the game exit returns directly to home.
+- Gameplay now flashes a 2-second target-color directive over the field, then hides it until the player removes two worms of that named color and triggers the next callout.
+- Standard worms now use stable named colors with stronger contrast so the target-color callout is readable in motion on desktop and mobile.
 - Mobile rounds still keep a persistent `Beat bell` timer in the HUD so the countdown feels like pressure, not buried admin data.
 - Successful worm actions now follow a fixed stage-audio cadence: six western gunshots, then three whip cracks, then the pattern repeats.
 - The dinosaur cue is currently disabled so the gunshot-whip cadence remains the only active gameplay sound feedback.
@@ -30,6 +31,8 @@ npm run verify
 ```
 
 That runs the focused gameplay/component tests, lint, and a production build, which is the required validation path for substantive gameplay or UI changes.
+
+For gameplay-rule changes, run `npm run test:engine` first so engine and stage regressions fail fast before the full verify pass.
 
 Bundled gameplay audio sources and attribution are tracked in `docs/audio-sources.md` and `public/audio/gameplay/ATTRIBUTION.txt`.
 

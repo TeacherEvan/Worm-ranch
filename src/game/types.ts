@@ -1,5 +1,6 @@
 import type { DisplayProfile } from "./detection";
 import type { ProfileRules } from "./rules";
+import type { WormColorId } from "./wormColors";
 
 export type RoundPhase =
   | "introCountdown"
@@ -21,9 +22,7 @@ export type Point = {
   y: number;
 };
 
-export type WormVisualVariant = "standard" | "psychedelic";
-
-export type Worm = {
+type WormBase = {
   id: string;
   x: number;
   y: number;
@@ -34,12 +33,25 @@ export type Worm = {
   radius: number;
   hue: number;
   wave: number;
-  visualVariant: WormVisualVariant;
   teleportsRemaining: number;
   touchBursts: number;
   state: WormState;
   stateTimerMs: number;
 };
+
+export type StandardWorm = WormBase & {
+  visualVariant: "standard";
+  colorId: WormColorId;
+};
+
+export type PsychedelicWorm = WormBase & {
+  visualVariant: "psychedelic";
+  colorId: null;
+};
+
+export type Worm = StandardWorm | PsychedelicWorm;
+
+export type WormVisualVariant = Worm["visualVariant"];
 
 export type Fairy = {
   id: string;
@@ -60,6 +72,22 @@ export type Fairy = {
   state: FairyState;
 };
 
+export type ContinuousColorTargetState = {
+  colorId: WormColorId;
+  label: string;
+  progress: number;
+  goal: number;
+  visibleUntilMs: number;
+};
+
+export type GameSummaryTargetColor = {
+  colorId: WormColorId;
+  label: string;
+  progress: number;
+  goal: number;
+  visible: boolean;
+};
+
 export type GameSummary = {
   profile: DisplayProfile;
   phase: RoundPhase;
@@ -73,6 +101,7 @@ export type GameSummary = {
   countdownMs: number;
   finalWormActive: boolean;
   rushTriggered: boolean;
+  targetColor: GameSummaryTargetColor | null;
 };
 
 export type RoundResult = {
@@ -113,6 +142,7 @@ export type GameWorld = {
   finaleStartedAt: number | null;
   roundResult: RoundResult | null;
   runtime: EngineRuntime;
+  targetColor: ContinuousColorTargetState | null;
   continuousMode?: {
     active: boolean;
     // elapsed ms since continuous mode started (for deterministic tests)

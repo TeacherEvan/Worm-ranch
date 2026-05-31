@@ -8,11 +8,11 @@
   gap: clamp(16px, 3vw, 22px);
   align-items: start;
   padding: clamp(18px, 3vw, 28px);
-  border-radius: 28px;
-  background: color-mix(in srgb, var(--panel-strong) 90%, transparent);
-  border: 1px solid rgba(199, 243, 107, 0.14);
-  backdrop-filter: blur(16px);
-  box-shadow: var(--shadow);
+  border-radius: 32px;
+  background: linear-gradient(180deg, rgba(9, 17, 28, 0.58), rgba(9, 17, 28, 0.74));
+  border: 1px solid rgba(199, 243, 107, 0.1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.2);
 }
 
 .copyCluster {

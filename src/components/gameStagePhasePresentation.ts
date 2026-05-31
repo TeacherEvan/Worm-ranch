@@ -95,6 +95,10 @@ function getPhaseChipText(summary: GameSummary, rules: ReturnType<typeof getGame
     return "Countdown";
   }
 
+  if (summary.continuousActive) {
+    return summary.targetColor ? `${summary.targetColor.label} target` : "Target live";
+  }
+
   if (summary.profile === "desktop") {
     if (summary.phase === "ghostFinale") {
       return "Ghost escaping";
@@ -129,6 +133,23 @@ function buildStatusItemsForSummary(
   const isCountdown = summary.phase === "introCountdown";
   const isResolved = summary.phase === "resolved";
   const showClock = !summary.continuousActive;
+
+  if (summary.continuousActive) {
+    return [
+      {
+        id: "bagged",
+        label: "Bagged",
+        value: `${summary.collected}/${rules.totalWorms}`,
+        active: !isResolved && summary.collected > 0,
+      },
+      {
+        id: "mechanic",
+        label: "Target",
+        value: summary.targetColor ? `${summary.targetColor.progress}/${summary.targetColor.goal}` : "Waiting",
+        active: !isCountdown && !isResolved,
+      },
+    ];
+  }
 
   if (summary.profile === "desktop") {
     return [
@@ -212,6 +233,25 @@ function getStageCopyData(
     };
   }
 
+  if (summary.continuousActive) {
+    if (!summary.targetColor) {
+      return {
+        title,
+        body: "Hold the lane. New target incoming.",
+        hint: "Stay loose until the next color call lands.",
+      };
+    }
+
+    return {
+      title,
+      body: `Remove ${summary.targetColor.goal} ${summary.targetColor.label} worms.`,
+      hint:
+        summary.profile === "desktop"
+          ? "Ignore the others until the target changes."
+          : "Stay on the called color until it flips.",
+    };
+  }
+
   if (summary.profile === "desktop") {
     if (summary.phase === "ghostFinale") {
       return {
@@ -260,6 +300,10 @@ function getStageCopyData(
 }
 
 function getOverlayKey(summary: GameSummary) {
+  if (summary.continuousActive && summary.targetColor) {
+    return `target:${summary.targetColor.colorId}:${summary.targetColor.progress}:${summary.targetColor.visible}`;
+  }
+
   if (summary.profile === "mobile" && summary.phase === "activeChase") {
     return summary.rushTriggered ? "activeChase:rush" : "activeChase:primed";
   }

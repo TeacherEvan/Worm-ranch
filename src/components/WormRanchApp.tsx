@@ -4,18 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import styles from "./WormRanchApp.module.css";
 import { GameStage } from "@/components/GameStage";
 import { HomeScreen } from "@/components/HomeScreen";
-import { ResultsScreen } from "@/components/ResultsScreen";
 import { WormRanchInstallPrompt } from "@/components/WormRanchInstallPrompt";
 import { WormRanchGameExit } from "@/components/WormRanchGameExit";
 import { SettingsScreen } from "@/components/SettingsScreen";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { WormRanchShellHeader } from "@/components/WormRanchShellHeader";
-import {
-  getGameplayRunPlan,
-  getInitialGameplayRunPlan,
-  getGameplayRoundTransition,
-  getPlayedRoundLevelResult,
-} from "@/components/wormRanchLevelFlow";
+import { getGameplayRunPlan, getInitialGameplayRunPlan } from "@/components/wormRanchLevelFlow";
 import { areDisplaySnapshotsEqual, getProfileDetectedDetails } from "@/lib/analytics";
 import { detectDisplayProfile, type DisplayProfile, type DisplaySnapshot } from "@/game/detection";
 import { getGameplayLevelRules } from "@/game/levels";
@@ -29,27 +23,21 @@ import {
   type SettingsState,
   writeStoredSettings,
 } from "@/lib/wormRanchSettings";
-import type { RoundResult } from "@/game/types";
 import { createSilentLogger, type EventName } from "@/lib/logger";
 
-type AppScreen = "welcome" | "home" | "settings" | "game" | "results";
+type AppScreen = "welcome" | "home" | "settings" | "game";
 type DeferredInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 };
-type PlayedRoundResult = ReturnType<typeof getPlayedRoundLevelResult>;
-
-const FAIRY_LIFT_COPY = "Clean catches still lift into fairies and drift out of the ranch glow.";
 
 export function WormRanchApp() {
   const [screen, setScreen] = useState<AppScreen>("welcome");
   const [detectedDisplay, setDetectedDisplay] = useState<DisplaySnapshot | null>(null);
   const [runProfile, setRunProfile] = useState<DisplayProfile | null>(null);
-  const [result, setResult] = useState<PlayedRoundResult | null>(null);
   const [installPromptEvent, setInstallPromptEvent] = useState<DeferredInstallPromptEvent | null>(null);
   const [installPromptDismissed, setInstallPromptDismissed] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(getInitialGameplayRunPlan().level);
-  const [nextRunPlan, setNextRunPlan] = useState(getInitialGameplayRunPlan);
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
   const [logger] = useState(() => createSilentLogger("/api/events"));
   const hasLoggedOpenRef = useRef(false);
@@ -112,12 +100,18 @@ export function WormRanchApp() {
     [logEvent],
   );
 
-  const handleRoundEnd = useCallback((roundResult: RoundResult) => {
-    const roundTransition = getGameplayRoundTransition(currentLevelRef.current, roundResult);
-    setResult(roundTransition.playedRoundResult);
-    setNextRunPlan(roundTransition.nextRunPlan);
-    setScreen("results");
+  const returnHome = useCallback(() => {
+    const initialRunPlan = getInitialGameplayRunPlan();
+
+    currentLevelRef.current = initialRunPlan.level;
+    setCurrentLevel(initialRunPlan.level);
+    setRunProfile(null);
+    setScreen("home");
   }, []);
+
+  const handleRoundEnd = useCallback(() => {
+    returnHome();
+  }, [returnHome]);
 
   useEffect(() => {
     sessionIdRef.current = sessionId;
@@ -213,7 +207,7 @@ export function WormRanchApp() {
 
     const activeScreen = screenRef.current;
     const profile =
-      activeScreen === "game" || activeScreen === "results"
+      activeScreen === "game"
         ? runProfileRef.current ?? effectiveProfileRef.current
         : effectiveProfileRef.current;
 
@@ -240,10 +234,7 @@ export function WormRanchApp() {
   }, [detectedDisplay, logEvent]);
 
   useEffect(() => {
-    const profile =
-      screen === "game" || screen === "results"
-        ? runProfileRef.current ?? effectiveProfileRef.current
-        : effectiveProfileRef.current;
+    const profile = screen === "game" ? runProfileRef.current ?? effectiveProfileRef.current : effectiveProfileRef.current;
 
     logEvent("screen_viewed", undefined, screen, settingsRef.current.analyticsEnabled, profile);
   }, [logEvent, screen]);
@@ -260,49 +251,31 @@ export function WormRanchApp() {
     setInstallPromptDismissed(true);
   }, [installPromptEvent]);
 
-  const beginRun = async () => {
+  const beginRun = () => {
     const nextRunProfile = effectiveProfile;
-    const runPlan = screenRef.current === "results" ? nextRunPlan : getInitialGameplayRunPlan();
+    const runPlan = getInitialGameplayRunPlan();
     const nextRunLevel = runPlan.level;
     const nextSessionId = crypto.randomUUID();
-    const nextBackdropUrl = runPlan.backdropUrl;
-
-    await preloadGameplayBackdrop(nextBackdropUrl);
 
     sessionIdRef.current = nextSessionId;
     runProfileRef.current = nextRunProfile;
     currentLevelRef.current = nextRunLevel;
 
     setCurrentLevel(nextRunLevel);
-    setNextRunPlan(runPlan);
     setSessionId(nextSessionId);
     setRunProfile(nextRunProfile);
-    setResult(null);
     setScreen("game");
-  };
 
-  const returnHome = () => {
-    const initialRunPlan = getInitialGameplayRunPlan();
-
-    currentLevelRef.current = initialRunPlan.level;
-    setCurrentLevel(initialRunPlan.level);
-    setNextRunPlan(initialRunPlan);
-    setResult(null);
-    setScreen("home");
+    void preloadGameplayBackdrop(runPlan.backdropUrl);
   };
 
   const updateSetting = <K extends keyof SettingsState>(key: K, value: SettingsState[K]) => {
     writeStoredSettings({ ...settings, [key]: value });
   };
 
-  const shellProfile = screen === "game" || screen === "results" ? runProfile ?? effectiveProfile : effectiveProfile;
-  const shellScanProfile: DisplayProfile | "scanning" =
-    screen === "game" || screen === "results" ? shellProfile : detectedDisplay?.profile ?? "scanning";
-  const activeShellLevel = screen === "results" && result ? result.level : currentLevel;
-  const profileRules =
-    screen === "game" || screen === "results"
-      ? getGameplayLevelRules(shellProfile, activeShellLevel)
-      : PROFILE_RULES[shellProfile];
+  const shellProfile = screen === "game" ? runProfile ?? effectiveProfile : effectiveProfile;
+  const shellScanProfile: DisplayProfile | "scanning" = screen === "game" ? shellProfile : detectedDisplay?.profile ?? "scanning";
+  const profileRules = screen === "game" ? getGameplayLevelRules(shellProfile, currentLevel) : PROFILE_RULES[shellProfile];
   const installPromptVisible = installPromptEvent !== null && !installPromptDismissed;
   const welcomeMetrics = [
     { label: "Pasture", value: "moonlit" },
@@ -380,18 +353,6 @@ export function WormRanchApp() {
           <WormRanchGameExit profile={runProfile ?? effectiveProfile} onLeave={returnHome} />
         </section>
       )}
-
-      {screen === "results" && result && (
-        <ResultsScreen
-          outcome={formatReason(result.reason)}
-          bagged={result.collected}
-          level={result.level}
-          leftLoose={result.remaining}
-          note={getResultsNote(result.level)}
-          onReplay={beginRun}
-          onReturnHome={returnHome}
-        />
-      )}
     </main>
   );
 }
@@ -426,25 +387,6 @@ function preloadGameplayBackdrop(backdropUrl: string) {
 
     image.decode?.().then(finish, finish);
   });
-}
-
-function formatReason(reason: RoundResult["reason"]) {
-  if (reason === "captured") {
-    return "Corral cleared";
-  }
-
-  if (reason === "ghostEscape") {
-    return "Outlaw escaped";
-  }
-
-  return "Clock ran dry";
-}
-
-function getResultsNote(level: number) {
-  const mobileRules = getGameplayLevelRules("mobile", level);
-  const tapLabel = mobileRules.touchBurstsToCapture === 1 ? "tap" : "taps";
-
-  return `${FAIRY_LIFT_COPY} On desktop, the last outlaw is designed to escape. On mobile, the first touch wakes the herd. Tagged worms need ${mobileRules.touchBurstsToCapture} clean ${tapLabel} total.`;
 }
 
 function isDeferredInstallPromptEvent(event: Event): event is DeferredInstallPromptEvent {

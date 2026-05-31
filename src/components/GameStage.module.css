@@ -153,6 +153,38 @@
   transform: translateY(1px);
 }
 
+.targetCallout {
+  position: absolute;
+  top: clamp(12px, 4.5vh, 30px);
+  left: 50%;
+  z-index: 6;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  min-width: min(10rem, calc(100% - 32px));
+  max-width: min(18rem, calc(100% - 32px));
+  padding: 10px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(78, 58, 16, 0.18);
+  background: linear-gradient(180deg, rgba(245, 232, 177, 0.98), rgba(233, 209, 135, 0.98));
+  box-shadow: 0 12px 24px rgba(7, 10, 14, 0.24);
+  pointer-events: none;
+  text-align: center;
+}
+
+.targetCallout strong {
+  font-size: clamp(0.84rem, 1.4vw, 1rem);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.targetCallout span {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
 .statusStrip {
   position: absolute;
   inset: clamp(12px, 2vw, 18px) auto auto clamp(12px, 2vw, 18px);
@@ -231,6 +263,22 @@
 
 .shell[data-overlay-density="compact"] .statusValue {
   font-size: 0.78rem;
+}
+
+.shell[data-overlay-density="compact"] .targetCallout {
+  top: max(60px, env(safe-area-inset-top, 0px) + 10px);
+  min-width: min(9rem, calc(100% - 20px));
+  max-width: min(15rem, calc(100% - 20px));
+  padding: 8px 12px;
+  border-radius: 14px;
+}
+
+.shell[data-overlay-density="compact"] .targetCallout strong {
+  font-size: 0.78rem;
+}
+
+.shell[data-overlay-density="compact"] .targetCallout span {
+  font-size: 0.72rem;
 }
 
 .overlay {

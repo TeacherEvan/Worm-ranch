@@ -48,6 +48,8 @@ function flattenElementText(node: unknown): string {
     return node.map((child) => flattenElementText(child)).join("");
   }
 
+  node = resolveFunctionComponent(node);
+
   if (typeof node === "string" || typeof node === "number") {
     return String(node);
   }
@@ -70,6 +72,8 @@ function findElementTextByClassName(node: unknown, className: string): string | 
 
     return null;
   }
+
+  node = resolveFunctionComponent(node);
 
   if (!node || typeof node !== "object" || !("props" in node)) {
     return null;
@@ -100,6 +104,8 @@ function findStatusPill(node: unknown, label: string) {
 
     return null;
   }
+
+  node = resolveFunctionComponent(node);
 
   if (!node || typeof node !== "object" || !("props" in node)) {
     return null;
@@ -142,6 +148,23 @@ function findStatusPill(node: unknown, label: string) {
   return findStatusPill(element.props.children, label);
 }
 
+function resolveFunctionComponent(node: unknown) {
+  if (!node || typeof node !== "object" || !("props" in node) || !("type" in node)) {
+    return node;
+  }
+
+  const element = node as {
+    props: Record<string, unknown>;
+    type: unknown;
+  };
+
+  if (typeof element.type !== "function") {
+    return node;
+  }
+
+  return (element.type as (props: Record<string, unknown>) => unknown)(element.props);
+}
+
 async function createInteractionHarness(options: InteractionHarnessOptions = {}) {
   const cleanupFns: Array<(() => void) | undefined> = [];
   const canvasListeners = new Map<string, (event: StageInteractionEvent) => void>();
@@ -158,6 +181,7 @@ async function createInteractionHarness(options: InteractionHarnessOptions = {})
     return nextResult ?? options.pressResult ?? { kind: "tag", wormId: "worm-1", bursts: 1 };
   });
   const createWorld = vi.fn(() => world);
+  const startContinuousMode = vi.fn();
   const audioController = {
     getCycleStep: vi.fn(() => 0),
     play: vi.fn(() => ({ cue: "gunshot", nextCycleStep: 1 })),
@@ -272,7 +296,7 @@ async function createInteractionHarness(options: InteractionHarnessOptions = {})
     })),
     resizeWorld: vi.fn(),
     setPointer: vi.fn(),
-    startContinuousMode: vi.fn(),
+    startContinuousMode,
     stepWorld: vi.fn(),
     stopContinuousMode: vi.fn(),
     triggerTouchRush: vi.fn(),
@@ -325,6 +349,7 @@ async function createInteractionHarness(options: InteractionHarnessOptions = {})
     canvasListeners,
     createGameStageAudioController,
     createWorld,
+    startContinuousMode,
     cleanup() {
       for (const cleanup of cleanupFns.reverse()) {
         cleanup?.();
@@ -441,6 +466,107 @@ describe("GameStage", () => {
     );
 
     expect(html).toContain('background-image:url(&quot;/art/Gameplay%20backdrops/desert-landscape-with-sparse-vegetation_1308-178017.avif&quot;)');
+  });
+
+  it("renders the live target-color callout while the announce window is visible", async () => {
+    vi.resetModules();
+
+    vi.doMock("@/components/gameStageAudio", () => ({
+      createGameStageAudioController: vi.fn(() => ({
+        dispose: vi.fn(),
+        play: vi.fn(),
+      })),
+    }));
+    vi.doMock("@/components/gameStageKeyboard", () => ({
+      getKeyboardStatus: () => "status",
+      getKeyboardTargetId: () => null,
+    }));
+    vi.doMock("@/components/gameStagePresentation", () => ({
+      areSummariesEqual: () => true,
+      drawStaticStageBackdrop: vi.fn(),
+      renderStage: vi.fn(),
+      stepFeedback: vi.fn(),
+    }));
+    vi.doMock("@/components/gameStageMotion", () => ({
+      getMotionFeedback: () => ({ stageCue: "none" }),
+    }));
+    vi.doMock("@/components/gameStagePhasePresentation", () => ({
+      getStagePresentation: () => ({
+        overlayKey: "overlay",
+        overlayDensity: "standard",
+        phaseChipLabel: "Target live",
+        copy: {
+          title: "Level 1 · Live chase",
+          body: "Remove 2 Pond Blue worms.",
+          hint: "Ignore the others until the target changes.",
+        },
+        statusItems: [
+          { id: "bagged", label: "Bagged", value: "0/12", active: false },
+          { id: "mechanic", label: "Target", value: "0/2", active: true },
+        ],
+      }),
+    }));
+    vi.doMock("@/lib/analytics", () => ({
+      getFairyLifecycleEvents: () => ({ events: [], nextStates: new Map() }),
+      getRoundEndedDetails: vi.fn(),
+      getRoundTransitionEvents: () => [],
+    }));
+    vi.doMock("@/game/engine", () => ({
+      applyAccuratePress: vi.fn(),
+      applyMiss: vi.fn(),
+      createWorld: vi.fn(() => ({
+        worms: [],
+        fairies: [],
+        roundResult: null,
+        continuousMode: { active: true },
+      })),
+      findWormIdAtPoint: vi.fn(),
+      getSummary: vi.fn(() => ({
+        profile: "desktop",
+        phase: "activeChase",
+        collected: 0,
+        remaining: 8,
+        fairies: 0,
+        timerMs: 42_000,
+        continuousActive: true,
+        speedBonus: 0,
+        teleportsUnlocked: false,
+        countdownMs: 0,
+        finalWormActive: false,
+        rushTriggered: false,
+        targetColor: {
+          colorId: "pond-blue",
+          label: "Pond Blue",
+          progress: 0,
+          goal: 2,
+          visible: true,
+        },
+      })),
+      resizeWorld: vi.fn(),
+      setPointer: vi.fn(),
+      startContinuousMode: vi.fn(),
+      stepWorld: vi.fn(),
+      stopContinuousMode: vi.fn(),
+      triggerTouchRush: vi.fn(),
+    }));
+    vi.doMock("@/game/levels", () => ({
+      getGameplayLevelRules: vi.fn(() => ({})),
+    }));
+
+    const { GameStage: TargetCalloutStage } = await import("./GameStage");
+    const html = renderToStaticMarkup(
+      createElement(TargetCalloutStage, {
+        level: 1,
+        profile: "desktop",
+        reducedMotion: false,
+        onSummaryChange: vi.fn(),
+        onRoundEnd: vi.fn(),
+        onEvent: vi.fn(),
+      }),
+    );
+
+    expect(html).toContain("TAP POND BLUE");
+    expect(html).toContain("0/2");
   });
 
   it("routes pointer misses through applyMiss without triggering stage audio", async () => {
@@ -754,6 +880,7 @@ describe("GameStage", () => {
     const harness = await createInteractionHarness();
 
     expect(harness.createWorld).toHaveBeenCalledTimes(1);
+    expect(harness.startContinuousMode).toHaveBeenCalledTimes(1);
 
     harness.cleanup();
   });
