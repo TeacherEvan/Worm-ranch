@@ -7,6 +7,7 @@ export type RoundPhase =
   | "activeChase"
   | "blinkBand"
   | "ghostFinale"
+  | "gameOver"
   | "resolved";
 
 export type DesktopWormState = "roaming" | "blinkCharged" | "blinkRecover" | "ghost" | "captured" | "escaped";
@@ -105,9 +106,11 @@ export type GameSummary = {
 };
 
 export type RoundResult = {
-  reason: "ghostEscape" | "time" | "captured";
+  reason: "ghostEscape" | "time" | "captured" | "wrongColor";
   collected: number;
   remaining: number;
+  wrongColorId?: WormColorId;
+  targetColorId?: WormColorId;
 };
 
 export type ActionResult =

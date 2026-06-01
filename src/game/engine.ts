@@ -8,6 +8,7 @@ import {
 import { stepWormMovement } from "./movement";
 import { getProfileRules, type ProfileRules } from "./rules";
 import { createPsychedelicWorm, createStandardWorm, shouldSpawnPsychedelicWorm } from "./specialWorms";
+import { getWormColorById } from "./wormColors";
 import {
   isFairyVisible,
   isWormActive,
@@ -335,6 +336,19 @@ export function applyAccuratePress(world: GameWorld, wormId: string): ActionResu
     }
   }
 
+  if (
+    world.continuousMode?.active &&
+    worm.visualVariant === "standard" &&
+    world.targetColor &&
+    worm.colorId !== world.targetColor.colorId
+  ) {
+    finishWorld(world, "wrongColor", {
+      wrongColorId: worm.colorId,
+      targetColorId: world.targetColor.colorId,
+    });
+    return { kind: "collect", wormId, collected: world.collected };
+  }
+
   captureWorm(world, worm);
 
   if (world.continuousMode?.active) {
@@ -472,9 +486,11 @@ function getTargetColorSummary(
     return null;
   }
 
+  const color = getWormColorById(targetColor.colorId);
+
   return {
     colorId: targetColor.colorId,
-    label: targetColor.label,
+    label: color.label,
     progress: targetColor.progress,
     goal: targetColor.goal,
     visible: isContinuousColorTargetVisible(targetColor, now),
@@ -542,7 +558,7 @@ function syncWormStates(world: GameWorld) {
 
 function updateRoundPhase(world: GameWorld) {
   if (world.roundResult) {
-    world.phase = "resolved";
+    world.phase = world.roundResult.reason === "wrongColor" ? "gameOver" : "resolved";
     return;
   }
 
@@ -573,13 +589,18 @@ function createProfileRules(profile: DisplayProfile, overrides: Partial<ProfileR
   } as ProfileRules;
 }
 
-function finishWorld(world: GameWorld, reason: RoundResult["reason"]) {
+function finishWorld(
+  world: GameWorld,
+  reason: RoundResult["reason"],
+  extras: Pick<RoundResult, "wrongColorId" | "targetColorId"> = {},
+) {
   world.roundResult = {
     reason,
     collected: world.collected,
     remaining: getRemainingWorms(world).length,
+    ...extras,
   };
-  world.phase = "resolved";
+  world.phase = reason === "wrongColor" ? "gameOver" : "resolved";
 
   for (const worm of world.worms) {
     if (isWormActive(worm)) {

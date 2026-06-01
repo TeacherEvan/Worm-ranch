@@ -185,6 +185,30 @@
   letter-spacing: 0.08em;
 }
 
+.targetCalloutGameOver {
+  top: 50%;
+  min-width: min(18rem, calc(100% - 32px));
+  max-width: min(28rem, calc(100% - 32px));
+  padding: 18px 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 120, 92, 0.42);
+  background: linear-gradient(180deg, rgba(255, 233, 224, 0.98), rgba(255, 176, 142, 0.98));
+  box-shadow:
+    0 24px 56px rgba(7, 10, 14, 0.5),
+    0 0 0 1px rgba(255, 120, 92, 0.16) inset;
+  transform: translate(-50%, -50%);
+}
+
+.targetCalloutGameOver strong {
+  font-size: clamp(1.4rem, 3.8vw, 2.4rem);
+  letter-spacing: 0.18em;
+}
+
+.targetCalloutGameOver span {
+  font-size: 0.96rem;
+  letter-spacing: 0.16em;
+}
+
 .statusStrip {
   position: absolute;
   inset: clamp(12px, 2vw, 18px) auto auto clamp(12px, 2vw, 18px);

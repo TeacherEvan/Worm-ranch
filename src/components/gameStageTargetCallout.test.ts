@@ -22,11 +22,11 @@ function createSummary(overrides: Partial<GameSummary> = {}): GameSummary {
 }
 
 describe("gameStageTargetCallout", () => {
-  it("maps a visible target color into a raw black-text payload", () => {
+  it("maps a visible target color into a raw black-text payload with plain color naming", () => {
     const summary = createSummary({
       targetColor: {
         colorId: "pond-blue",
-        label: "Pond Blue",
+        label: "BLUE",
         progress: 0,
         goal: 2,
         visible: true,
@@ -36,10 +36,11 @@ describe("gameStageTargetCallout", () => {
     expect(getTargetCallout(summary)).toEqual({
       visible: true,
       colorId: "pond-blue",
-      label: "Pond Blue",
+      label: "BLUE",
       progress: 0,
       goal: 2,
       textColor: "#000000",
+      gameOver: false,
     });
   });
 
@@ -47,7 +48,7 @@ describe("gameStageTargetCallout", () => {
     const summary = createSummary({
       targetColor: {
         colorId: "pond-blue",
-        label: "Pond Blue",
+        label: "BLUE",
         progress: 1,
         goal: 2,
         visible: false,
@@ -55,5 +56,28 @@ describe("gameStageTargetCallout", () => {
     });
 
     expect(getTargetCallout(summary).visible).toBe(false);
+  });
+
+  it("keeps the plain target color visible during game over", () => {
+    const summary = createSummary({
+      phase: "gameOver",
+      targetColor: {
+        colorId: "fence-red",
+        label: "RED",
+        progress: 0,
+        goal: 2,
+        visible: false,
+      },
+    });
+
+    expect(getTargetCallout(summary)).toEqual({
+      visible: true,
+      colorId: "fence-red",
+      label: "RED",
+      progress: 0,
+      goal: 2,
+      textColor: "#000000",
+      gameOver: true,
+    });
   });
 });

@@ -34,10 +34,12 @@ function createStandardWorms(count: number) {
 }
 
 describe("continuous color targets", () => {
-  it("assigns named colors from the bounded standard palette", () => {
-    expect(getStandardWormColor(0).label).toBe("Sun Yellow");
-    expect(getStandardWormColor(1).label).toBe("Fence Red");
-    expect(getStandardWormColor(4).id).toBe("sun-yellow");
+  it("assigns plain named colors from the expanded standard palette", () => {
+    expect(getStandardWormColor(0).label).toBe("YELLOW");
+    expect(getStandardWormColor(1).label).toBe("RED");
+    expect(getStandardWormColor(4).label).toBe("ORANGE");
+    expect(getStandardWormColor(5).label).toBe("PURPLE");
+    expect(getStandardWormColor(6).id).toBe("sun-yellow");
 
     const worm = createStandardWorm(0, DESKTOP_RULES, 800, 540, createDeterministicRuntime());
 
@@ -60,7 +62,7 @@ describe("continuous color targets", () => {
 
     expect(state).toMatchObject({
       colorId: "clover-green",
-      label: "Clover Green",
+      label: "GREEN",
       progress: 0,
       goal: CONTINUOUS_COLOR_TARGET_GOAL,
       visibleUntilMs: 1_700_200_000_000 + CONTINUOUS_COLOR_TARGET_FLASH_MS,
@@ -78,7 +80,7 @@ describe("continuous color targets", () => {
 
     expect(initial).toMatchObject({
       colorId: "sun-yellow",
-      label: "Sun Yellow",
+      label: "YELLOW",
       progress: 0,
       goal: 2,
     });
@@ -103,7 +105,7 @@ describe("continuous color targets", () => {
     const afterSecondMatch = registerContinuousColorRemoval(afterFirstMatch, "sun-yellow", worms, runtime);
     expect(afterSecondMatch).toMatchObject({
       colorId: "fence-red",
-      label: "Fence Red",
+      label: "RED",
       progress: 0,
       goal: 2,
       visibleUntilMs: runtime.now() + CONTINUOUS_COLOR_TARGET_FLASH_MS,

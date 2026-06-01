@@ -29,14 +29,17 @@ export function GameStageOverlay({
   targetCallout,
   time,
 }: GameStageOverlayProps) {
-  const targetTitle = `TAP ${targetCallout.label.toUpperCase()}`;
+  const targetTitle = targetCallout.gameOver ? targetCallout.label.toUpperCase() : `TAP ${targetCallout.label.toUpperCase()}`;
   const targetProgress = `${targetCallout.progress}/${targetCallout.goal}`;
 
   return (
     <>
       <GameHUD time={time} kills={kills} />
       {targetCallout.visible ? (
-        <div className={styles.targetCallout} style={{ color: targetCallout.textColor } as CSSProperties}>
+        <div
+          className={`${styles.targetCallout} ${targetCallout.gameOver ? styles.targetCalloutGameOver : ""}`.trim()}
+          style={{ color: targetCallout.textColor } as CSSProperties}
+        >
           <strong>{targetTitle}</strong>
           <span>{targetProgress}</span>
         </div>

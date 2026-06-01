@@ -6,7 +6,7 @@ import { getGameplayRunPlan } from "./wormRanchLevelFlow";
 type MockGameStageProps = {
   backdropUrl?: string | null;
   level: number;
-  onRoundEnd: (result: { reason: "ghostEscape" | "time" | "captured"; collected: number; remaining: number }) => void;
+  onRoundEnd: (result: { reason: "ghostEscape" | "time" | "captured" | "wrongColor"; collected: number; remaining: number }) => void;
 };
 
 type MockHomeScreenProps = {
@@ -207,7 +207,7 @@ describe("WormRanchApp", () => {
     expect(gameStageProps?.backdropUrl).toBe(getGameplayRunPlan(1).backdropUrl);
   });
 
-  it("returns to home after a round ends and starts the next run from level 1", async () => {
+  it("returns to home after a wrong-color game over and starts the next run from level 1", async () => {
     let screenState: "welcome" | "home" | "settings" | "game" = "game";
     let currentLevelState = 1;
     let gameStageProps: MockGameStageProps | null = null;
@@ -274,7 +274,7 @@ describe("WormRanchApp", () => {
       throw new Error("expected GameStage props");
     }
 
-    gameStageProps.onRoundEnd({ reason: "time", collected: 12, remaining: 88 });
+    gameStageProps.onRoundEnd({ reason: "wrongColor", collected: 3, remaining: 9 });
     const postRoundHtml = await renderApp();
 
     expect(postRoundHtml).toContain("Moonlit roundup");

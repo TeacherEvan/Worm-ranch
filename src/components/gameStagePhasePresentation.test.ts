@@ -97,7 +97,7 @@ describe("gameStagePhasePresentation", () => {
     };
     world.targetColor = {
       colorId: "pond-blue",
-      label: "Pond Blue",
+      label: "BLUE",
       progress: 0,
       goal: 2,
       visibleUntilMs: world.runtime.now() + 2_000,
@@ -106,6 +106,53 @@ describe("gameStagePhasePresentation", () => {
     const presentation = getStagePresentation(getSummary(world), "desktop", 1);
 
     expect(presentation.statusItems.map((item) => item.id)).toEqual(["bagged", "mechanic"]);
-    expect(presentation.copy.body).toContain("Remove 2 Pond Blue worms");
+    expect(presentation.copy.body).toContain("Remove 2 BLUE worms");
+  });
+
+  it("presents wrong-color failure as a centered game over beat", () => {
+    const world = createWorld("desktop", 800, 540, {
+      ...createDeterministicOptions(79),
+      rules: getGameplayLevelRules("desktop", 1),
+    });
+
+    startRound(world);
+    world.continuousMode = {
+      active: true,
+      elapsedMs: 0,
+      speedMultiplier: 1,
+      spawnTimerMs: 0,
+      spawnIntervalMs: 1200,
+    };
+    world.roundResult = {
+      reason: "wrongColor",
+      collected: 3,
+      remaining: 7,
+      wrongColorId: "pond-blue",
+      targetColorId: "fence-red",
+    };
+    world.phase = "gameOver";
+    world.targetColor = {
+      colorId: "fence-red",
+      label: "RED",
+      progress: 0,
+      goal: 2,
+      visibleUntilMs: world.runtime.now() - 1,
+    };
+
+    const presentation = getStagePresentation(getSummary(world), "desktop", 1);
+
+    expect(presentation.phaseChipLabel).toBe("GAME OVER");
+    expect(presentation.statusItems[1]).toMatchObject({
+      id: "mechanic",
+      label: "Failure",
+      value: "wrong color",
+      active: true,
+    });
+    expect(presentation.copy).toEqual({
+      title: "GAME OVER",
+      body: "Wrong color bagged. Target was RED.",
+      hint: "Hold the called color only.",
+    });
+    expect(presentation.overlayKey).toBe("gameOver:fence-red");
   });
 });

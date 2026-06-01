@@ -85,6 +85,8 @@ function getPhaseLabelText(summary: GameSummary) {
       return "Blink armed";
     case "ghostFinale":
       return "Ghost finale";
+    case "gameOver":
+      return "Game over";
     case "resolved":
       return "Tallied";
   }
@@ -96,6 +98,10 @@ function getPhaseChipText(summary: GameSummary, rules: ReturnType<typeof getGame
   }
 
   if (summary.continuousActive) {
+    if (summary.phase === "gameOver") {
+      return "GAME OVER";
+    }
+
     return summary.targetColor ? `${summary.targetColor.label} target` : "Target live";
   }
 
@@ -132,6 +138,7 @@ function buildStatusItemsForSummary(
 ): StatusItem[] {
   const isCountdown = summary.phase === "introCountdown";
   const isResolved = summary.phase === "resolved";
+  const isGameOver = summary.phase === "gameOver";
   const showClock = !summary.continuousActive;
 
   if (summary.continuousActive) {
@@ -140,12 +147,12 @@ function buildStatusItemsForSummary(
         id: "bagged",
         label: "Bagged",
         value: `${summary.collected}/${rules.totalWorms}`,
-        active: !isResolved && summary.collected > 0,
+        active: !isResolved && !isGameOver && summary.collected > 0,
       },
       {
         id: "mechanic",
-        label: "Target",
-        value: summary.targetColor ? `${summary.targetColor.progress}/${summary.targetColor.goal}` : "Waiting",
+        label: isGameOver ? "Failure" : "Target",
+        value: isGameOver ? "wrong color" : summary.targetColor ? `${summary.targetColor.progress}/${summary.targetColor.goal}` : "Waiting",
         active: !isCountdown && !isResolved,
       },
     ];
@@ -233,6 +240,14 @@ function getStageCopyData(
     };
   }
 
+  if (summary.continuousActive && summary.phase === "gameOver") {
+    return {
+      title: "GAME OVER",
+      body: summary.targetColor ? `Wrong color bagged. Target was ${summary.targetColor.label}.` : "Wrong color bagged.",
+      hint: "Hold the called color only.",
+    };
+  }
+
   if (summary.continuousActive) {
     if (!summary.targetColor) {
       return {
@@ -300,6 +315,10 @@ function getStageCopyData(
 }
 
 function getOverlayKey(summary: GameSummary) {
+  if (summary.continuousActive && summary.phase === "gameOver") {
+    return `gameOver:${summary.targetColor?.colorId ?? "none"}`;
+  }
+
   if (summary.continuousActive && summary.targetColor) {
     return `target:${summary.targetColor.colorId}:${summary.targetColor.progress}:${summary.targetColor.visible}`;
   }

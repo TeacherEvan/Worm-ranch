@@ -55,6 +55,20 @@ const STANDARD_WORM_VISUALS: Record<WormColorId, StandardWormVisualFrame> = {
     shadowBlur: 6,
     shadowColor: "rgba(123, 221, 135, 0.24)",
   },
+  "blaze-orange": {
+    bodyStroke: "hsl(28 98% 56%)",
+    headFill: "hsl(31 100% 74%)",
+    headShadowFill: "rgba(77, 33, 9, 0.62)",
+    shadowBlur: 7,
+    shadowColor: "rgba(255, 166, 79, 0.3)",
+  },
+  "shock-purple": {
+    bodyStroke: "hsl(282 84% 60%)",
+    headFill: "hsl(286 100% 78%)",
+    headShadowFill: "rgba(52, 18, 71, 0.62)",
+    shadowBlur: 7,
+    shadowColor: "rgba(204, 126, 255, 0.3)",
+  },
 };
 
 export function getStandardWormVisualFrame(worm: Worm): StandardWormVisualFrame | null {

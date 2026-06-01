@@ -1,4 +1,4 @@
-import { STANDARD_WORM_COLORS } from "./wormColors";
+import { getWormColorById } from "./wormColors";
 import { isWormActive, type ContinuousColorTargetState, type EngineRuntime, type Worm } from "./types";
 
 export const CONTINUOUS_COLOR_TARGET_GOAL = 2;
@@ -67,11 +67,7 @@ export function isContinuousColorTargetVisible(state: ContinuousColorTargetState
 }
 
 function createTargetState(colorId: ContinuousColorTargetState["colorId"], now: number): ContinuousColorTargetState {
-  const color = STANDARD_WORM_COLORS.find((candidate) => candidate.id === colorId);
-
-  if (!color) {
-    throw new Error(`unknown continuous target color: ${colorId}`);
-  }
+  const color = getWormColorById(colorId);
 
   return {
     colorId: color.id,

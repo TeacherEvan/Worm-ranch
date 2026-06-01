@@ -7,6 +7,7 @@ export type StageTargetCallout = {
   progress: number;
   visible: boolean;
   textColor: string;
+  gameOver: boolean;
 };
 
 const HIDDEN_CALLOUT: StageTargetCallout = {
@@ -16,6 +17,7 @@ const HIDDEN_CALLOUT: StageTargetCallout = {
   progress: 0,
   visible: false,
   textColor: "#000000",
+  gameOver: false,
 };
 
 export function getTargetCallout(summary: GameSummary): StageTargetCallout {
@@ -28,7 +30,8 @@ export function getTargetCallout(summary: GameSummary): StageTargetCallout {
     goal: summary.targetColor.goal,
     label: summary.targetColor.label,
     progress: summary.targetColor.progress,
-    visible: summary.targetColor.visible,
+    visible: summary.targetColor.visible || summary.phase === "gameOver",
     textColor: "#000000",
+    gameOver: summary.phase === "gameOver",
   };
 }

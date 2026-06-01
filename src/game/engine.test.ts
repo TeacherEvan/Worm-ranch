@@ -316,7 +316,7 @@ describe("engine", () => {
 
     expect(getSummary(world).targetColor).toMatchObject({
       colorId: "sun-yellow",
-      label: "Sun Yellow",
+      label: "YELLOW",
       progress: 0,
       goal: 2,
       visible: true,
@@ -368,35 +368,13 @@ describe("engine", () => {
     expect(getSummary(world).targetColor?.visible).toBe(false);
   });
 
-  it("increments target progress only when the active color is removed", () => {
+  it("increments target progress when the active color is removed", () => {
     const { world } = createContinuousActiveWorld("desktop", 4);
     const initialTarget = getSummary(world).targetColor;
 
     if (!initialTarget) {
       throw new Error("expected an active target color");
     }
-
-    const nonTargetWorm = world.worms.find(
-      (worm) =>
-        worm.colorId !== null &&
-        worm.colorId !== initialTarget.colorId &&
-        worm.state !== "captured" &&
-        worm.state !== "escaped",
-    );
-
-    if (!nonTargetWorm) {
-      throw new Error("expected a non-target worm");
-    }
-
-    expect(applyAccuratePress(world, nonTargetWorm.id)).toMatchObject({
-      kind: "collect",
-      wormId: nonTargetWorm.id,
-    });
-    expect(getSummary(world).targetColor).toMatchObject({
-      colorId: initialTarget.colorId,
-      progress: 0,
-      goal: 2,
-    });
 
     const targetWormId = getActiveStandardWormIdByColor(world, initialTarget.colorId);
 
@@ -434,7 +412,7 @@ describe("engine", () => {
 
     expect(getSummary(world).targetColor).toMatchObject({
       colorId: "fence-red",
-      label: "Fence Red",
+      label: "RED",
       progress: 0,
       goal: 2,
       visible: true,
@@ -459,7 +437,44 @@ describe("engine", () => {
     expect(world.roundResult).toBeNull();
   });
 
-  it("does not set roundResult during continuous play", () => {
+  it("ends continuous play with game over when the wrong color is bagged", () => {
+    const { world } = createContinuousActiveWorld("desktop", 4);
+    const initialTarget = getSummary(world).targetColor;
+
+    if (!initialTarget) {
+      throw new Error("expected an active target color");
+    }
+
+    const wrongColorWorm = world.worms.find(
+      (worm) =>
+        worm.visualVariant === "standard" &&
+        worm.colorId !== null &&
+        worm.colorId !== initialTarget.colorId &&
+        worm.state !== "captured" &&
+        worm.state !== "escaped",
+    );
+
+    if (!wrongColorWorm || !wrongColorWorm.colorId) {
+      throw new Error("expected an active wrong-color worm");
+    }
+
+    expect(applyAccuratePress(world, wrongColorWorm.id)).toMatchObject({
+      kind: "collect",
+      wormId: wrongColorWorm.id,
+      collected: 0,
+    });
+
+    expect(world.roundResult).toMatchObject({
+      reason: "wrongColor",
+      collected: 0,
+      remaining: 4,
+      wrongColorId: wrongColorWorm.colorId,
+      targetColorId: initialTarget.colorId,
+    });
+    expect(getSummary(world).phase).toBe("gameOver");
+  });
+
+  it("does not set roundResult during continuous play when the target color is bagged", () => {
     const { world } = createContinuousActiveWorld("desktop", 2);
     const worm = world.worms[0];
 
