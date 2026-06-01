@@ -98,19 +98,25 @@ function WelcomeHeroMedia({ ambientMotionEnabled, heroVariant, reducedMotion }: 
   const [launchMediaState, setLaunchMediaState] = useState(() =>
     getInitialWelcomeLaunchMediaState({ reducedMotion, introVideoSrc: heroVariant.introVideoSrc }),
   );
-  const [posterLoaded, setPosterLoaded] = useState(false);
+  const [posterLoaded, setPosterLoaded] = useState(true);
   const [introVideoMetadataLoaded, setIntroVideoMetadataLoaded] = useState(false);
   const [introVideoCanPlay, setIntroVideoCanPlay] = useState(false);
-  const showIntroVideo = launchMediaState !== "image" && Boolean(heroVariant.introVideoSrc);
+  const videoAllowed = Boolean(heroVariant.introVideoSrc) && !reducedMotion;
+  const showIntroVideo = videoAllowed;
   const loaderSnapshot: WelcomeLaunchLoaderSnapshot = {
     reducedMotion,
     posterLoaded,
-    introVideoExpected: Boolean(heroVariant.introVideoSrc) && !reducedMotion && launchMediaState !== "image",
+    introVideoExpected: videoAllowed && launchMediaState !== "image",
     introVideoMetadataLoaded,
     introVideoCanPlay,
     launchMediaState,
   };
   const showLaunchLoader = shouldShowWelcomeLaunchLoader(loaderSnapshot);
+
+  const handleIntroVideoCanPlay = () => {
+    setIntroVideoCanPlay(true);
+    setLaunchMediaState((currentState) => getNextWelcomeLaunchMediaState(currentState, "video-ready"));
+  };
 
   return (
     <div
@@ -152,7 +158,7 @@ function WelcomeHeroMedia({ ambientMotionEnabled, heroVariant, reducedMotion }: 
             autoPlay
             className={styles.heroVideo}
             muted
-            onCanPlay={() => setIntroVideoCanPlay(true)}
+            onCanPlay={handleIntroVideoCanPlay}
             onEnded={() => setLaunchMediaState((currentState) => getNextWelcomeLaunchMediaState(currentState, "video-ended"))}
             onError={() => setLaunchMediaState((currentState) => getNextWelcomeLaunchMediaState(currentState, "video-error"))}
             onLoadedMetadata={() => setIntroVideoMetadataLoaded(true)}

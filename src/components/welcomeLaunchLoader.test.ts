@@ -20,14 +20,18 @@ function createSnapshot(overrides: Partial<WelcomeLaunchLoaderSnapshot> = {}): W
 }
 
 describe("welcomeLaunchLoader", () => {
-  it("starts with a themed boot phase and a visible baseline progress floor", () => {
-    const snapshot = createSnapshot();
+  it("treats the poster-first launch path as immediately visible even before media readiness events arrive", () => {
+    const snapshot = createSnapshot({
+      introVideoExpected: false,
+      launchMediaState: "image",
+    });
 
     expect(getWelcomeLaunchLoaderPhase(snapshot)).toMatchObject({
-      title: "Booting the reclamation rig",
-      detail: "Spooling pasture glass and worm-scan overlays.",
+      title: "Ranch glass coming online",
+      detail: "Locking the still frame before the gate opens.",
     });
-    expect(getWelcomeLaunchLoaderProgress(snapshot)).toBe(18);
+    expect(getWelcomeLaunchLoaderProgress(snapshot)).toBe(100);
+    expect(shouldShowWelcomeLaunchLoader(snapshot)).toBe(false);
   });
 
   it("shows a lighter poster-first phase when reduced motion skips the intro reel", () => {
@@ -41,10 +45,10 @@ describe("welcomeLaunchLoader", () => {
       title: "Ranch glass coming online",
       detail: "Locking the still frame before the gate opens.",
     });
-    expect(getWelcomeLaunchLoaderProgress(snapshot)).toBe(18);
+    expect(getWelcomeLaunchLoaderProgress(snapshot)).toBe(100);
   });
 
-  it("marks the image-only launch path ready once the poster has loaded", () => {
+  it("keeps the image-only launch path ready once the poster has loaded", () => {
     const snapshot = createSnapshot({
       posterLoaded: true,
       introVideoExpected: false,
@@ -52,18 +56,29 @@ describe("welcomeLaunchLoader", () => {
     });
 
     expect(getWelcomeLaunchLoaderPhase(snapshot)).toMatchObject({
-      title: "Gate ready",
-      detail: "All ranch glass locked. Step through when ready.",
+      title: "Ranch glass coming online",
+      detail: "Locking the still frame before the gate opens.",
     });
     expect(getWelcomeLaunchLoaderProgress(snapshot)).toBe(100);
     expect(shouldShowWelcomeLaunchLoader(snapshot)).toBe(false);
   });
 
-  it("advances as poster and video resources become ready", () => {
-    expect(getWelcomeLaunchLoaderProgress(createSnapshot({ posterLoaded: true }))).toBe(52);
+  it("does not gate the hero on poster or video readiness once the image path is active", () => {
+    expect(
+      getWelcomeLaunchLoaderProgress(createSnapshot({ posterLoaded: false, introVideoExpected: false, launchMediaState: "image" })),
+    ).toBe(100);
+    expect(
+      getWelcomeLaunchLoaderProgress(createSnapshot({ posterLoaded: true, introVideoExpected: false, launchMediaState: "image" })),
+    ).toBe(100);
     expect(
       getWelcomeLaunchLoaderProgress(
-        createSnapshot({ posterLoaded: true, introVideoMetadataLoaded: true, introVideoCanPlay: true }),
+        createSnapshot({
+          posterLoaded: true,
+          introVideoExpected: false,
+          introVideoMetadataLoaded: true,
+          introVideoCanPlay: true,
+          launchMediaState: "image",
+        }),
       ),
     ).toBe(100);
   });

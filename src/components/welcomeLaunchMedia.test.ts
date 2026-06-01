@@ -6,14 +6,18 @@ import {
 } from "./welcomeLaunchMedia";
 
 describe("welcomeLaunchMedia", () => {
-  it("starts in video mode only when motion is allowed and an intro source exists", () => {
+  it("starts on the poster even when motion is allowed so video never gates first paint", () => {
     expect(getInitialWelcomeLaunchMediaState({ reducedMotion: false, introVideoSrc: "/art/intro.mp4" })).toBe(
-      "video",
+      "image",
     );
     expect(getInitialWelcomeLaunchMediaState({ reducedMotion: true, introVideoSrc: "/art/intro.mp4" })).toBe(
       "image",
     );
     expect(getInitialWelcomeLaunchMediaState({ reducedMotion: false, introVideoSrc: null })).toBe("image");
+  });
+
+  it("can promote the intro video after the poster is already visible", () => {
+    expect(getNextWelcomeLaunchMediaState("image", "video-ready")).toBe("video");
   });
 
   it("moves through a handoff state before settling on the still image", () => {

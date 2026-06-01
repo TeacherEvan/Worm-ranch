@@ -15,11 +15,11 @@ export type WelcomeLaunchLoaderPhase = {
 };
 
 export function getWelcomeLaunchLoaderProgress(snapshot: WelcomeLaunchLoaderSnapshot) {
-  const baseline = 18;
-
   if (!snapshot.introVideoExpected || snapshot.launchMediaState === "image") {
-    return snapshot.posterLoaded ? 100 : baseline;
+    return 100;
   }
+
+  const baseline = 18;
 
   let progress = baseline;
 
@@ -46,10 +46,10 @@ export function getWelcomeLaunchLoaderPhase(snapshot: WelcomeLaunchLoaderSnapsho
     };
   }
 
-  if (snapshot.launchMediaState === "image" && snapshot.posterLoaded) {
+  if (snapshot.launchMediaState === "image") {
     return {
-      title: "Gate ready",
-      detail: "All ranch glass locked. Step through when ready.",
+      title: "Ranch glass coming online",
+      detail: "Locking the still frame before the gate opens.",
     };
   }
 

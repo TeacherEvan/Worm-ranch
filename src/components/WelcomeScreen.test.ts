@@ -27,22 +27,21 @@ describe("WelcomeScreen", () => {
 
     expect(html).toContain('data-layout="full-bleed-hero"');
     expect(html).toMatch(
-      /<div[^>]*data-hero-stage="full-bleed"[^>]*>\s*<div[^>]*data-hero-media-surface="full-bleed"[^>]*data-launch-media="video"[^>]*data-launch-loader-state="loading"[^>]*>[\s\S]*<\/div>\s*<div[^>]*data-hero-copy-layer="overlay"[^>]*>/,
+      /<div[^>]*data-hero-stage="full-bleed"[^>]*>\s*<div[^>]*data-hero-media-surface="full-bleed"[^>]*data-launch-media="image"[^>]*data-launch-loader-state="ready"[^>]*>[\s\S]*<\/div>\s*<div[^>]*data-hero-copy-layer="overlay"[^>]*>/,
     );
     expect(html).not.toContain('data-hero-frame="card"');
   });
 
-  it("renders the desktop launch poster with the worm intro video when reduced motion is off", async () => {
+  it("renders the desktop launch poster without visually activating the intro video before readiness when reduced motion is off", async () => {
     const html = await renderWelcomeScreen(false);
 
     expect(html).toContain("<video");
     expect(html).toContain("worm-ranch-launch-poster.png");
     expect(html).toContain("worm-ranch-launch-intro.mp4");
-    expect(html).toContain('data-launch-media="video"');
-    expect(html).toContain('data-launch-loader-state="loading"');
+    expect(html).toContain('data-launch-media="image"');
+    expect(html).toContain('data-launch-loader-state="ready"');
+    expect(html).toMatch(/class="[^"]*heroVideoLayer[^"]*" data-launch-state="image"/);
     expect(html).toContain("Open the gate, or rig the tack first.");
-    expect(html).toContain("Booting the reclamation rig");
-    expect(html).toContain("18%");
   });
 
   it("uses the launch poster without autoplay video when reduced motion is on", async () => {
@@ -51,8 +50,7 @@ describe("WelcomeScreen", () => {
     expect(html).not.toContain("<video");
     expect(html).toContain('data-launch-media="image"');
     expect(html).toContain("worm-ranch-launch-poster.png");
-    expect(html).toContain('data-launch-loader-state="loading"');
-    expect(html).toContain("Ranch glass coming online");
+    expect(html).toContain('data-launch-loader-state="ready"');
   });
 
   it("selects the mobile backdrop when matchMedia reports a narrow viewport", async () => {
