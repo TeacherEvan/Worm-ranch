@@ -3,13 +3,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import styles from "./WormRanchApp.module.css";
 import { GameStage } from "@/components/GameStage";
+import { GameModeScreen } from "@/components/GameModeScreen";
 import { HomeScreen } from "@/components/HomeScreen";
+import { ScreenTransition } from "@/components/ScreenTransition";
 import { WormRanchInstallPrompt } from "@/components/WormRanchInstallPrompt";
 import { WormRanchGameExit } from "@/components/WormRanchGameExit";
 import { SettingsScreen } from "@/components/SettingsScreen";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { WormRanchShellHeader } from "@/components/WormRanchShellHeader";
 import { getGameplayRunPlan, getInitialGameplayRunPlan } from "@/components/wormRanchLevelFlow";
+import { DEFAULT_GAME_MODE, type GameMode } from "@/game/gameModes";
 import { areDisplaySnapshotsEqual, getProfileDetectedDetails } from "@/lib/analytics";
 import { detectDisplayProfile, type DisplayProfile, type DisplaySnapshot } from "@/game/detection";
 import { getGameplayLevelRules } from "@/game/levels";
@@ -25,10 +28,15 @@ import {
 } from "@/lib/wormRanchSettings";
 import { createSilentLogger, type EventName } from "@/lib/logger";
 
-type AppScreen = "welcome" | "home" | "settings" | "game";
+type AppScreen = "welcome" | "home" | "settings" | "modeMenu" | "transition" | "game";
 type DeferredInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+};
+type TransitionTarget = {
+  screen: Exclude<AppScreen, "transition">;
+  resetRun?: boolean;
+  gameMode?: GameMode;
 };
 
 export function WormRanchApp() {
@@ -40,6 +48,9 @@ export function WormRanchApp() {
   const [currentLevel, setCurrentLevel] = useState(getInitialGameplayRunPlan().level);
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
   const [logger] = useState(() => createSilentLogger("/api/events"));
+  const [selectedGameMode, setSelectedGameMode] = useState<GameMode>(DEFAULT_GAME_MODE);
+  const [modeMenuReturnScreen, setModeMenuReturnScreen] = useState<"home" | "settings">("home");
+  const [transitionTarget, setTransitionTarget] = useState<TransitionTarget | null>(null);
   const hasLoggedOpenRef = useRef(false);
   const settings = useSyncExternalStore(
     subscribeToSettings,
@@ -100,14 +111,55 @@ export function WormRanchApp() {
     [logEvent],
   );
 
-  const returnHome = useCallback(() => {
-    const initialRunPlan = getInitialGameplayRunPlan();
-
-    currentLevelRef.current = initialRunPlan.level;
-    setCurrentLevel(initialRunPlan.level);
-    setRunProfile(null);
-    setScreen("home");
+  const queueScreenTransition = useCallback((nextTarget: TransitionTarget) => {
+    setTransitionTarget(nextTarget);
+    setScreen("transition");
   }, []);
+
+  const completeTransition = useCallback(() => {
+    if (!transitionTarget) {
+      return;
+    }
+
+    const nextTarget = transitionTarget;
+    setTransitionTarget(null);
+
+    if (nextTarget.screen === "game") {
+      const nextRunProfile = effectiveProfile;
+      const runPlan = getInitialGameplayRunPlan();
+      const nextRunLevel = runPlan.level;
+      const nextSessionId = crypto.randomUUID();
+
+      sessionIdRef.current = nextSessionId;
+      runProfileRef.current = nextRunProfile;
+      currentLevelRef.current = nextRunLevel;
+      if (nextTarget.gameMode) {
+        setSelectedGameMode(nextTarget.gameMode);
+      }
+
+      setCurrentLevel(nextRunLevel);
+      setSessionId(nextSessionId);
+      setRunProfile(nextRunProfile);
+      setScreen("game");
+
+      void preloadGameplayBackdrop(runPlan.backdropUrl);
+      return;
+    }
+
+    if (nextTarget.resetRun) {
+      const initialRunPlan = getInitialGameplayRunPlan();
+
+      currentLevelRef.current = initialRunPlan.level;
+      setCurrentLevel(initialRunPlan.level);
+      setRunProfile(null);
+    }
+
+    setScreen(nextTarget.screen);
+  }, [effectiveProfile, transitionTarget]);
+
+  const returnHome = useCallback(() => {
+    queueScreenTransition({ screen: "home", resetRun: true });
+  }, [queueScreenTransition]);
 
   const handleRoundEnd = useCallback(() => {
     returnHome();
@@ -251,23 +303,21 @@ export function WormRanchApp() {
     setInstallPromptDismissed(true);
   }, [installPromptEvent]);
 
-  const beginRun = () => {
-    const nextRunProfile = effectiveProfile;
-    const runPlan = getInitialGameplayRunPlan();
-    const nextRunLevel = runPlan.level;
-    const nextSessionId = crypto.randomUUID();
+  const openModeMenu = useCallback(
+    (returnScreen: "home" | "settings") => {
+      setModeMenuReturnScreen(returnScreen);
+      queueScreenTransition({ screen: "modeMenu" });
+    },
+    [queueScreenTransition],
+  );
 
-    sessionIdRef.current = nextSessionId;
-    runProfileRef.current = nextRunProfile;
-    currentLevelRef.current = nextRunLevel;
-
-    setCurrentLevel(nextRunLevel);
-    setSessionId(nextSessionId);
-    setRunProfile(nextRunProfile);
-    setScreen("game");
-
-    void preloadGameplayBackdrop(runPlan.backdropUrl);
-  };
+  const beginRun = useCallback(
+    (gameMode: GameMode) => {
+      setSelectedGameMode(gameMode);
+      queueScreenTransition({ screen: "game", gameMode });
+    },
+    [queueScreenTransition],
+  );
 
   const updateSetting = <K extends keyof SettingsState>(key: K, value: SettingsState[K]) => {
     writeStoredSettings({ ...settings, [key]: value });
@@ -290,9 +340,9 @@ export function WormRanchApp() {
       data-motion={settings.reducedMotion ? "reduced" : "full"}
       data-screen={screen}
     >
-      {screen !== "game" &&
-        (screen === "welcome" ? (
-          <WormRanchShellHeader density="welcome" shellProfile={shellProfile} shellScanProfile={shellScanProfile} />
+        {screen !== "game" &&
+          (screen === "welcome" ? (
+            <WormRanchShellHeader density="welcome" shellProfile={shellProfile} shellScanProfile={shellScanProfile} />
         ) : (
           <WormRanchShellHeader
             shellProfile={shellProfile}
@@ -303,8 +353,8 @@ export function WormRanchApp() {
       {screen === "welcome" && (
         <WelcomeScreen
           metrics={welcomeMetrics}
-          onOpenGate={() => setScreen("home")}
-          onRigTack={() => setScreen("settings")}
+          onOpenGate={() => queueScreenTransition({ screen: "home" })}
+          onRigTack={() => queueScreenTransition({ screen: "settings" })}
           reducedMotion={settings.reducedMotion}
         />
       )}
@@ -319,9 +369,9 @@ export function WormRanchApp() {
               onDismiss={() => setInstallPromptDismissed(true)}
             />
           }
-          onBack={() => setScreen("welcome")}
-          onOpenSettings={() => setScreen("settings")}
-          onStart={beginRun}
+          onBack={() => queueScreenTransition({ screen: "welcome" })}
+          onOpenSettings={() => queueScreenTransition({ screen: "settings" })}
+          onStart={() => openModeMenu("home")}
         />
       )}
 
@@ -330,12 +380,33 @@ export function WormRanchApp() {
           analyticsEnabled={settings.analyticsEnabled}
           displayMode={settings.displayMode}
           onAnalyticsEnabledChange={(value) => updateSetting("analyticsEnabled", value)}
-          onBack={() => setScreen("home")}
+          onBack={() => queueScreenTransition({ screen: "home" })}
           onDisplayModeChange={(value) => updateSetting("displayMode", value)}
           onReducedMotionChange={(value) => updateSetting("reducedMotion", value)}
-          onStart={beginRun}
+          onStart={() => openModeMenu("settings")}
           reducedMotion={settings.reducedMotion}
         />
+      )}
+
+      {screen === "modeMenu" && (
+        <section className={styles.screen}>
+          <GameModeScreen
+            selectedMode={selectedGameMode}
+            onBack={() => queueScreenTransition({ screen: modeMenuReturnScreen })}
+            onSelectMode={setSelectedGameMode}
+            onStart={() => beginRun(selectedGameMode)}
+          />
+        </section>
+      )}
+
+      {screen === "transition" && transitionTarget && (
+        <section className={styles.screen}>
+          <ScreenTransition
+            destinationLabel={getTransitionLabel(transitionTarget.screen)}
+            onReady={completeTransition}
+            reducedMotion={settings.reducedMotion}
+          />
+        </section>
       )}
 
       {screen === "game" && (
@@ -391,4 +462,19 @@ function preloadGameplayBackdrop(backdropUrl: string) {
 
 function isDeferredInstallPromptEvent(event: Event): event is DeferredInstallPromptEvent {
   return "prompt" in event && "userChoice" in event;
+}
+
+function getTransitionLabel(screen: Exclude<AppScreen, "transition">) {
+  switch (screen) {
+    case "welcome":
+      return "launch";
+    case "home":
+      return "the yard";
+    case "settings":
+      return "ranch settings";
+    case "modeMenu":
+      return "the game mode menu";
+    case "game":
+      return "gameplay";
+  }
 }

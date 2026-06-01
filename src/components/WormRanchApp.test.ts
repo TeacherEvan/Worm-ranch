@@ -1,18 +1,40 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import type { GameMode } from "@/game/gameModes";
+import type { RoundResult } from "@/game/types";
 import { getGameplayRunPlan } from "./wormRanchLevelFlow";
+
+type AppScreen = "welcome" | "home" | "settings" | "modeMenu" | "transition" | "game";
 
 type MockGameStageProps = {
   backdropUrl?: string | null;
   level: number;
-  onRoundEnd: (result: { reason: "ghostEscape" | "time" | "captured" | "wrongColor"; collected: number; remaining: number }) => void;
+  onRoundEnd: (result: RoundResult) => void;
 };
 
 type MockHomeScreenProps = {
   onBack: () => void;
   onOpenSettings: () => void;
   onStart: () => Promise<void> | void;
+};
+
+type MockSettingsScreenProps = {
+  onBack: () => void;
+  onStart: () => Promise<void> | void;
+};
+
+type MockGameModeScreenProps = {
+  onBack: () => void;
+  onSelectMode: (mode: GameMode) => void;
+  onStart: () => Promise<void> | void;
+  selectedMode: GameMode;
+};
+
+type MockScreenTransitionProps = {
+  destinationLabel: string;
+  onReady: () => void;
+  reducedMotion: boolean;
 };
 
 type MockGameExitProps = {
@@ -25,6 +47,113 @@ const SETTINGS_SNAPSHOT = {
   displayMode: "auto" as const,
 };
 
+function createReactStateMock(initialScreen: AppScreen) {
+  const stateSlots: unknown[] = [];
+  let cursor = 0;
+
+  return {
+    beginRender() {
+      cursor = 0;
+    },
+    async moduleFactory() {
+      const actual = await vi.importActual<typeof import("react")>("react");
+
+      return {
+        ...actual,
+        useEffect: () => undefined,
+        useSyncExternalStore: () => SETTINGS_SNAPSHOT,
+        useState: (initial: unknown) => {
+          const slot = cursor;
+          cursor += 1;
+
+          if (stateSlots.length <= slot) {
+            const resolvedInitial = typeof initial === "function" ? (initial as () => unknown)() : initial;
+            stateSlots[slot] = slot === 0 ? initialScreen : resolvedInitial;
+          }
+
+          const setState = (value: unknown) => {
+            stateSlots[slot] = typeof value === "function" ? (value as (current: unknown) => unknown)(stateSlots[slot]) : value;
+          };
+
+          return [stateSlots[slot], setState];
+        },
+      };
+    },
+  };
+}
+
+async function setupApp(initialScreen: AppScreen) {
+  let homeScreenProps: MockHomeScreenProps | null = null;
+  let settingsScreenProps: MockSettingsScreenProps | null = null;
+  let gameModeScreenProps: MockGameModeScreenProps | null = null;
+  let screenTransitionProps: MockScreenTransitionProps | null = null;
+  let gameStageProps: MockGameStageProps | null = null;
+  let gameExitProps: MockGameExitProps | null = null;
+  const reactStateMock = createReactStateMock(initialScreen);
+
+  vi.doMock("react", () => reactStateMock.moduleFactory());
+  vi.doMock("@/components/GameStage", () => ({
+    GameStage: (props: MockGameStageProps) => {
+      gameStageProps = props;
+      return createElement("div", {
+        "data-game-level": props.level,
+        "data-game-backdrop": props.backdropUrl ?? "",
+      });
+    },
+  }));
+  vi.doMock("@/components/HomeScreen", () => ({
+    HomeScreen: (props: MockHomeScreenProps) => {
+      homeScreenProps = props;
+      return createElement("div", null, "Home screen");
+    },
+  }));
+  vi.doMock("@/components/SettingsScreen", () => ({
+    SettingsScreen: (props: MockSettingsScreenProps) => {
+      settingsScreenProps = props;
+      return createElement("div", null, "Settings screen");
+    },
+  }));
+  vi.doMock("@/components/GameModeScreen", () => ({
+    GameModeScreen: (props: MockGameModeScreenProps) => {
+      gameModeScreenProps = props;
+      return createElement("div", null, `Game mode screen: ${props.selectedMode}`);
+    },
+  }));
+  vi.doMock("@/components/ScreenTransition", () => ({
+    ScreenTransition: (props: MockScreenTransitionProps) => {
+      screenTransitionProps = props;
+      return createElement("div", null, `Transitioning to ${props.destinationLabel}`);
+    },
+  }));
+  vi.doMock("@/components/WelcomeScreen", () => ({ WelcomeScreen: () => createElement("div", null, "Welcome screen") }));
+  vi.doMock("@/components/WormRanchShellHeader", () => ({ WormRanchShellHeader: () => createElement("div") }));
+  vi.doMock("@/components/WormRanchInstallPrompt", () => ({ WormRanchInstallPrompt: () => createElement("div") }));
+  vi.doMock("@/components/WormRanchGameExit", () => ({
+    WormRanchGameExit: (props: MockGameExitProps) => {
+      gameExitProps = props;
+      return createElement("div");
+    },
+  }));
+  vi.doMock("@/lib/logger", () => ({ createSilentLogger: () => ({ log: vi.fn(), dispose: vi.fn() }) }));
+
+  const { WormRanchApp } = await import("./WormRanchApp");
+
+  const renderApp = () => {
+    reactStateMock.beginRender();
+    return renderToStaticMarkup(createElement(WormRanchApp));
+  };
+
+  return {
+    renderApp,
+    getGameExitProps: () => gameExitProps,
+    getGameModeScreenProps: () => gameModeScreenProps,
+    getGameStageProps: () => gameStageProps,
+    getHomeScreenProps: () => homeScreenProps,
+    getScreenTransitionProps: () => screenTransitionProps,
+    getSettingsScreenProps: () => settingsScreenProps,
+  };
+}
+
 describe("WormRanchApp", () => {
   afterEach(() => {
     vi.resetModules();
@@ -32,22 +161,33 @@ describe("WormRanchApp", () => {
     vi.unstubAllGlobals();
   });
 
-  it("enters gameplay without blocking on backdrop preload", async () => {
-    let homeScreenProps: MockHomeScreenProps | null = null;
-    const setScreen = vi.fn();
-    const setCurrentLevel = vi.fn();
+  it("routes start actions into the mode menu instead of gameplay immediately", async () => {
+    const app = await setupApp("home");
+    app.renderApp();
 
-    const isGameplayRunPlanState = (
-      value: unknown,
-    ): value is ReturnType<typeof getGameplayRunPlan> => {
-      return (
-        typeof value === "object" &&
-        value !== null &&
-        "level" in value &&
-        "backdropUrl" in value
-      );
-    };
+    const homeScreenProps = app.getHomeScreenProps();
+    if (!homeScreenProps) {
+      throw new Error("expected HomeScreen props");
+    }
 
+    void homeScreenProps.onStart();
+    const transitionHtml = app.renderApp();
+
+    expect(transitionHtml).toContain("Transitioning to the game mode menu");
+    expect(app.getGameStageProps()).toBeNull();
+
+    const transitionProps = app.getScreenTransitionProps();
+    if (!transitionProps) {
+      throw new Error("expected ScreenTransition props");
+    }
+
+    transitionProps.onReady();
+    const modeMenuHtml = app.renderApp();
+
+    expect(modeMenuHtml).toContain("Game mode screen: standard");
+  });
+
+  it("shows the transition screen before gameplay and does not block on backdrop preload", async () => {
     class PendingImage {
       complete = false;
       decoding: "async" | "sync" | "auto" = "auto";
@@ -64,229 +204,76 @@ describe("WormRanchApp", () => {
     vi.stubGlobal("Image", PendingImage);
     vi.stubGlobal("window", { Image: PendingImage });
 
-    vi.doMock("react", async () => {
-      const actual = await vi.importActual<typeof import("react")>("react");
+    const app = await setupApp("modeMenu");
+    app.renderApp();
 
-      return {
-        ...actual,
-        useEffect: () => undefined,
-        useSyncExternalStore: () => SETTINGS_SNAPSHOT,
-        useState: (initial: unknown) => {
-          const resolvedInitial = typeof initial === "function" ? (initial as () => unknown)() : initial;
-
-          if (resolvedInitial === "welcome") {
-            return ["home", setScreen];
-          }
-
-          if (resolvedInitial === getGameplayRunPlan(1).level) {
-            return [resolvedInitial, setCurrentLevel];
-          }
-
-          if (isGameplayRunPlanState(resolvedInitial)) {
-            return [resolvedInitial, vi.fn()];
-          }
-
-          return [resolvedInitial, vi.fn()];
-        },
-      };
-    });
-
-    vi.doMock("@/components/GameStage", () => ({ GameStage: () => createElement("div") }));
-    vi.doMock("@/components/HomeScreen", () => ({
-      HomeScreen: (props: MockHomeScreenProps) => {
-        homeScreenProps = props;
-        return createElement("div");
-      },
-    }));
-    vi.doMock("@/components/SettingsScreen", () => ({ SettingsScreen: () => createElement("div") }));
-    vi.doMock("@/components/WelcomeScreen", () => ({ WelcomeScreen: () => createElement("div") }));
-    vi.doMock("@/components/WormRanchShellHeader", () => ({ WormRanchShellHeader: () => createElement("div") }));
-    vi.doMock("@/components/WormRanchInstallPrompt", () => ({ WormRanchInstallPrompt: () => createElement("div") }));
-    vi.doMock("@/components/WormRanchGameExit", () => ({ WormRanchGameExit: () => createElement("div") }));
-    vi.doMock("@/lib/logger", () => ({ createSilentLogger: () => ({ log: vi.fn(), dispose: vi.fn() }) }));
-
-    const { WormRanchApp } = await import("./WormRanchApp");
-    renderToStaticMarkup(createElement(WormRanchApp));
-
-    if (!homeScreenProps) {
-      throw new Error("expected HomeScreen props");
+    const modeMenuProps = app.getGameModeScreenProps();
+    if (!modeMenuProps) {
+      throw new Error("expected GameModeScreen props");
     }
 
-    void homeScreenProps.onStart();
+    void modeMenuProps.onStart();
+    const transitionHtml = app.renderApp();
 
-    expect(setCurrentLevel).toHaveBeenCalledWith(1);
-    expect(setScreen).toHaveBeenCalledWith("game");
+    expect(transitionHtml).toContain("Transitioning to gameplay");
+    expect(app.getGameStageProps()).toBeNull();
+
+    const transitionProps = app.getScreenTransitionProps();
+    if (!transitionProps) {
+      throw new Error("expected ScreenTransition props");
+    }
+
+    transitionProps.onReady();
+    app.renderApp();
+
+    expect(app.getGameStageProps()?.level).toBe(1);
+    expect(app.getGameStageProps()?.backdropUrl).toBe(getGameplayRunPlan(1).backdropUrl);
   });
 
-  it("returns directly to home when the player quits from gameplay", async () => {
-    let screenState: "welcome" | "home" | "settings" | "game" = "game";
-    let currentLevelState = 1;
-    let gameStageProps: MockGameStageProps | null = null;
-    let homeScreenProps: MockHomeScreenProps | null = null;
-    let gameExitProps: MockGameExitProps | null = null;
+  it("preserves the endless selection when returning to the mode menu after a run", async () => {
+    const app = await setupApp("modeMenu");
+    app.renderApp();
 
-    vi.doMock("react", async () => {
-      const actual = await vi.importActual<typeof import("react")>("react");
-
-      return {
-        ...actual,
-        useEffect: () => undefined,
-        useSyncExternalStore: () => SETTINGS_SNAPSHOT,
-        useState: (initial: unknown) => {
-          const resolvedInitial = typeof initial === "function" ? (initial as () => unknown)() : initial;
-
-          if (resolvedInitial === "welcome") {
-            return [screenState, (value: typeof screenState | ((current: typeof screenState) => typeof screenState)) => {
-              screenState = typeof value === "function" ? value(screenState) : value;
-            }];
-          }
-
-          if (resolvedInitial === getGameplayRunPlan(1).level) {
-            return [currentLevelState, (value: number | ((current: number) => number)) => {
-              currentLevelState = typeof value === "function" ? value(currentLevelState) : value;
-            }];
-          }
-
-          return [resolvedInitial, vi.fn()];
-        },
-      };
-    });
-
-    vi.doMock("@/components/GameStage", () => ({
-      GameStage: (props: MockGameStageProps) => {
-        gameStageProps = props;
-        return createElement("div", {
-          "data-game-level": props.level,
-          "data-game-backdrop": props.backdropUrl ?? "",
-        });
-      },
-    }));
-
-    vi.doMock("@/components/HomeScreen", () => ({
-      HomeScreen: (props: MockHomeScreenProps) => {
-        homeScreenProps = props;
-        return createElement("div", null, "Moonlit roundup");
-      },
-    }));
-    vi.doMock("@/components/SettingsScreen", () => ({ SettingsScreen: () => createElement("div") }));
-    vi.doMock("@/components/WelcomeScreen", () => ({ WelcomeScreen: () => createElement("div") }));
-    vi.doMock("@/components/WormRanchShellHeader", () => ({ WormRanchShellHeader: () => createElement("div") }));
-    vi.doMock("@/components/WormRanchInstallPrompt", () => ({ WormRanchInstallPrompt: () => createElement("div") }));
-    vi.doMock("@/components/WormRanchGameExit", () => ({
-      WormRanchGameExit: (props: MockGameExitProps) => {
-        gameExitProps = props;
-        return createElement("div");
-      },
-    }));
-    vi.doMock("@/lib/logger", () => ({ createSilentLogger: () => ({ log: vi.fn(), dispose: vi.fn() }) }));
-
-    const renderApp = async () => {
-      const { WormRanchApp } = await import("./WormRanchApp");
-      return renderToStaticMarkup(createElement(WormRanchApp));
-    };
-
-    await renderApp();
-
-    if (!gameExitProps) {
-      throw new Error("expected WormRanchGameExit props");
+    const initialModeMenuProps = app.getGameModeScreenProps();
+    if (!initialModeMenuProps) {
+      throw new Error("expected initial GameModeScreen props");
     }
 
-    gameExitProps.onLeave();
-    const homeHtml = await renderApp();
+    initialModeMenuProps.onSelectMode("targetEndless");
+    app.renderApp();
 
-    expect(homeHtml).toContain("Moonlit roundup");
-
-    if (!homeScreenProps) {
-      throw new Error("expected HomeScreen props after quitting");
+    const updatedModeMenuProps = app.getGameModeScreenProps();
+    if (!updatedModeMenuProps) {
+      throw new Error("expected updated GameModeScreen props");
     }
 
-    await homeScreenProps.onStart();
-    await renderApp();
+    expect(updatedModeMenuProps.selectedMode).toBe("targetEndless");
 
-    expect(gameStageProps?.level).toBe(1);
-    expect(gameStageProps?.backdropUrl).toBe(getGameplayRunPlan(1).backdropUrl);
-  });
+    void updatedModeMenuProps.onStart();
+    app.renderApp();
+    app.getScreenTransitionProps()?.onReady();
+    app.renderApp();
 
-  it("returns to home after a wrong-color game over and starts the next run from level 1", async () => {
-    let screenState: "welcome" | "home" | "settings" | "game" = "game";
-    let currentLevelState = 1;
-    let gameStageProps: MockGameStageProps | null = null;
-    let homeScreenProps: MockHomeScreenProps | null = null;
-
-    vi.doMock("react", async () => {
-      const actual = await vi.importActual<typeof import("react")>("react");
-
-      return {
-        ...actual,
-        useEffect: () => undefined,
-        useSyncExternalStore: () => SETTINGS_SNAPSHOT,
-        useState: (initial: unknown) => {
-          const resolvedInitial = typeof initial === "function" ? (initial as () => unknown)() : initial;
-
-          if (resolvedInitial === "welcome") {
-            return [screenState, (value: typeof screenState | ((current: typeof screenState) => typeof screenState)) => {
-              screenState = typeof value === "function" ? value(screenState) : value;
-            }];
-          }
-
-          if (resolvedInitial === getGameplayRunPlan(1).level) {
-            return [currentLevelState, (value: number | ((current: number) => number)) => {
-              currentLevelState = typeof value === "function" ? value(currentLevelState) : value;
-            }];
-          }
-
-          return [resolvedInitial, vi.fn()];
-        },
-      };
-    });
-
-    vi.doMock("@/components/GameStage", () => ({
-      GameStage: (props: MockGameStageProps) => {
-        gameStageProps = props;
-        return createElement("div", {
-          "data-game-level": props.level,
-          "data-game-backdrop": props.backdropUrl ?? "",
-        });
-      },
-    }));
-
-    vi.doMock("@/components/HomeScreen", () => ({
-      HomeScreen: (props: MockHomeScreenProps) => {
-        homeScreenProps = props;
-        return createElement("div", null, "Moonlit roundup");
-      },
-    }));
-    vi.doMock("@/components/SettingsScreen", () => ({ SettingsScreen: () => createElement("div") }));
-    vi.doMock("@/components/WelcomeScreen", () => ({ WelcomeScreen: () => createElement("div") }));
-    vi.doMock("@/components/WormRanchShellHeader", () => ({ WormRanchShellHeader: () => createElement("div") }));
-    vi.doMock("@/components/WormRanchInstallPrompt", () => ({ WormRanchInstallPrompt: () => createElement("div") }));
-    vi.doMock("@/components/WormRanchGameExit", () => ({ WormRanchGameExit: () => createElement("div") }));
-    vi.doMock("@/lib/logger", () => ({ createSilentLogger: () => ({ log: vi.fn(), dispose: vi.fn() }) }));
-
-    const renderApp = async () => {
-      const { WormRanchApp } = await import("./WormRanchApp");
-      return renderToStaticMarkup(createElement(WormRanchApp));
-    };
-
-    await renderApp();
-
+    const gameStageProps = app.getGameStageProps();
     if (!gameStageProps) {
       throw new Error("expected GameStage props");
     }
 
     gameStageProps.onRoundEnd({ reason: "wrongColor", collected: 3, remaining: 9 });
-    const postRoundHtml = await renderApp();
+    app.renderApp();
+    app.getScreenTransitionProps()?.onReady();
+    app.renderApp();
 
-    expect(postRoundHtml).toContain("Moonlit roundup");
-
+    const homeScreenProps = app.getHomeScreenProps();
     if (!homeScreenProps) {
-      throw new Error("expected HomeScreen props after the round ends");
+      throw new Error("expected HomeScreen props after round end");
     }
 
-    await homeScreenProps.onStart();
-    await renderApp();
+    void homeScreenProps.onStart();
+    app.renderApp();
+    app.getScreenTransitionProps()?.onReady();
+    app.renderApp();
 
-    expect(gameStageProps?.level).toBe(1);
-    expect(gameStageProps?.backdropUrl).toBe(getGameplayRunPlan(1).backdropUrl);
+    expect(app.getGameModeScreenProps()?.selectedMode).toBe("targetEndless");
   });
 });

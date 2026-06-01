@@ -8,7 +8,9 @@
 
 .page[data-screen="welcome"],
 .page[data-screen="home"],
-.page[data-screen="settings"] {
+.page[data-screen="settings"],
+.page[data-screen="modeMenu"],
+.page[data-screen="transition"] {
   max-width: 1220px;
   margin: 0 auto;
 }
