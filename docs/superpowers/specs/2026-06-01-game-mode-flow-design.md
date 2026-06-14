@@ -1,5 +1,7 @@
 # Game Mode Flow Design
 
+**Status:** 🔄 **Active — Design Complete, Implementation Pending**
+
 ## Problem
 
 Worm Ranch currently boots directly into one gameplay path that always starts continuous play inside `GameStage`. That creates two player-facing problems:

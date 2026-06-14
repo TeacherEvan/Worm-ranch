@@ -1,5 +1,7 @@
 # Continuous Color Target Relaunch Implementation Plan
 
+**Status:** ✅ **Archived — Implemented & Verified**
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace the round-based stage flow with a continuous color-target chase, make worm colors legible and intentional, and fix the app-shell launch/layering issues that currently keep gameplay from opening reliably.

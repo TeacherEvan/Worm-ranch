@@ -36,6 +36,10 @@ For gameplay-rule changes, run `npm run test:engine` first so engine and stage r
 
 Bundled gameplay audio sources and attribution are tracked in `docs/audio-sources.md` and `public/audio/gameplay/ATTRIBUTION.txt`.
 
+## Documentation
+
+Full documentation hub: [docs/README.md](docs/README.md)
+
 ## Architecture
 
 - `src/app`: routing shell only

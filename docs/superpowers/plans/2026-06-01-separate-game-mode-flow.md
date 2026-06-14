@@ -1,5 +1,7 @@
 # Separate Game Mode Flow Implementation Plan
 
+**Status:** 🔄 **Active — Not Yet Implemented**
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a separate endless target-color game mode behind a pre-run mode menu, keep endless play running until a wrong-color bag, hold on a real Game Over window for that mode, and show a shared loading screen between displays.

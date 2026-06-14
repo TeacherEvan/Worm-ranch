@@ -6,6 +6,7 @@ Start here:
 - Active implementation plan: [docs/plans/worm-ranch-plan.md](../docs/plans/worm-ranch-plan.md)
 - Current focus tracker: [docs/jobcard.md](../docs/jobcard.md)
 - Gameplay specialist: [Worm Ranch Gameplay](agents/gameplay-display-mechanics.agent.md)
+- Full documentation hub: [docs/README.md](../docs/README.md)
 
 Core repo rules:
 

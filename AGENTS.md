@@ -7,6 +7,8 @@ Start with [`.github/copilot-instructions.md`](.github/copilot-instructions.md) 
 
 For active implementation context, use [docs/plans/worm-ranch-plan.md](docs/plans/worm-ranch-plan.md) and [docs/jobcard.md](docs/jobcard.md) instead of copying plan details into chat customizations.
 
+Full documentation hub: [docs/README.md](docs/README.md)
+
 For launch-surface cleanup, prefer title-first home screens and move rules explanation into live HUD cues instead of static dashboard copy.
 
 For Worm Ranch gameplay readability, HUD clarity, input feel, or player-facing mechanics work, prefer the `Worm Ranch Gameplay` workspace agent.

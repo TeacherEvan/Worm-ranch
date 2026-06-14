@@ -1,5 +1,7 @@
 # Worm Ranch Plan
 
+**Status:** ✅ **Archived — Implemented & Verified**
+
 Status: implemented, smoke-checked, and verified, with follow-up gameplay feedback updates also shipped and verified
 
 ## Goal
