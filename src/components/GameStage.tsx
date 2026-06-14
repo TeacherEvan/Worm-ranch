@@ -34,6 +34,7 @@ import {
   resizeWorld,
   setPointer,
   startContinuousMode,
+  startRound,
   stepWorld,
   stopContinuousMode,
   triggerTouchRush,
@@ -43,9 +44,12 @@ import { getGameplayLevelRules } from "@/game/levels";
 import type { ActionResult, FairyState, GameSummary, RoundResult } from "@/game/types";
 import type { EventName } from "@/lib/logger";
 
+import type { GameplayMode } from "@/game/gameModes";
+
 type GameStageProps = {
   backdropUrl?: string | null;
   level: number;
+  mode: GameplayMode;
   profile: DisplayProfile;
   reducedMotion: boolean;
   onSummaryChange: (summary: GameSummary) => void;
@@ -58,6 +62,7 @@ const SUMMARY_INTERVAL_MS = 120;
 export function GameStage({
   backdropUrl = null,
   level,
+  mode,
   profile,
   reducedMotion,
   onSummaryChange,
@@ -67,7 +72,11 @@ export function GameStage({
   const levelRules = useMemo(() => getGameplayLevelRules(profile, level), [level, profile]);
   const [initialWorld] = useState(() => {
     const world = createWorld(profile, 800, 540, { rules: levelRules });
-    startContinuousMode(world);
+    if (mode === "targetEndless") {
+      startContinuousMode(world);
+    } else {
+      startRound(world);
+    }
     return world;
   });
   
@@ -142,7 +151,11 @@ export function GameStage({
     hasMountedRef.current = true;
     worldRef.current = nextWorld;
     if (nextWorld !== initialWorld) {
-      startContinuousMode(nextWorld);
+      if (mode === "targetEndless") {
+        startContinuousMode(nextWorld);
+      } else {
+        startRound(nextWorld);
+      }
     }
     feedbackRef.current = [];
     finishedRef.current = false;
@@ -423,7 +436,7 @@ export function GameStage({
       stopContinuousMode(worldRef.current);
       audioController.dispose();
     };
-  }, [initialWorld, level, levelRules, profile, reducedMotionRef, keyboardTargetRef, showActionEchoRef, onSummaryChangeRef, onRoundEndRef, onEventRef]);
+  }, [initialWorld, level, levelRules, profile, reducedMotionRef, keyboardTargetRef, showActionEchoRef, onSummaryChangeRef, onRoundEndRef, onEventRef, mode]);
 
   const targetCallout = getTargetCallout(stageSummary);
 

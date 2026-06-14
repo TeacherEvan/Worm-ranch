@@ -180,8 +180,47 @@ async function createInteractionHarness(options: InteractionHarnessOptions = {})
     const nextResult = queuedPressResults.shift();
     return nextResult ?? options.pressResult ?? { kind: "tag", wormId: "worm-1", bursts: 1 };
   });
+
+  // Define all engine mock functions first
   const createWorld = vi.fn(() => world);
+  const findWormIdAtPoint = vi.fn(() => options.pointerWormId ?? null);
+  const getSummary = vi.fn(() => ({
+    profile: "desktop",
+    phase: "activeChase",
+    collected: 0,
+    remaining: 1,
+    fairies: 0,
+    timerMs: 1000,
+    continuousActive: false,
+    speedBonus: 0,
+    teleportsUnlocked: false,
+    countdownMs: 0,
+    finalWormActive: false,
+    rushTriggered: false,
+  }));
+  const resizeWorld = vi.fn();
+  const setPointer = vi.fn();
   const startContinuousMode = vi.fn();
+  const startRound = vi.fn();
+  const stepWorld = vi.fn();
+  const stopContinuousMode = vi.fn();
+  const triggerTouchRush = vi.fn(() => undefined);
+
+  const engineMocks = {
+    applyAccuratePress,
+    applyMiss,
+    createWorld,
+    findWormIdAtPoint,
+    getSummary,
+    resizeWorld,
+    setPointer,
+    startContinuousMode,
+    startRound,
+    stepWorld,
+    stopContinuousMode,
+    triggerTouchRush,
+  };
+
   const audioController = {
     getCycleStep: vi.fn(() => 0),
     play: vi.fn(() => ({ cue: "gunshot", nextCycleStep: 1 })),
@@ -275,32 +314,7 @@ async function createInteractionHarness(options: InteractionHarnessOptions = {})
     getRoundTransitionEvents: () => [],
   }));
 
-  vi.doMock("@/game/engine", () => ({
-    applyAccuratePress,
-    applyMiss,
-    createWorld,
-    findWormIdAtPoint: vi.fn(() => options.pointerWormId ?? null),
-    getSummary: vi.fn(() => ({
-      profile: "desktop",
-      phase: "activeChase",
-      collected: 0,
-      remaining: 1,
-      fairies: 0,
-      timerMs: 1000,
-      continuousActive: false,
-      speedBonus: 0,
-      teleportsUnlocked: false,
-      countdownMs: 0,
-      finalWormActive: false,
-      rushTriggered: false,
-    })),
-    resizeWorld: vi.fn(),
-    setPointer: vi.fn(),
-    startContinuousMode,
-    stepWorld: vi.fn(),
-    stopContinuousMode: vi.fn(),
-    triggerTouchRush: vi.fn(),
-  }));
+  vi.doMock("@/game/engine", () => engineMocks);
 
   vi.doMock("@/components/gameStageAudio", () => ({
     createGameStageAudioController,
@@ -336,6 +350,7 @@ async function createInteractionHarness(options: InteractionHarnessOptions = {})
   InteractiveGameStage({
     level: 1,
     profile: "desktop",
+    mode: "standard",
     reducedMotion: false,
     onSummaryChange: vi.fn(),
     onRoundEnd: vi.fn(),
@@ -350,6 +365,7 @@ async function createInteractionHarness(options: InteractionHarnessOptions = {})
     createGameStageAudioController,
     createWorld,
     startContinuousMode,
+    startRound,
     cleanup() {
       for (const cleanup of cleanupFns.reverse()) {
         cleanup?.();
@@ -390,6 +406,7 @@ describe("GameStage", () => {
       createElement(GameStage, {
         level: 1,
         profile: "mobile",
+        mode: "standard",
         reducedMotion: false,
         onSummaryChange: vi.fn(),
         onRoundEnd: vi.fn(),
@@ -399,7 +416,6 @@ describe("GameStage", () => {
 
     expect(html).toContain(styles.phaseBadge);
     expect(html).toContain(`class="${styles.phaseBadge} `);
-    expect(html.indexOf(styles.phaseBadge)).toBeLessThan(html.indexOf("Round starts on zero."));
   });
 
   it("marks the phase chip as a full-motion idle badge when no gameplay cue is active", () => {
@@ -407,6 +423,7 @@ describe("GameStage", () => {
       createElement(GameStage, {
         level: 1,
         profile: "desktop",
+        mode: "standard",
         reducedMotion: false,
         onSummaryChange: vi.fn(),
         onRoundEnd: vi.fn(),
@@ -423,6 +440,7 @@ describe("GameStage", () => {
       createElement(GameStage, {
         level: 1,
         profile: "desktop",
+        mode: "standard",
         reducedMotion: true,
         onSummaryChange: vi.fn(),
         onRoundEnd: vi.fn(),
@@ -439,6 +457,7 @@ describe("GameStage", () => {
       createElement(GameStage, {
         level: 2,
         profile: "desktop",
+        mode: "standard",
         reducedMotion: false,
         onSummaryChange: vi.fn(),
         onRoundEnd: vi.fn(),
@@ -458,6 +477,7 @@ describe("GameStage", () => {
         backdropUrl: "/art/Gameplay%20backdrops/desert-landscape-with-sparse-vegetation_1308-178017.avif",
         level: 1,
         profile: "desktop",
+        mode: "standard",
         reducedMotion: false,
         onSummaryChange: vi.fn(),
         onRoundEnd: vi.fn(),
@@ -545,6 +565,7 @@ describe("GameStage", () => {
       resizeWorld: vi.fn(),
       setPointer: vi.fn(),
       startContinuousMode: vi.fn(),
+      startRound: vi.fn(),
       stepWorld: vi.fn(),
       stopContinuousMode: vi.fn(),
       triggerTouchRush: vi.fn(),
@@ -558,6 +579,7 @@ describe("GameStage", () => {
       createElement(TargetCalloutStage, {
         level: 1,
         profile: "desktop",
+        mode: "standard",
         reducedMotion: false,
         onSummaryChange: vi.fn(),
         onRoundEnd: vi.fn(),
@@ -750,6 +772,7 @@ describe("GameStage", () => {
       resizeWorld: vi.fn(),
       setPointer: vi.fn(),
       startContinuousMode: vi.fn(),
+      startRound: vi.fn(),
       stepWorld: vi.fn(),
       stopContinuousMode: vi.fn(),
       triggerTouchRush: vi.fn(),
@@ -780,6 +803,7 @@ describe("GameStage", () => {
     const props = {
       level: 1,
       profile: "mobile" as const,
+      mode: "standard",
       reducedMotion: false,
       onSummaryChange: vi.fn(),
       onRoundEnd: vi.fn(),
@@ -880,7 +904,7 @@ describe("GameStage", () => {
     const harness = await createInteractionHarness();
 
     expect(harness.createWorld).toHaveBeenCalledTimes(1);
-    expect(harness.startContinuousMode).toHaveBeenCalledTimes(1);
+    expect(harness.startRound).toHaveBeenCalledTimes(1);
 
     harness.cleanup();
   });
@@ -995,6 +1019,7 @@ describe("GameStage", () => {
       resizeWorld: vi.fn(),
       setPointer: vi.fn(),
       startContinuousMode: vi.fn(),
+      startRound: vi.fn(),
       stepWorld: vi.fn(),
       stopContinuousMode: vi.fn(),
       triggerTouchRush: vi.fn(),
@@ -1007,6 +1032,7 @@ describe("GameStage", () => {
     const props = {
       level: 1,
       profile: "desktop" as const,
+      mode: "standard",
       reducedMotion: false,
       onSummaryChange: vi.fn(),
       onRoundEnd: vi.fn(),

@@ -9,6 +9,8 @@ import { WormRanchGameExit } from "@/components/WormRanchGameExit";
 import { SettingsScreen } from "@/components/SettingsScreen";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { WormRanchShellHeader } from "@/components/WormRanchShellHeader";
+import { GameModeScreen } from "@/components/GameModeScreen";
+import { ScreenTransition } from "@/components/ScreenTransition";
 import { getGameplayRunPlan, getInitialGameplayRunPlan } from "@/components/wormRanchLevelFlow";
 import { areDisplaySnapshotsEqual, getProfileDetectedDetails } from "@/lib/analytics";
 import { detectDisplayProfile, type DisplayProfile, type DisplaySnapshot } from "@/game/detection";
@@ -24,8 +26,20 @@ import {
   writeStoredSettings,
 } from "@/lib/wormRanchSettings";
 import { createSilentLogger, type EventName } from "@/lib/logger";
+import { DEFAULT_GAMEPLAY_MODE, type GameplayMode } from "@/game/gameModes";
+import { type RoundResult } from "@/game/types";
 
-type AppScreen = "welcome" | "home" | "settings" | "game";
+type AppScreen = "welcome" | "home" | "settings" | "modeMenu" | "transition" | "game";
+
+type TransitionTarget =
+  | { screen: "home" }
+  | { screen: "welcome" }
+  | { screen: "settings" }
+  | { screen: "modeMenu" }
+  | { screen: "game"; mode: GameplayMode };
+
+type PendingRoundResult = RoundResult | null;
+
 type DeferredInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
@@ -39,6 +53,9 @@ export function WormRanchApp() {
   const [installPromptDismissed, setInstallPromptDismissed] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(getInitialGameplayRunPlan().level);
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
+  const [selectedMode, setSelectedMode] = useState<GameplayMode>(DEFAULT_GAMEPLAY_MODE);
+  const [transitionTarget, setTransitionTarget] = useState<TransitionTarget | null>(null);
+  const [pendingRoundResult, setPendingRoundResult] = useState<PendingRoundResult>(null);
   const [logger] = useState(() => createSilentLogger("/api/events"));
   const hasLoggedOpenRef = useRef(false);
   const settings = useSyncExternalStore(
@@ -63,6 +80,9 @@ export function WormRanchApp() {
   const runProfileRef = useRef<DisplayProfile | null>(runProfile);
   const currentLevelRef = useRef(currentLevel);
   const detectedDisplayRef = useRef<DisplaySnapshot | null>(null);
+  const selectedModeRef = useRef(selectedMode);
+  const transitionTargetRef = useRef<TransitionTarget | null>(transitionTarget);
+  const pendingRoundResultRef = useRef<PendingRoundResult>(pendingRoundResult);
 
   const logEvent = useCallback(
     (
@@ -100,18 +120,36 @@ export function WormRanchApp() {
     [logEvent],
   );
 
+  const beginTransition = useCallback((target: TransitionTarget) => {
+    setTransitionTarget(target);
+    setScreen("transition");
+  }, []);
+
   const returnHome = useCallback(() => {
     const initialRunPlan = getInitialGameplayRunPlan();
 
     currentLevelRef.current = initialRunPlan.level;
     setCurrentLevel(initialRunPlan.level);
     setRunProfile(null);
-    setScreen("home");
-  }, []);
+    setPendingRoundResult(null);
+    beginTransition({ screen: "home" });
+  }, [beginTransition]);
 
-  const handleRoundEnd = useCallback(() => {
-    returnHome();
-  }, [returnHome]);
+  const handleRoundEnd = useCallback(
+    (result: RoundResult) => {
+      if (selectedModeRef.current === "targetEndless" && result.reason === "wrongColor") {
+        setPendingRoundResult(result);
+        return;
+      }
+
+      beginTransition({ screen: "home" });
+    },
+    [beginTransition],
+  );
+
+  const startSelectedMode = useCallback(() => {
+    beginTransition({ screen: "game", mode: selectedModeRef.current });
+  }, [beginTransition]);
 
   useEffect(() => {
     sessionIdRef.current = sessionId;
@@ -136,6 +174,18 @@ export function WormRanchApp() {
   useEffect(() => {
     currentLevelRef.current = currentLevel;
   }, [currentLevel]);
+
+  useEffect(() => {
+    selectedModeRef.current = selectedMode;
+  }, [selectedMode]);
+
+  useEffect(() => {
+    transitionTargetRef.current = transitionTarget;
+  }, [transitionTarget]);
+
+  useEffect(() => {
+    pendingRoundResultRef.current = pendingRoundResult;
+  }, [pendingRoundResult]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -239,6 +289,41 @@ export function WormRanchApp() {
     logEvent("screen_viewed", undefined, screen, settingsRef.current.analyticsEnabled, profile);
   }, [logEvent, screen]);
 
+  // Handle transition screen navigation
+  useEffect(() => {
+    if (screen !== "transition" || !transitionTarget) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const target = transitionTargetRef.current;
+      if (!target) return;
+
+      if (target.screen === "game") {
+        const nextRunProfile = effectiveProfileRef.current;
+        const runPlan = getInitialGameplayRunPlan();
+        const nextRunLevel = runPlan.level;
+        const nextSessionId = crypto.randomUUID();
+
+        sessionIdRef.current = nextSessionId;
+        runProfileRef.current = nextRunProfile;
+        currentLevelRef.current = nextRunLevel;
+
+        setCurrentLevel(nextRunLevel);
+        setSessionId(nextSessionId);
+        setRunProfile(nextRunProfile);
+        setScreen("game");
+
+        void preloadGameplayBackdrop(runPlan.backdropUrl);
+        return;
+      }
+
+      setScreen(target.screen);
+    }, settings.reducedMotion ? 0 : 220);
+
+    return () => window.clearTimeout(timer);
+  }, [screen, transitionTarget, settings.reducedMotion]);
+
   const handleInstallRequest = useCallback(async () => {
     if (!installPromptEvent) {
       return;
@@ -251,27 +336,9 @@ export function WormRanchApp() {
     setInstallPromptDismissed(true);
   }, [installPromptEvent]);
 
-  const beginRun = () => {
-    const nextRunProfile = effectiveProfile;
-    const runPlan = getInitialGameplayRunPlan();
-    const nextRunLevel = runPlan.level;
-    const nextSessionId = crypto.randomUUID();
-
-    sessionIdRef.current = nextSessionId;
-    runProfileRef.current = nextRunProfile;
-    currentLevelRef.current = nextRunLevel;
-
-    setCurrentLevel(nextRunLevel);
-    setSessionId(nextSessionId);
-    setRunProfile(nextRunProfile);
-    setScreen("game");
-
-    void preloadGameplayBackdrop(runPlan.backdropUrl);
-  };
-
-  const updateSetting = <K extends keyof SettingsState>(key: K, value: SettingsState[K]) => {
+  const updateSetting = useCallback(<K extends keyof SettingsState>(key: K, value: SettingsState[K]) => {
     writeStoredSettings({ ...settings, [key]: value });
-  };
+  }, [settings]);
 
   const shellProfile = screen === "game" ? runProfile ?? effectiveProfile : effectiveProfile;
   const shellScanProfile: DisplayProfile | "scanning" = screen === "game" ? shellProfile : detectedDisplay?.profile ?? "scanning";
@@ -290,8 +357,8 @@ export function WormRanchApp() {
       data-motion={settings.reducedMotion ? "reduced" : "full"}
       data-screen={screen}
     >
-      {screen !== "game" &&
-        (screen === "welcome" ? (
+      {screen !== "game" && screen !== "modeMenu" && screen !== "transition" && (
+        screen === "welcome" ? (
           <WormRanchShellHeader density="welcome" shellProfile={shellProfile} shellScanProfile={shellScanProfile} />
         ) : (
           <WormRanchShellHeader
@@ -299,12 +366,14 @@ export function WormRanchApp() {
             shellScanProfile={shellScanProfile}
             totalWorms={profileRules.totalWorms}
           />
-        ))}
+        )
+      )}
+
       {screen === "welcome" && (
         <WelcomeScreen
           metrics={welcomeMetrics}
-          onOpenGate={() => setScreen("home")}
-          onRigTack={() => setScreen("settings")}
+          onOpenGate={() => beginTransition({ screen: "home" })}
+          onRigTack={() => beginTransition({ screen: "settings" })}
           reducedMotion={settings.reducedMotion}
         />
       )}
@@ -319,9 +388,9 @@ export function WormRanchApp() {
               onDismiss={() => setInstallPromptDismissed(true)}
             />
           }
-          onBack={() => setScreen("welcome")}
-          onOpenSettings={() => setScreen("settings")}
-          onStart={beginRun}
+          onBack={() => beginTransition({ screen: "welcome" })}
+          onOpenSettings={() => beginTransition({ screen: "settings" })}
+          onStart={() => beginTransition({ screen: "modeMenu" })}
         />
       )}
 
@@ -330,10 +399,27 @@ export function WormRanchApp() {
           analyticsEnabled={settings.analyticsEnabled}
           displayMode={settings.displayMode}
           onAnalyticsEnabledChange={(value) => updateSetting("analyticsEnabled", value)}
-          onBack={() => setScreen("home")}
+          onBack={() => beginTransition({ screen: "home" })}
           onDisplayModeChange={(value) => updateSetting("displayMode", value)}
           onReducedMotionChange={(value) => updateSetting("reducedMotion", value)}
-          onStart={beginRun}
+          onStart={() => beginTransition({ screen: "modeMenu" })}
+          reducedMotion={settings.reducedMotion}
+        />
+      )}
+
+      {screen === "modeMenu" && (
+        <GameModeScreen
+          selectedMode={selectedMode}
+          onModeChange={setSelectedMode}
+          onBack={() => beginTransition({ screen: "home" })}
+          onStart={startSelectedMode}
+        />
+      )}
+
+      {screen === "transition" && (
+        <ScreenTransition
+          title="Switching displays"
+          detail="Rolling the next ranch surface into place."
           reducedMotion={settings.reducedMotion}
         />
       )}
@@ -344,16 +430,58 @@ export function WormRanchApp() {
             backdropUrl={getGameplayRunPlan(currentLevel).backdropUrl}
             key={sessionId}
             level={currentLevel}
+            mode={selectedMode}
             profile={runProfile ?? effectiveProfile}
             reducedMotion={settings.reducedMotion}
             onSummaryChange={() => undefined}
             onEvent={handleStageEvent}
             onRoundEnd={handleRoundEnd}
           />
+          {pendingRoundResult && (
+            <EndlessGameOverWindow
+              result={pendingRoundResult}
+              onReplay={() => {
+                setPendingRoundResult(null);
+                beginTransition({ screen: "game", mode: selectedMode });
+              }}
+              onReturnHome={() => {
+                setPendingRoundResult(null);
+                beginTransition({ screen: "home" });
+              }}
+            />
+          )}
           <WormRanchGameExit profile={runProfile ?? effectiveProfile} onLeave={returnHome} />
         </section>
       )}
     </main>
+  );
+}
+
+type EndlessGameOverWindowProps = {
+  result: RoundResult;
+  onReplay: () => void;
+  onReturnHome: () => void;
+};
+
+function EndlessGameOverWindow({ result, onReplay, onReturnHome }: EndlessGameOverWindowProps) {
+  const targetColor = result.targetColorId || "unknown";
+
+  return (
+    <section className={styles.overWindow} role="dialog" aria-modal="true" aria-labelledby="over-title">
+      <header>
+        <h2 id="over-title">Game Over</h2>
+      </header>
+      <p>Wrong color bagged. Target was {targetColor.toUpperCase()}.</p>
+      <p>{result.collected} worms secured before the miss.</p>
+      <div className={styles.overActions}>
+        <button className={styles.replay} onClick={onReplay} autoFocus>
+          Ride Again
+        </button>
+        <button className={styles.yard} onClick={onReturnHome}>
+          Yard
+        </button>
+      </div>
+    </section>
   );
 }
 
