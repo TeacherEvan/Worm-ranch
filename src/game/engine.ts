@@ -23,14 +23,15 @@ import {
   type RoundResult,
   type Worm,
 } from "./types";
-
-const BLINK_RECOVER_MS = 220;
-const WORM_HIT_RADIUS_FACTOR = 3.1;
-
-// Continuous mode tuning
-const CONTINUOUS_SPAWN_INTERVAL_MS = 1200; // base spawn interval
-const SPEED_MULTIPLIER_CAP = 2.5; // maximum speed multiplier relative to base
-const SPEED_RAMP_PER_SECOND = 0.12; // increase multiplier per second
+import {
+  BLINK_RECOVER_MS,
+  CONTINUOUS_SPAWN_INTERVAL_MS,
+  DIRECTION_EPSILON,
+  FAIRY_MORPH_DURATION_MS,
+  SPEED_MULTIPLIER_CAP,
+  SPEED_RAMP_PER_SECOND,
+  WORM_HIT_RADIUS_FACTOR,
+} from "./constants";
 
 export { PROFILE_RULES } from "./rules";
 export type {
@@ -393,7 +394,7 @@ export function getSummary(world: GameWorld): GameSummary {
 
 function createFairy(world: GameWorld, worm: Worm): Fairy {
   const rules = world.rules;
-  const morphDurationMs = 2_000;
+  const morphDurationMs = FAIRY_MORPH_DURATION_MS;
   const flyDurationMs = Math.max(0, rules.fairyFadeAtMs - morphDurationMs);
   const trailFadeDurationMs = Math.max(0, rules.fairyTtlMs - rules.fairyFadeAtMs);
   const target = generateFairyTarget(world, worm);
@@ -461,7 +462,7 @@ function teleportWorm(world: GameWorld, worm: Worm, immortal: boolean) {
   worm.y = clamp(worm.y + Math.sin(angle) * step, worm.radius, world.height - worm.radius);
   worm.vx += Math.cos(angle) * 1.4;
   worm.vy += Math.sin(angle) * 1.4;
-  worm.direction = Math.atan2(worm.vy, worm.vx || 0.0001);
+  worm.direction = Math.atan2(worm.vy, worm.vx || DIRECTION_EPSILON);
 }
 
 function captureWorm(world: GameWorld, worm: Worm) {
