@@ -38,4 +38,7 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# large unreferenced media (kept local, not committed)
+/public/art/Gameplay backdrops/output.mp4
 next-env.d.ts

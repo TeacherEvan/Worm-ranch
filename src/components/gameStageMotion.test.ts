@@ -5,7 +5,7 @@ import type { GameSummary } from "@/game/types";
 function createSummary(overrides: Partial<GameSummary> = {}): GameSummary {
   return {
     profile: "desktop",
-    phase: "live",
+    phase: "activeChase",
     collected: 0,
     remaining: 100,
     fairies: 0,
@@ -16,6 +16,7 @@ function createSummary(overrides: Partial<GameSummary> = {}): GameSummary {
     countdownMs: 0,
     finalWormActive: false,
     rushTriggered: false,
+    targetColor: null,
     ...overrides,
   };
 }

@@ -1,15 +1,41 @@
 :root {
-  --bg: #07111b;
-  --bg-soft: #0d1c2b;
-  --panel: rgba(9, 17, 28, 0.72);
+  /* ===== CORE NEON TOKEN SYSTEM ===== */
+  --bg-deep: #050A0F;
+  --bg-glass: rgba(10, 18, 26, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
+  --neon-lime: #C7F36B;      /* collect, blink charge, selection ring */
+  --neon-cyan: #00F5FF;      /* teleport, UI focus, countdown urgency */
+  --neon-orange: #F07E43;    /* ghost finale, rush, warning */
+  --neon-pink: #FF3366;      /* outlaw, critical, game over */
+  --neon-purple: #BC9FFF;    /* fairy/morph, supernatural */
+  --neon-amber: #FFD44A;     /* tag progress, buildup */
+
+  --text: #F5F4E9;
+  --text-dim: #9AA3AC;
+
+  /* Legacies (for backward compat during transition) */
+  --bg: var(--bg-deep);
+  --bg-soft: rgba(13, 28, 43, 0.8);
+  --panel: var(--bg-glass);
   --panel-strong: rgba(10, 19, 31, 0.92);
-  --line: rgba(146, 191, 133, 0.2);
-  --text: #f5f4e9;
-  --muted: #bdc8bc;
-  --accent: #c7f36b;
-  --accent-strong: #f07e43;
-  --danger: #ff7f74;
+  --line: rgba(199, 243, 107, 0.15);
+  --muted: var(--text-dim);
+  --accent: var(--neon-lime);
+  --accent-strong: var(--neon-orange);
+  --danger: var(--neon-pink);
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+}
+
+/* ===== FONT FACES: Space Grotesk Variable (OFL) ===== */
+/* Display / Mono labels — uppercase, wght 700, ls 0.12em */
+@font-face {
+  font-family: "Space Grotesk Variable";
+  font-display: swap;
+  font-weight: 200 900;
+  font-stretch: 100%;
+  src: url("/fonts/SpaceGrotesk-VariableFont_wght.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 html {
@@ -27,25 +53,23 @@ body {
   display: flex;
   flex-direction: column;
   color: var(--text);
-  background:
-    radial-gradient(circle at top, rgba(199, 243, 107, 0.12), transparent 28%),
-    radial-gradient(circle at bottom left, rgba(240, 126, 67, 0.2), transparent 24%),
-    linear-gradient(160deg, var(--bg) 0%, #0d1522 48%, #122033 100%);
-  font-family: var(--font-sans), sans-serif;
+  background: var(--bg-deep);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Subtle grid texture on body (optional, low opacity) */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background:
-    linear-gradient(rgba(199, 243, 107, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(199, 243, 107, 0.03) 1px, transparent 1px);
+  background-image:
+    linear-gradient(rgba(199, 243, 107, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(199, 243, 107, 0.02) 1px, transparent 1px);
   background-size: 56px 56px;
   pointer-events: none;
-  opacity: 0.4;
+  opacity: 0.5;
 }
 
 * {
@@ -70,7 +94,7 @@ button {
 }
 
 :where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
-  outline: 2px solid rgba(244, 199, 108, 0.92);
+  outline: 2px solid rgba(199, 243, 107, 0.92);
   outline-offset: 3px;
 }
 
@@ -81,5 +105,22 @@ html {
 @media (max-width: 720px) {
   body::before {
     background-size: 36px 36px;
+  }
+}
+
+/* ===== REDUCED MOTION COMPLIANCE ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Disable canvas-level motion effects via data attribute */
+  html[data-reduced-motion="true"] .canvas {
+    /* Handled in JS via reducedMotion flag */
   }
 }
