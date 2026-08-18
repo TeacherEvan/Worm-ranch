@@ -1,6 +1,4 @@
 import { expect } from "vitest";
-import { DESKTOP_RULES, MOBILE_RULES } from "./rules";
-import { STANDARD_WORM_COLORS } from "./wormColors";
 import {
   applyAccuratePress,
   createWorld,

@@ -7,9 +7,18 @@
     "build": "next build",
     "start": "node scripts/run-next-with-fallback.mjs start",
     "lint": "eslint",
+    "lint:fix": "eslint --fix .",
     "test:engine": "vitest run",
     "verify": "npm run test:engine && npm run typecheck && npm run lint && npm run build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "knip": "knip --config knip.jsonc",
+    "prepare": "husky",
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs}": [
+      "eslint --fix"
+    ]
   },
   "dependencies": {
     "next": "16.2.4",
@@ -22,6 +31,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
+    "husky": "^9.1.7",
+    "knip": "^6.32.2",
+    "lint-staged": "^17.3.0",
     "typescript": "^5",
     "vitest": "^4.1.5"
   }
