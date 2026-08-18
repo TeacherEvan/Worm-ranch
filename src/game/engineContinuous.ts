@@ -5,6 +5,7 @@ import type { ContinuousColorTargetState, GameWorld, GameSummaryTargetColor } fr
 import { isWormActive } from "./types";
 import { isContinuousColorTargetVisible } from "./continuousColorTargets";
 import { getWormColorById } from "./wormColors";
+import { createStandardWorm } from "./specialWorms";
 
 export function spawnContinuousWorm(world: GameWorld) {
   const inactiveIndex = world.worms.findIndex((worm) => !isWormActive(worm));
@@ -45,5 +46,4 @@ export function getTargetColorSummary(
   };
 }
 
-// `createStandardWorm` lives in specialWorms.ts (barrel). Declare the shape we consume.
-import { createStandardWorm } from "./specialWorms";
+

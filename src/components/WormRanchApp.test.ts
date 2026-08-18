@@ -85,7 +85,7 @@ describe("WormRanchApp", () => {
       throw new Error("expected HomeScreen props");
     }
 
-    void homeScreenProps.onStart();
+    void (homeScreenProps as MockHomeScreenProps).onStart();
 
     // beginTransition({ screen: "modeMenu" }) should call setScreen("transition") and setTransitionTarget({ screen: "modeMenu" })
     expect(setScreenCalls).toHaveBeenCalledWith("transition");
@@ -145,8 +145,8 @@ describe("WormRanchApp", () => {
       throw new Error("expected GameModeScreen props");
     }
 
-    gameModeScreenProps.onModeChange("targetEndless");
-    gameModeScreenProps.onStart();
+    (gameModeScreenProps as MockGameModeScreenProps).onModeChange("targetEndless");
+    (gameModeScreenProps as MockGameModeScreenProps).onStart();
 
     // startSelectedMode() calls beginTransition({ screen: "game", mode: "targetEndless" })
     expect(setScreenCalls).toHaveBeenCalledWith("transition");
@@ -218,10 +218,10 @@ describe("WormRanchApp", () => {
       throw new Error("expected GameStage props");
     }
 
-    gameStageProps.onRoundEnd({ reason: "wrongColor", collected: 3, remaining: 9 });
+    (gameStageProps as MockGameStageProps).onRoundEnd({ reason: "wrongColor", collected: 3, remaining: 9 });
 
     // TODO: Verify replay logic - this will be implemented in Task 3
     // For now, just verify the round ends
-    expect(gameStageProps.onRoundEnd).toBeDefined();
+    expect((gameStageProps as MockGameStageProps).onRoundEnd).toBeDefined();
   });
 });

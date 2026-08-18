@@ -6,10 +6,10 @@ import {
 import { renderStage } from "./gameStagePresentation";
 import { createWorld } from "@/game/engine";
 import type { DisplayProfile } from "@/game/detection";
-import type { Worm } from "@/game/types";
+import type { PsychedelicWorm, Worm } from "@/game/types";
 
 function createWorm(overrides: Partial<Worm> = {}): Worm {
-  return {
+  const base: PsychedelicWorm = {
     id: "worm-psychedelic-1",
     x: 240,
     y: 180,
@@ -21,12 +21,14 @@ function createWorm(overrides: Partial<Worm> = {}): Worm {
     hue: 168,
     wave: Math.PI / 5,
     visualVariant: "psychedelic",
+    colorId: null,
     teleportsRemaining: 0,
     touchBursts: 0,
     state: "roaming",
     stateTimerMs: 0,
-    ...overrides,
   };
+
+  return { ...base, ...overrides } as Worm;
 }
 
 type FakeGradient = {
@@ -71,7 +73,7 @@ function createFakeContext() {
     arc: vi.fn(),
     beginPath: vi.fn(),
     clearRect: vi.fn(),
-    createLinearGradient: vi.fn<FakeGradient, [number, number, number, number]>(() => ({
+    createLinearGradient: vi.fn<(...args: [number, number, number, number]) => FakeGradient>(() => ({
       addColorStop: (offset, color) => {
         gradientStops.push({ offset, color });
       },
@@ -123,7 +125,7 @@ function createRenderWorld({
   });
 
   world.countdownMs = 0;
-  world.phase = "active";
+  world.phase = "activeChase";
   world.worms = [
     createWorm({
       visualVariant,
@@ -141,7 +143,7 @@ function createRenderWorld({
 function renderAndCountEllipses(visualVariant: Worm["visualVariant"], reducedMotion: boolean) {
   const { context, gradientStops } = createFakeContext();
 
-  renderStage(context, createRenderWorld({ visualVariant }), reducedMotion, [], null);
+  renderStage(context as unknown as CanvasRenderingContext2D, createRenderWorld({ visualVariant }), reducedMotion, [], null);
 
   return {
     ellipseCalls: context.ellipse.mock.calls.length,
@@ -152,7 +154,7 @@ function renderAndCountEllipses(visualVariant: Worm["visualVariant"], reducedMot
 function renderAndCaptureText(world: ReturnType<typeof createRenderWorld>) {
   const { context } = createFakeContext();
 
-  renderStage(context, world, false, [], null);
+  renderStage(context as unknown as CanvasRenderingContext2D, world, false, [], null);
 
   return context.fillText.mock.calls.map(([label]) => label);
 }

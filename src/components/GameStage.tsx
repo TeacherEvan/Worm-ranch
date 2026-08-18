@@ -23,7 +23,8 @@ import {
   type StageFeedback,
 } from "@/components/gameStagePresentation";
 import { getCueEffect, getMotionFeedback, type StageMotionCue } from "@/components/gameStageMotion";
-import { createBurstFromTone, drawParticles, stepParticles, type Particle, type ParticleTone } from "@/components/gameStageParticles";
+import { createBurstFromTone, drawParticles, stepParticles, type Particle } from "@/components/gameStageParticles";
+import { createStageFeedbackItem, getActionParticleBurst } from "@/components/gameStageFeedback";
 import { getStagePresentation } from "@/components/gameStagePhasePresentation";
 import { getFairyLifecycleEvents, getRoundEndedDetails, getRoundTransitionEvents } from "@/lib/analytics";
 import {
@@ -239,32 +240,7 @@ export function GameStage({
 
       const id = feedbackIdRef.current + 1;
       feedbackIdRef.current = id;
-      feedbackRef.current = [
-        ...feedbackRef.current.slice(-9),
-        {
-          id,
-          x: worm.x,
-          y: worm.y - worm.radius * 1.8,
-          lifeMs: 0,
-          ttlMs: result.kind === "collect" ? 920 : result.kind === "tag" ? 840 : 880,
-          label:
-            result.kind === "collect"
-              ? "BAGGED"
-              : result.kind === "tag"
-                ? "TAGGED"
-                : result.immortal
-                  ? "OUTLAW"
-                  : "BLINK",
-          tone:
-            result.kind === "collect"
-              ? "collect"
-              : result.kind === "tag"
-                ? "tag"
-                : result.immortal
-                  ? "final"
-                  : "teleport",
-        },
-      ];
+      feedbackRef.current = [...feedbackRef.current.slice(-9), createStageFeedbackItem(result, worm, id)];
     };
 
     const handleAction = (result: ActionResult) => {
@@ -273,28 +249,16 @@ export function GameStage({
       }
       showActionEchoRef.current(result);
 
-      if (result.kind === "collect") {
+      if (result.kind === "collect" || result.kind === "tag" || result.kind === "teleport") {
         pushFeedback(result);
-        onEventRef.current("worm_collected", { wormId: result.wormId, collected: result.collected });
-        const worm = worldRef.current.worms.find((w) => w.id === result.wormId);
-        if (worm && !reducedMotionRef.current) {
-          particlesRef.current = [...particlesRef.current, ...createBurstFromTone("collect", worm.x, worm.y - worm.radius * 1.8)];
+        if (result.kind === "collect") {
+          onEventRef.current("worm_collected", { wormId: result.wormId, collected: result.collected });
+        } else if (result.kind === "teleport") {
+          onEventRef.current("worm_teleported", { wormId: result.wormId, immortal: result.immortal });
         }
-      }
-      if (result.kind === "tag") {
-        pushFeedback(result);
         const worm = worldRef.current.worms.find((w) => w.id === result.wormId);
         if (worm && !reducedMotionRef.current) {
-          particlesRef.current = [...particlesRef.current, ...createBurstFromTone("tag", worm.x, worm.y)];
-        }
-      }
-      if (result.kind === "teleport") {
-        pushFeedback(result);
-        onEventRef.current("worm_teleported", { wormId: result.wormId, immortal: result.immortal });
-        const worm = worldRef.current.worms.find((w) => w.id === result.wormId);
-        if (worm && !reducedMotionRef.current) {
-          const tone: ParticleTone = result.immortal ? "outlaw" : "teleport";
-          particlesRef.current = [...particlesRef.current, ...createBurstFromTone(tone, worm.x, worm.y)];
+          particlesRef.current = [...particlesRef.current, ...getActionParticleBurst(result, worm)];
         }
       }
       setKeyboardTargetId((currentTargetId) => getKeyboardTargetId(worldRef.current, currentTargetId, "preserve"));

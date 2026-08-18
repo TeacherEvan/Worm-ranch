@@ -8,7 +8,8 @@
     "start": "node scripts/run-next-with-fallback.mjs start",
     "lint": "eslint",
     "test:engine": "vitest run",
-    "verify": "npm run test:engine && npm run lint && npm run build"
+    "verify": "npm run test:engine && npm run typecheck && npm run lint && npm run build",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "next": "16.2.4",
