@@ -14,7 +14,7 @@
 
 .kicker {
   padding-inline: 8px 2px;
-  color: color-mix(in srgb, var(--muted) 82%, var(--accent) 18%);
+  color: color-mix(in srgb, var(--muted) 82%, var(--neon-lime) 18%);
   font-family: var(--font-mono), monospace;
   font-size: 0.64rem;
   letter-spacing: 0.12em;

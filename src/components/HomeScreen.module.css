@@ -22,7 +22,7 @@
 }
 
 .kicker {
-  color: color-mix(in srgb, var(--muted) 80%, var(--accent) 20%);
+  color: color-mix(in srgb, var(--muted) 80%, var(--neon-lime) 20%);
   font-family: var(--font-mono), monospace;
   font-size: 0.74rem;
   font-weight: 700;
@@ -68,7 +68,7 @@
 
 .primary {
   color: #061018;
-  background: linear-gradient(135deg, var(--accent), #f4c76c);
+  background: linear-gradient(135deg, var(--neon-lime), #f4c76c);
   box-shadow: 0 12px 28px rgba(199, 243, 107, 0.18);
 }
 

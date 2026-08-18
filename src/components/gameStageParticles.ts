@@ -17,8 +17,9 @@ export type Particle = {
   color: string;       // CSS color string (from neon tokens)
   life: number;        // 0–1 normalized
   maxLife: number;     // ms
-  rotation: number;    // radians
-  spin: number;        // rad/ms
+  rotation: number;  // radians
+  spin: number;      // rad/ms
+  gravity: number;   // px/ms² — copied from tone config at spawn (per-particle)
   shape: "square" | "circle" | "triangle";
 };
 
@@ -195,6 +196,7 @@ export function createBurst(config: ParticleBurstConfig): Particle[] {
       maxLife: life,
       rotation: Math.random() * Math.PI * 2,
       spin: (Math.random() - 0.5) * 0.02,
+      gravity: rest.gravity,
       shape: rest.shapes[randInt(0, rest.shapes.length - 1)],
     });
   }
@@ -229,7 +231,7 @@ export function stepParticles(particles: Particle[], deltaMs: number): Particle[
 
     p.x += p.vx * deltaMs;
     p.y += p.vy * deltaMs;
-    p.vy += TONE_CONFIGS.collect.gravity * deltaMs; // gravity applied per-frame
+    p.vy += p.gravity * deltaMs; // per-particle gravity (tone-specific)
     p.rotation += p.spin * deltaMs;
 
     // Size grows then shrinks

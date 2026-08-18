@@ -28,6 +28,9 @@ import {
 import { createSilentLogger, type EventName } from "@/lib/logger";
 import { DEFAULT_GAMEPLAY_MODE, type GameplayMode } from "@/game/gameModes";
 import { type RoundResult } from "@/game/types";
+import { EndlessGameOverWindow } from "@/components/EndlessGameOverWindow";
+import { useInstallPrompt } from "@/components/useInstallPrompt";
+import { preloadGameplayBackdrop } from "@/lib/backdropPreload";
 
 type AppScreen = "welcome" | "home" | "settings" | "modeMenu" | "transition" | "game";
 
@@ -40,17 +43,10 @@ type TransitionTarget =
 
 type PendingRoundResult = RoundResult | null;
 
-type DeferredInstallPromptEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
-};
-
 export function WormRanchApp() {
   const [screen, setScreen] = useState<AppScreen>("welcome");
   const [detectedDisplay, setDetectedDisplay] = useState<DisplaySnapshot | null>(null);
   const [runProfile, setRunProfile] = useState<DisplayProfile | null>(null);
-  const [installPromptEvent, setInstallPromptEvent] = useState<DeferredInstallPromptEvent | null>(null);
-  const [installPromptDismissed, setInstallPromptDismissed] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(getInitialGameplayRunPlan().level);
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
   const [selectedMode, setSelectedMode] = useState<GameplayMode>(DEFAULT_GAMEPLAY_MODE);
@@ -187,38 +183,7 @@ export function WormRanchApp() {
     pendingRoundResultRef.current = pendingRoundResult;
   }, [pendingRoundResult]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => undefined);
-    }
-
-    const handleBeforeInstallPrompt = (event: Event) => {
-      if (!isDeferredInstallPromptEvent(event)) {
-        return;
-      }
-
-      event.preventDefault();
-      setInstallPromptEvent(event);
-      setInstallPromptDismissed(false);
-    };
-
-    const handleAppInstalled = () => {
-      setInstallPromptEvent(null);
-      setInstallPromptDismissed(true);
-    };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt as EventListener);
-    window.addEventListener("appinstalled", handleAppInstalled);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt as EventListener);
-      window.removeEventListener("appinstalled", handleAppInstalled);
-    };
-  }, []);
+  const install = useInstallPrompt();
 
   useEffect(() => {
     const updateProfile = () => setDetectedDisplay(detectDisplayProfile(window));
@@ -324,18 +289,6 @@ export function WormRanchApp() {
     return () => window.clearTimeout(timer);
   }, [screen, transitionTarget, settings.reducedMotion]);
 
-  const handleInstallRequest = useCallback(async () => {
-    if (!installPromptEvent) {
-      return;
-    }
-
-    const pendingPrompt = installPromptEvent;
-    await pendingPrompt.prompt();
-    await pendingPrompt.userChoice;
-    setInstallPromptEvent(null);
-    setInstallPromptDismissed(true);
-  }, [installPromptEvent]);
-
   const updateSetting = useCallback(<K extends keyof SettingsState>(key: K, value: SettingsState[K]) => {
     writeStoredSettings({ ...settings, [key]: value });
   }, [settings]);
@@ -343,7 +296,7 @@ export function WormRanchApp() {
   const shellProfile = screen === "game" ? runProfile ?? effectiveProfile : effectiveProfile;
   const shellScanProfile: DisplayProfile | "scanning" = screen === "game" ? shellProfile : detectedDisplay?.profile ?? "scanning";
   const profileRules = screen === "game" ? getGameplayLevelRules(shellProfile, currentLevel) : PROFILE_RULES[shellProfile];
-  const installPromptVisible = installPromptEvent !== null && !installPromptDismissed;
+  const installPromptVisible = install.installPromptEvent !== null && !install.installPromptDismissed;
   const welcomeMetrics = [
     { label: "Pasture", value: "moonlit" },
     { label: "Tack", value: "ready" },
@@ -384,8 +337,8 @@ export function WormRanchApp() {
             <WormRanchInstallPrompt
               visible={installPromptVisible}
               placement="inline"
-              onInstall={handleInstallRequest}
-              onDismiss={() => setInstallPromptDismissed(true)}
+              onInstall={install.onInstall}
+              onDismiss={() => install.setInstallPromptDismissed(true)}
             />
           }
           onBack={() => beginTransition({ screen: "welcome" })}
@@ -457,66 +410,3 @@ export function WormRanchApp() {
   );
 }
 
-type EndlessGameOverWindowProps = {
-  result: RoundResult;
-  onReplay: () => void;
-  onReturnHome: () => void;
-};
-
-function EndlessGameOverWindow({ result, onReplay, onReturnHome }: EndlessGameOverWindowProps) {
-  const targetColor = result.targetColorId || "unknown";
-
-  return (
-    <section className={styles.overWindow} role="dialog" aria-modal="true" aria-labelledby="over-title">
-      <header>
-        <h2 id="over-title">Game Over</h2>
-      </header>
-      <p>Wrong color bagged. Target was {targetColor.toUpperCase()}.</p>
-      <p>{result.collected} worms secured before the miss.</p>
-      <div className={styles.overActions}>
-        <button className={styles.replay} onClick={onReplay} autoFocus>
-          Ride Again
-        </button>
-        <button className={styles.yard} onClick={onReturnHome}>
-          Yard
-        </button>
-      </div>
-    </section>
-  );
-}
-
-function preloadGameplayBackdrop(backdropUrl: string) {
-  if (typeof window === "undefined") {
-    return Promise.resolve();
-  }
-
-  return new Promise<void>((resolve) => {
-    const image = new window.Image();
-    let settled = false;
-
-    const finish = () => {
-      if (settled) {
-        return;
-      }
-
-      settled = true;
-      resolve();
-    };
-
-    image.decoding = "async";
-    image.onload = finish;
-    image.onerror = finish;
-    image.src = backdropUrl;
-
-    if (image.complete) {
-      finish();
-      return;
-    }
-
-    image.decode?.().then(finish, finish);
-  });
-}
-
-function isDeferredInstallPromptEvent(event: Event): event is DeferredInstallPromptEvent {
-  return "prompt" in event && "userChoice" in event;
-}

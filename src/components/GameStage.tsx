@@ -22,7 +22,8 @@ import {
   stepFeedback,
   type StageFeedback,
 } from "@/components/gameStagePresentation";
-import { getMotionFeedback, type StageMotionCue } from "@/components/gameStageMotion";
+import { getCueEffect, getMotionFeedback, type StageMotionCue } from "@/components/gameStageMotion";
+import { createBurstFromTone, drawParticles, stepParticles, type Particle, type ParticleTone } from "@/components/gameStageParticles";
 import { getStagePresentation } from "@/components/gameStagePhasePresentation";
 import { getFairyLifecycleEvents, getRoundEndedDetails, getRoundTransitionEvents } from "@/lib/analytics";
 import {
@@ -86,6 +87,8 @@ export function GameStage({
   const summaryRef = useRef(0);
   const feedbackRef = useRef<StageFeedback[]>([]);
   const feedbackIdRef = useRef(0);
+  const particlesRef = useRef<Particle[]>([]);
+  const previousParticleSummaryRef = useRef<GameSummary | null>(null);
   const finishedRef = useRef(false);
   const lastTimestampRef = useRef<number | null>(null);
   const hasMountedRef = useRef(false);
@@ -158,6 +161,8 @@ export function GameStage({
       }
     }
     feedbackRef.current = [];
+    particlesRef.current = [];
+    previousParticleSummaryRef.current = null;
     finishedRef.current = false;
     lastTimestampRef.current = null;
     summaryRef.current = 0;
@@ -271,13 +276,26 @@ export function GameStage({
       if (result.kind === "collect") {
         pushFeedback(result);
         onEventRef.current("worm_collected", { wormId: result.wormId, collected: result.collected });
+        const worm = worldRef.current.worms.find((w) => w.id === result.wormId);
+        if (worm && !reducedMotionRef.current) {
+          particlesRef.current = [...particlesRef.current, ...createBurstFromTone("collect", worm.x, worm.y - worm.radius * 1.8)];
+        }
       }
       if (result.kind === "tag") {
         pushFeedback(result);
+        const worm = worldRef.current.worms.find((w) => w.id === result.wormId);
+        if (worm && !reducedMotionRef.current) {
+          particlesRef.current = [...particlesRef.current, ...createBurstFromTone("tag", worm.x, worm.y)];
+        }
       }
       if (result.kind === "teleport") {
         pushFeedback(result);
         onEventRef.current("worm_teleported", { wormId: result.wormId, immortal: result.immortal });
+        const worm = worldRef.current.worms.find((w) => w.id === result.wormId);
+        if (worm && !reducedMotionRef.current) {
+          const tone: ParticleTone = result.immortal ? "outlaw" : "teleport";
+          particlesRef.current = [...particlesRef.current, ...createBurstFromTone(tone, worm.x, worm.y)];
+        }
       }
       setKeyboardTargetId((currentTargetId) => getKeyboardTargetId(worldRef.current, currentTargetId, "preserve"));
     };
@@ -365,6 +383,21 @@ export function GameStage({
       stepWorld(worldRef.current, delta);
       emitFairyLifecycleEvents();
       stepFeedback(feedbackRef.current, delta);
+      particlesRef.current = stepParticles(particlesRef.current, delta);
+      if (particlesRef.current.length > 60) particlesRef.current = particlesRef.current.slice(-60);
+
+      const rawSummary = getSummary(worldRef.current);
+      const motionFeedback = getMotionFeedback(previousParticleSummaryRef.current ?? rawSummary, rawSummary);
+      previousParticleSummaryRef.current = rawSummary;
+      if (!reducedMotionRef.current && motionFeedback.stageCue !== "none") {
+        const cueEffect = getCueEffect(motionFeedback.stageCue, false);
+        if (cueEffect.particleTone) {
+          const cx = worldRef.current.width / 2;
+          const cy = worldRef.current.height / 2;
+          particlesRef.current = [...particlesRef.current, ...createBurstFromTone(cueEffect.particleTone, cx, cy, cueEffect.particleCount)];
+        }
+      }
+
       renderStage(
         context,
         worldRef.current,
@@ -374,6 +407,7 @@ export function GameStage({
         level,
         staticBackdropRef.current?.canvas ?? null,
       );
+      drawParticles(context, particlesRef.current, reducedMotionRef.current);
       updateSummary();
 
       const roundResult = worldRef.current.roundResult;
