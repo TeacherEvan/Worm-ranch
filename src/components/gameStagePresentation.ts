@@ -131,10 +131,6 @@ export function areSummariesEqual(left: GameSummary, right: GameSummary) {
   );
 }
 
-export function createInitialSummary(profile: DisplayProfile, level = 1) {
-  return getSummary(createWorld(profile, 800, 540, { rules: getGameplayLevelRules(profile, level) }));
-}
-
 export function buildStatusItems(profile: DisplayProfile, summary: GameSummary, level = 1): StatusItem[] {
   return getStagePresentation(summary, profile, level).statusItems;
 }
