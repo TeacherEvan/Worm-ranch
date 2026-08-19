@@ -131,6 +131,24 @@ describe("particle burst system", () => {
       expect(alive[i].x).not.toBe(before[i].x);
     }
   });
+
+  it("applies per-tone gravity — fairy particles drift upward, teleport particles have zero drift", () => {
+    // fairy tone: gravity -0.00008 (upward) — vy should decrease (more negative) after step
+    const fairy = createBurstFromTone("fairy", 200, 200);
+    const fairyInitialVy = fairy.map((p) => p.vy);
+    const fairyAfter = stepParticles(fairy, 100);
+    for (let i = 0; i < fairyAfter.length; i++) {
+      expect(fairyAfter[i].vy).toBeLessThanOrEqual(fairyInitialVy[i]);
+    }
+
+    // teleport tone: gravity 0 — vy unchanged after step
+    const teleport = createBurstFromTone("teleport", 200, 200);
+    const teleportInitialVy = teleport.map((p) => p.vy);
+    const teleportAfter = stepParticles(teleport, 100);
+    for (let i = 0; i < teleportAfter.length; i++) {
+      expect(teleportAfter[i].vy).toBeCloseTo(teleportInitialVy[i], 5);
+    }
+  });
 });
 
 describe("reduced-motion flash", () => {

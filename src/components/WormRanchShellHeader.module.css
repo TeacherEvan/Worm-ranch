@@ -14,7 +14,7 @@
 }
 
 .eyebrow {
-  color: var(--accent);
+  color: var(--neon-lime);
   font-family: var(--font-mono), monospace;
   font-size: clamp(0.74rem, 0.5rem + 0.5vw, 0.88rem);
   letter-spacing: 0.14em;
@@ -51,7 +51,7 @@
   border-radius: 999px;
   background: color-mix(in srgb, var(--bg-soft) 74%, transparent);
   border: 1px solid rgba(199, 243, 107, 0.16);
-  color: color-mix(in srgb, var(--text) 78%, var(--accent) 22%);
+  color: color-mix(in srgb, var(--text) 78%, var(--neon-lime) 22%);
   font-family: var(--font-mono), monospace;
   font-size: 0.82rem;
   letter-spacing: 0.04em;

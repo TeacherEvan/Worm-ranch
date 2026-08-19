@@ -24,7 +24,7 @@
 }
 
 .eyebrow {
-  color: color-mix(in srgb, var(--text) 74%, var(--accent) 26%);
+  color: color-mix(in srgb, var(--text) 74%, var(--neon-lime) 26%);
   font-family: var(--font-mono), monospace;
   font-size: 0.72rem;
   letter-spacing: 0.12em;
@@ -64,7 +64,7 @@
 
 .primary {
   color: #061018;
-  background: linear-gradient(135deg, var(--accent), #f4c76c);
+  background: linear-gradient(135deg, var(--neon-lime), #f4c76c);
   box-shadow: 0 12px 28px rgba(199, 243, 107, 0.18);
 }
 

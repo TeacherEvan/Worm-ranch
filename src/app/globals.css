@@ -15,15 +15,12 @@
   --text-dim: #9AA3AC;
 
   /* Legacies (for backward compat during transition) */
-  --bg: var(--bg-deep);
   --bg-soft: rgba(13, 28, 43, 0.8);
   --panel: var(--bg-glass);
   --panel-strong: rgba(10, 19, 31, 0.92);
   --line: rgba(199, 243, 107, 0.15);
   --muted: var(--text-dim);
-  --accent: var(--neon-lime);
   --accent-strong: var(--neon-orange);
-  --danger: var(--neon-pink);
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
 }
 

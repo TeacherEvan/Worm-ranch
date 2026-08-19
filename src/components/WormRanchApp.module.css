@@ -40,7 +40,7 @@
 }
 
 .metricLabel {
-  color: color-mix(in srgb, var(--muted) 88%, var(--accent) 12%);
+  color: color-mix(in srgb, var(--muted) 88%, var(--neon-lime) 12%);
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
   letter-spacing: 0.08em;

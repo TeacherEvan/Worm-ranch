@@ -7,8 +7,18 @@
     "build": "next build",
     "start": "node scripts/run-next-with-fallback.mjs start",
     "lint": "eslint",
-    "test:engine": "vitest run src/game/engine.test.ts src/game/engineSpecialWorm.test.ts src/game/levels.test.ts src/components/GameStage.test.ts src/components/gameStageAudio.test.ts src/components/gameStageWormVisuals.test.ts src/components/WelcomeScreen.test.ts src/components/gameStageBackdropRotation.test.ts src/components/gameStagePhasePresentation.test.ts src/components/gameStageFairyPresentation.test.ts src/components/welcomeHeroPresentation.test.ts src/components/welcomeLaunchLoader.test.ts src/components/welcomeLaunchMedia.test.ts src/components/WormRanchApp.test.ts src/components/WormRanchInstallPrompt.test.ts src/components/WormRanchGameExit.test.ts src/components/HomeScreen.test.ts src/components/ResultsScreen.test.ts src/components/wormRanchLevelFlow.test.ts src/components/gameStageMotion.test.ts src/components/gameStageCueEffects.test.ts src/lib/analytics.test.ts",
-    "verify": "npm run test:engine && npm run lint && npm run build"
+    "lint:fix": "eslint --fix .",
+    "test:engine": "vitest run",
+    "verify": "npm run test:engine && npm run typecheck && npm run lint && npm run build",
+    "typecheck": "tsc --noEmit",
+    "knip": "knip --config knip.jsonc",
+    "prepare": "husky",
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs}": [
+      "eslint --fix"
+    ]
   },
   "dependencies": {
     "next": "16.2.4",
@@ -21,6 +31,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
+    "husky": "^9.1.7",
+    "knip": "^6.32.2",
+    "lint-staged": "^17.3.0",
     "typescript": "^5",
     "vitest": "^4.1.5"
   }

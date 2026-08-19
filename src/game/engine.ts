@@ -1,23 +1,18 @@
 import type { DisplayProfile } from "./detection";
 import {
   createContinuousColorTargetState,
-  isContinuousColorTargetVisible,
   registerContinuousColorRemoval,
   resetContinuousColorTargetVisibility,
 } from "./continuousColorTargets";
 import { stepWormMovement } from "./movement";
 import { getProfileRules, type ProfileRules } from "./rules";
 import { createPsychedelicWorm, createStandardWorm, shouldSpawnPsychedelicWorm } from "./specialWorms";
-import { getWormColorById } from "./wormColors";
 import {
   isFairyVisible,
   isWormActive,
   type ActionResult,
-  type ContinuousColorTargetState,
   type EngineRuntime,
-  type Fairy,
   type GameSummary,
-  type GameSummaryTargetColor,
   type GameWorld,
   type Point,
   type RoundResult,
@@ -27,11 +22,14 @@ import {
   BLINK_RECOVER_MS,
   CONTINUOUS_SPAWN_INTERVAL_MS,
   DIRECTION_EPSILON,
-  FAIRY_MORPH_DURATION_MS,
   SPEED_MULTIPLIER_CAP,
   SPEED_RAMP_PER_SECOND,
   WORM_HIT_RADIUS_FACTOR,
 } from "./constants";
+import { createFairy, advanceFairies } from "./engineFairies";
+import { spawnContinuousWorm, refillContinuousWorms, getTargetColorSummary } from "./engineContinuous";
+import { advanceWormTimers, syncWormStates, updateRoundPhase } from "./enginePhase";
+import { randomBetween, clamp, getWormSpeed } from "./engineUtils";
 
 export { PROFILE_RULES } from "./rules";
 export type {
@@ -392,66 +390,8 @@ export function getSummary(world: GameWorld): GameSummary {
   };
 }
 
-function createFairy(world: GameWorld, worm: Worm): Fairy {
-  const rules = world.rules;
-  const morphDurationMs = FAIRY_MORPH_DURATION_MS;
-  const flyDurationMs = Math.max(0, rules.fairyFadeAtMs - morphDurationMs);
-  const trailFadeDurationMs = Math.max(0, rules.fairyTtlMs - rules.fairyFadeAtMs);
-  const target = generateFairyTarget(world, worm);
-  const control = generateFairyControlPoint(world, worm, target);
-
-  return {
-    id: `fairy-${worm.id}-${world.runtime.now()}`,
-    wormId: worm.id,
-    x: worm.x,
-    y: worm.y,
-    targetX: target.x,
-    targetY: target.y,
-    controlX: control.x,
-    controlY: control.y,
-    createdAt: world.runtime.now(),
-    lifeMs: 0,
-    ttlMs: rules.fairyTtlMs,
-    morphDurationMs,
-    flyDurationMs,
-    trailFadeDurationMs,
-    hue: (worm.hue + 120) % 360,
-    state: "morphing",
-  };
-}
-
-function advanceFairies(world: GameWorld, deltaMs: number) {
-  world.fairies = world.fairies.filter((fairy) => {
-    fairy.lifeMs += deltaMs;
-    fairy.state = getFairyState(fairy);
-
-    return isFairyVisible(fairy);
-  });
-}
-
 function getRemainingWorms(world: GameWorld) {
   return world.worms.filter(isWormActive);
-}
-
-function getWormSpeed(world: GameWorld) {
-  const rules = world.rules;
-  const base = rules.baseMaxSpeed + world.collected * rules.speedBonusPerCollect;
-  const multiplier = world.continuousMode?.speedMultiplier ?? 1;
-  const speed = base * multiplier;
-  return clamp(speed, 0, rules.rushSpeed);
-}
-
-function spawnContinuousWorm(world: GameWorld) {
-  const inactiveIndex = world.worms.findIndex((worm) => !isWormActive(worm));
-  const spawnIndex = inactiveIndex >= 0 ? inactiveIndex : world.worms.length;
-  const worm = createStandardWorm(spawnIndex, world.rules, world.width, world.height, world.runtime);
-
-  if (inactiveIndex >= 0) {
-    world.worms[inactiveIndex] = worm;
-    return;
-  }
-
-  world.worms.push(worm);
 }
 
 function teleportWorm(world: GameWorld, worm: Worm, immortal: boolean) {
@@ -470,116 +410,6 @@ function captureWorm(world: GameWorld, worm: Worm) {
   worm.stateTimerMs = 0;
   world.collected += 1;
   world.fairies.push(createFairy(world, worm));
-}
-
-function refillContinuousWorms(world: GameWorld) {
-  while (getRemainingWorms(world).length < world.rules.totalWorms) {
-    spawnContinuousWorm(world);
-  }
-}
-
-function getTargetColorSummary(
-  targetColor: ContinuousColorTargetState | null,
-  continuousActive: boolean,
-  now: number,
-): GameSummaryTargetColor | null {
-  if (!continuousActive || !targetColor) {
-    return null;
-  }
-
-  const color = getWormColorById(targetColor.colorId);
-
-  return {
-    colorId: targetColor.colorId,
-    label: color.label,
-    progress: targetColor.progress,
-    goal: targetColor.goal,
-    visible: isContinuousColorTargetVisible(targetColor, now),
-  };
-}
-
-function getFairyState(fairy: Fairy) {
-  if (fairy.lifeMs < fairy.morphDurationMs) {
-    return "morphing" as const;
-  }
-
-  if (fairy.lifeMs < fairy.morphDurationMs + fairy.flyDurationMs) {
-    return "flying" as const;
-  }
-
-  if (fairy.lifeMs < fairy.ttlMs) {
-    return "trailFading" as const;
-  }
-
-  return "gone" as const;
-}
-
-function advanceWormTimers(world: GameWorld, deltaMs: number) {
-  for (const worm of world.worms) {
-    if (!isWormActive(worm) || worm.stateTimerMs <= 0) {
-      continue;
-    }
-
-    worm.stateTimerMs = Math.max(0, worm.stateTimerMs - deltaMs);
-  }
-}
-
-function syncWormStates(world: GameWorld) {
-  const remaining = getRemainingWorms(world);
-  const finalWormId =
-    world.profile === "desktop" && !world.continuousMode?.active && remaining.length === 1
-      ? remaining[0]?.id ?? null
-      : null;
-
-  for (const worm of world.worms) {
-    if (!isWormActive(worm)) {
-      continue;
-    }
-
-    if (world.profile === "desktop") {
-      if (worm.id === finalWormId) {
-        worm.state = "ghost";
-        worm.stateTimerMs = 0;
-        continue;
-      }
-
-      if (worm.state === "blinkRecover" && worm.stateTimerMs > 0) {
-        continue;
-      }
-
-      worm.state = worm.teleportsRemaining > 0 ? "blinkCharged" : "roaming";
-      worm.stateTimerMs = 0;
-      continue;
-    }
-
-    worm.state = worm.touchBursts > 0 ? "tagged" : "roaming";
-    worm.stateTimerMs = 0;
-  }
-}
-
-function updateRoundPhase(world: GameWorld) {
-  if (world.roundResult) {
-    world.phase = world.roundResult.reason === "wrongColor" ? "gameOver" : "resolved";
-    return;
-  }
-
-  if (world.countdownMs > 0) {
-    world.phase = "introCountdown";
-    return;
-  }
-
-  if (world.profile === "desktop") {
-    const remaining = getRemainingWorms(world).length;
-    if (!world.continuousMode?.active && remaining === 1) {
-      world.phase = "ghostFinale";
-      return;
-    }
-
-    world.phase = world.teleportsUnlocked ? "blinkBand" : "activeChase";
-    return;
-  }
-
-  world.phase = "activeChase";
 }
 
 function createProfileRules(profile: DisplayProfile, overrides: Partial<ProfileRules> = {}): ProfileRules {
@@ -609,49 +439,4 @@ function finishWorld(
       worm.stateTimerMs = 0;
     }
   }
-}
-
-function randomBetween(runtime: EngineRuntime, min: number, max: number) {
-  return min + runtime.random() * (max - min);
-}
-
-function generateFairyTarget(world: GameWorld, worm: Worm) {
-  const offScreenDistance = 100;
-  const edgeVariationX = 40;
-  const edgeVariationY = 200;
-  const edge = Math.floor(world.runtime.random() * 4);
-
-  switch (edge) {
-    case 0:
-      return {
-        x: worm.x + (world.runtime.random() - 0.5) * edgeVariationX,
-        y: -offScreenDistance,
-      };
-    case 1:
-      return {
-        x: world.width + offScreenDistance,
-        y: worm.y + (world.runtime.random() - 0.5) * edgeVariationY,
-      };
-    case 2:
-      return {
-        x: worm.x + (world.runtime.random() - 0.5) * edgeVariationX,
-        y: world.height + offScreenDistance,
-      };
-    default:
-      return {
-        x: -offScreenDistance,
-        y: worm.y + (world.runtime.random() - 0.5) * edgeVariationY,
-      };
-  }
-}
-
-function generateFairyControlPoint(world: GameWorld, worm: Worm, target: { x: number; y: number }) {
-  return {
-    x: worm.x + (target.x - worm.x) * 0.5 + (world.runtime.random() - 0.5) * 20,
-    y: Math.min(worm.y, target.y) - 50 - world.runtime.random() * 50,
-  };
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value));
 }

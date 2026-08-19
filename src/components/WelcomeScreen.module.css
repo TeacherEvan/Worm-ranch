@@ -49,7 +49,7 @@
 
 .heroDeck {
   max-width: 28rem;
-  color: color-mix(in srgb, var(--text) 82%, var(--accent) 18%);
+  color: color-mix(in srgb, var(--text) 82%, var(--neon-lime) 18%);
   font-size: clamp(1rem, 0.92rem + 0.4vw, 1.14rem);
   line-height: 1.55;
   text-wrap: pretty;
@@ -85,7 +85,7 @@
 
 .primaryButton {
   color: #061018;
-  background: linear-gradient(135deg, var(--accent), #f4c76c);
+  background: linear-gradient(135deg, var(--neon-lime), #f4c76c);
   box-shadow: 0 12px 28px rgba(199, 243, 107, 0.18);
 }
 
@@ -114,7 +114,7 @@
 }
 
 .metricLabel {
-  color: color-mix(in srgb, var(--muted) 88%, var(--accent) 12%);
+  color: color-mix(in srgb, var(--muted) 88%, var(--neon-lime) 12%);
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
   letter-spacing: 0.08em;

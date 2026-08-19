@@ -1,0 +1,30 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "src/app/**/page.tsx",
+    "src/app/**/layout.tsx",
+    "src/app/**/route.ts",
+    "src/app/**/manifest.ts",
+    "scripts/**/*.mjs",
+    "next.config.ts"
+  ],
+  "project": ["src/**/*.{ts,tsx}", "scripts/**/*.mjs", "next.config.ts"],
+  "ignore": ["src/**/*.test.ts", "src/**/*.test.tsx"],
+  "ignoreDependencies": [],
+  "vitest": {
+    "config": ["vitest.config.ts"],
+    "entry": ["src/**/*.test.ts", "src/**/*.test.tsx"]
+  },
+  "typescript": {
+    "tsConfig": {
+      "paths": true
+    }
+  },
+  "rules": {
+    "files": "warn",
+    "exports": "warn",
+    "types": "warn",
+    "enumMembers": "warn",
+    "duplicates": "warn"
+  }
+}

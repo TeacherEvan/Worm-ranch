@@ -13,6 +13,7 @@ function createFairy(overrides: Partial<Fairy> = {}): Fairy {
     controlY: 40,
     createdAt: 1_700_000_000_000,
     lifeMs: 0,
+    wormId: "fairy-1",
     ttlMs: 7_000,
     morphDurationMs: 2_000,
     flyDurationMs: 1_500,

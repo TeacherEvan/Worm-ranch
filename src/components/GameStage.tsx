@@ -22,7 +22,9 @@ import {
   stepFeedback,
   type StageFeedback,
 } from "@/components/gameStagePresentation";
-import { getMotionFeedback, type StageMotionCue } from "@/components/gameStageMotion";
+import { getCueEffect, getMotionFeedback, type StageMotionCue } from "@/components/gameStageMotion";
+import { createBurstFromTone, drawParticles, stepParticles, type Particle } from "@/components/gameStageParticles";
+import { createStageFeedbackItem, getActionParticleBurst } from "@/components/gameStageFeedback";
 import { getStagePresentation } from "@/components/gameStagePhasePresentation";
 import { getFairyLifecycleEvents, getRoundEndedDetails, getRoundTransitionEvents } from "@/lib/analytics";
 import {
@@ -86,6 +88,8 @@ export function GameStage({
   const summaryRef = useRef(0);
   const feedbackRef = useRef<StageFeedback[]>([]);
   const feedbackIdRef = useRef(0);
+  const particlesRef = useRef<Particle[]>([]);
+  const previousParticleSummaryRef = useRef<GameSummary | null>(null);
   const finishedRef = useRef(false);
   const lastTimestampRef = useRef<number | null>(null);
   const hasMountedRef = useRef(false);
@@ -158,6 +162,8 @@ export function GameStage({
       }
     }
     feedbackRef.current = [];
+    particlesRef.current = [];
+    previousParticleSummaryRef.current = null;
     finishedRef.current = false;
     lastTimestampRef.current = null;
     summaryRef.current = 0;
@@ -234,32 +240,7 @@ export function GameStage({
 
       const id = feedbackIdRef.current + 1;
       feedbackIdRef.current = id;
-      feedbackRef.current = [
-        ...feedbackRef.current.slice(-9),
-        {
-          id,
-          x: worm.x,
-          y: worm.y - worm.radius * 1.8,
-          lifeMs: 0,
-          ttlMs: result.kind === "collect" ? 920 : result.kind === "tag" ? 840 : 880,
-          label:
-            result.kind === "collect"
-              ? "BAGGED"
-              : result.kind === "tag"
-                ? "TAGGED"
-                : result.immortal
-                  ? "OUTLAW"
-                  : "BLINK",
-          tone:
-            result.kind === "collect"
-              ? "collect"
-              : result.kind === "tag"
-                ? "tag"
-                : result.immortal
-                  ? "final"
-                  : "teleport",
-        },
-      ];
+      feedbackRef.current = [...feedbackRef.current.slice(-9), createStageFeedbackItem(result, worm, id)];
     };
 
     const handleAction = (result: ActionResult) => {
@@ -268,16 +249,17 @@ export function GameStage({
       }
       showActionEchoRef.current(result);
 
-      if (result.kind === "collect") {
+      if (result.kind === "collect" || result.kind === "tag" || result.kind === "teleport") {
         pushFeedback(result);
-        onEventRef.current("worm_collected", { wormId: result.wormId, collected: result.collected });
-      }
-      if (result.kind === "tag") {
-        pushFeedback(result);
-      }
-      if (result.kind === "teleport") {
-        pushFeedback(result);
-        onEventRef.current("worm_teleported", { wormId: result.wormId, immortal: result.immortal });
+        if (result.kind === "collect") {
+          onEventRef.current("worm_collected", { wormId: result.wormId, collected: result.collected });
+        } else if (result.kind === "teleport") {
+          onEventRef.current("worm_teleported", { wormId: result.wormId, immortal: result.immortal });
+        }
+        const worm = worldRef.current.worms.find((w) => w.id === result.wormId);
+        if (worm && !reducedMotionRef.current) {
+          particlesRef.current = [...particlesRef.current, ...getActionParticleBurst(result, worm)];
+        }
       }
       setKeyboardTargetId((currentTargetId) => getKeyboardTargetId(worldRef.current, currentTargetId, "preserve"));
     };
@@ -365,6 +347,21 @@ export function GameStage({
       stepWorld(worldRef.current, delta);
       emitFairyLifecycleEvents();
       stepFeedback(feedbackRef.current, delta);
+      particlesRef.current = stepParticles(particlesRef.current, delta);
+      if (particlesRef.current.length > 60) particlesRef.current = particlesRef.current.slice(-60);
+
+      const rawSummary = getSummary(worldRef.current);
+      const motionFeedback = getMotionFeedback(previousParticleSummaryRef.current ?? rawSummary, rawSummary);
+      previousParticleSummaryRef.current = rawSummary;
+      if (!reducedMotionRef.current && motionFeedback.stageCue !== "none") {
+        const cueEffect = getCueEffect(motionFeedback.stageCue, false);
+        if (cueEffect.particleTone) {
+          const cx = worldRef.current.width / 2;
+          const cy = worldRef.current.height / 2;
+          particlesRef.current = [...particlesRef.current, ...createBurstFromTone(cueEffect.particleTone, cx, cy, cueEffect.particleCount)];
+        }
+      }
+
       renderStage(
         context,
         worldRef.current,
@@ -374,6 +371,7 @@ export function GameStage({
         level,
         staticBackdropRef.current?.canvas ?? null,
       );
+      drawParticles(context, particlesRef.current, reducedMotionRef.current);
       updateSummary();
 
       const roundResult = worldRef.current.roundResult;
