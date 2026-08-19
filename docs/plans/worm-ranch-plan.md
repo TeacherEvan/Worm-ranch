@@ -1,6 +1,6 @@
 # Worm Ranch Implementation Plan
 
-**Status:** ✅ Game mode flow + transition screen complete (commit 92332d1) | ✅ Motion/particle layer hardened (commit 1452020) | 🔄 Next slice decision pending
+**Status:** ✅ All committed + verified. Game mode flow + transition screen (92332d1) | ✅ Motion/particle layer hardened (1452020) | ✅ Codebase audit+refactor landed on `feat/codebase-audit-refactor` (pushed, gate GREEN: 32 suites / 159 tests, eslint 0, `next build` clean). Open assigned plan work: NONE. See `docs/plans/.archive/2026-08-18-*` for the audit + READY debrief.
 
 ---
 
@@ -39,12 +39,18 @@
 
 ## Next Slice Decision (from jobcard)
 
-Choose one focus:
-1. **Polish live target-call readability** — HUD/callout legibility for the active target color
-2. **Tighten manual mobile layout checks** — ensure reduced-motion, touch targets, safe-area all hold
-3. **Simplify remaining legacy flow surfaces** — delete dead code paths, consolidate aliases
+The slice work described here is COMPLETE and verified. Remaining items are
+OPTIONAL product debt, not assigned plan work — user decision required before
+any are picked up:
 
-Archive condition: move this plan to `docs/plans/.archive/` only after the chosen slice remains covered by `npm run verify` and a live shell/game smoke pass.
+1. **Visual gameplay smoke checks** — manual/automated legibility pass for the active target color
+2. **Automated E2E integration tests** — Playwright coverage for launch→game flow
+3. **Low-end mobile perf profiling** — frame budget on constrained viewports
+4. **Asset hygiene (open debt)** — `public/art` (welcome posters, 3MB launch intro mp4, 8.8MB poster png) and `public/fonts` are still untracked; `.gitignore` only excludes `output.mp4`. Either commit deliberately or widen `.gitignore` before a Vercel deploy.
+
+Archive condition: met. This plan stays ACTIVE only because `AGENTS.md` and
+other docs reference it as the live-context pointer; the completed slices are
+archived under `docs/plans/.archive/2026-08-18-*`.
 
 ---
 
