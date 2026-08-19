@@ -1,8 +1,10 @@
 # Separate Game Mode Flow Implementation Plan
 
-**Status:** 🔄 **Active — Not Yet Implemented**
+**Status:** ✅ **DONE — shipped in commit `92332d1` (feat: add game mode menu, transition screen, and endless game over flow), later hardened in `1452020`.**
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Archive resolution (2026-08-19):** This plan's banner was stale ("Active — Not Yet Implemented") while every task it describes was already implemented and verified. Code-state proof: `src/components/WormRanchApp.tsx` contains `AppScreen` with `modeMenu`/`transition`/`game`, `transitionTarget`, `pendingRoundResult`, `targetEndless` handling, and the endless wrong-color hold; `EndlessGameOverWindow.tsx` exists; `npm run verify` is green (32 suites / 159 tests, 0 lint errors, `next build` clean). Archived per the "rm/archive the ones that are done" rule — code state, not banner, decides. The `- [ ]` checkboxes below are left as historical record; they were never ticked even though the work shipped.
+>
+> **For agentic workers (historical):** originally specified superpowers:subagent-driven-development. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a separate endless target-color game mode behind a pre-run mode menu, keep endless play running until a wrong-color bag, hold on a real Game Over window for that mode, and show a shared loading screen between displays.
 
