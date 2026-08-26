@@ -28,6 +28,14 @@ export type StagePresentation = {
   fieldBanner: string | null;
 };
 
+export function getPhaseLabel(profile: DisplayProfile, summary: GameSummary, level = 1) {
+  return getStagePresentation(summary, profile, level).phaseLabel;
+}
+
+export function getPhaseChipLabel(profile: DisplayProfile, summary: GameSummary, level = 1) {
+  return getStagePresentation(summary, profile, level).phaseChipLabel;
+}
+
 export function getStagePresentation(
   summary: GameSummary,
   profile: DisplayProfile = summary.profile,
