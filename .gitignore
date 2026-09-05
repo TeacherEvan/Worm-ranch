@@ -42,3 +42,6 @@ yarn-error.log*
 # large unreferenced media (kept local, not committed)
 /public/art/Gameplay backdrops/output.mp4
 next-env.d.ts
+
+# V2 audit scratch dir (surgical-implementation writes here; never commit)
+docs/.scratch-audit/
