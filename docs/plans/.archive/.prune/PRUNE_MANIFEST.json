@@ -1,0 +1,881 @@
+{
+  "timestamp": "2026-08-19T18:24:07.247Z",
+  "target_path": "/home/ewaldt/Documents/VS/GAMES/Worm ranch",
+  "git_commit": "28d5b46",
+  "selected_files": [
+    {
+      "path": ".copilotignore",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": ".env.local",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": ".gitignore",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "AGENTS.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "HANDOVER.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "README.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "SECURITY.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "knip.jsonc",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "next-env.d.ts",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "package.json",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "surgical-pruning-0819-Worm ranch.html",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "task.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": ".prune/PRUNE_MANIFEST.json",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": ".prune/audit-report.json",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": ".prune/handoff-researcher.json",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": ".prune/handoff-reviewer.json",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": ".prune/suggestions.json",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": ".vscode/settings.json",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/README.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/audio-sources.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/jobcard.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/surgical-pruning-0819-Worm ranch.html",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/visual-redesign-spec.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/file.svg",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/globe.svg",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/next.svg",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/sw.js",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/vercel.svg",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/window.svg",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/worm-ranch-icon.svg",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "scripts/run-next-with-fallback.mjs",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/plans/worm-ranch-plan.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "memories/repo/design-context.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/art/welcome-memory-desktop.webp",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/art/welcome-memory-mobile.webp",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/art/worm-ranch-launch-intro.mp4",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/art/worm-ranch-launch-poster.png",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/fonts/SpaceGrotesk-VariableFont_wght.woff2",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/app/favicon.ico",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/app/globals.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/app/manifest.ts",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/app/page.tsx",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/EndlessGameOverWindow.module.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/EndlessGameOverWindow.tsx",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/GameHUD.tsx",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/GameModeScreen.module.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/GameModeScreen.tsx",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/GameStage.module.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/GameStage.tsx",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/GameStageOverlay.tsx",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/GameStagePhaseBadge.module.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/HomeScreen.module.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/HomeScreen.tsx",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/ResultsScreen.module.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/ScreenTransition.module.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/ScreenTransition.tsx",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/SettingsScreen.module.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/SettingsScreen.tsx",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/WelcomeLaunchLoader.module.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/WelcomeLaunchLoader.tsx",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/WelcomeScreen.module.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/WelcomeScreen.tsx",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/WormRanchApp.module.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/WormRanchApp.tsx",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/WormRanchAppMotion.module.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/WormRanchGameExit.module.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/WormRanchGameExit.tsx",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/WormRanchInstallPrompt.module.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/WormRanchInstallPrompt.tsx",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/WormRanchShellHeader.module.css",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/components/WormRanchShellHeader.tsx",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStageActionEcho.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStageAudio.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStageBackdropCanvas.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStageBackdropRotation.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStageCanvas.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStageFairyPresentation.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStageFeedback.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStageKeyboard.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStageMotion.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStageParticles.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStagePhasePresentation.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStagePresentation.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStageTargetCallout.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStageTestHelpers.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStageWormCanvas.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/gameStageWormVisuals.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/useInstallPrompt.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/welcomeHeroPresentation.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/welcomeLaunchLoader.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/welcomeLaunchMedia.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/components/wormRanchLevelFlow.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/constants.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/continuousColorTargets.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/detection.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/engine.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/engineContinuous.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/engineFairies.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/enginePhase.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/engineTestHelpers.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/engineUtils.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/gameModes.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/levels.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/movement.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/rules.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/specialWorms.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/types.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/game/wormColors.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/lib/analytics.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/lib/backdropPreload.ts",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/lib/logger.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "src/lib/wormRanchSettings.ts",
+      "action": "keep",
+      "confidence": 0.4,
+      "reason": "Low confidence (40%) — manual only"
+    },
+    {
+      "path": "docs/plans/.archive/2026-05-31-color-target-relaunch-plan.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/plans/.archive/2026-06-01-separate-game-mode-flow.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/plans/.archive/2026-08-18-audit-SECURITY.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/plans/.archive/2026-08-18-audit-TRACEABILITY.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/plans/.archive/2026-08-18-codebase-audit-and-refactor-recommendations.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/plans/.archive/2026-08-18-codebase-audit-debrief.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/plans/.archive/2026-08-19-plan-archive-audit-debrief.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/plans/.archive/HERMES_PLAN.ai.json",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/plans/.archive/HERMES_PLAN.html",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/plans/.archive/worm-ranch-plan.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-01-game-mode-flow-design.md",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/art/Gameplay backdrops/243-2436830_evil-clipart-baby-devil-sexy-devil-cartoon.jpeg",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/art/Gameplay backdrops/Grasspastures.jpeg",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/art/Gameplay backdrops/desert-landscape-with-sparse-vegetation_1308-178017.avif",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/art/Gameplay backdrops/istockphoto-866482364-612x612.jpg",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/art/Gameplay backdrops/output.mp4",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/art/Gameplay backdrops/top-view-city-with-desert_70347-2005.avif",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/art/Gameplay backdrops/top-view-countryside-with-forest-grass-with-stones-trees_70347-5426.avif",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/art/Gameplay backdrops/vector-top-view-of-the-countryside.jpg",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/audio/gameplay/ATTRIBUTION.txt",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/audio/gameplay/western-gunshot.mp3",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "public/audio/gameplay/whip-crack.mp3",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": ".superpowers/brainstorm/985943-1778153903/content/art-direction-1.html",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": ".superpowers/brainstorm/985943-1778153903/state/server-stopped",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    },
+    {
+      "path": "src/app/api/events/route.ts",
+      "action": "keep",
+      "confidence": 0,
+      "reason": "Low confidence (0%) — manual only"
+    }
+  ],
+  "protected_skipped": [
+    "src/components/GameStage.interaction.test.ts",
+    "src/components/GameStage.render.test.ts",
+    "src/components/HomeScreen.test.ts",
+    "src/components/SettingsScreen.test.ts",
+    "src/components/WelcomeScreen.test.ts",
+    "src/components/WormRanchApp.test.ts",
+    "src/components/WormRanchGameExit.test.ts",
+    "src/components/WormRanchInstallPrompt.test.ts",
+    "src/components/WormRanchShellHeader.test.ts",
+    "src/components/gameStageActionEcho.test.ts",
+    "src/components/gameStageAudio.test.ts",
+    "src/components/gameStageBackdropRotation.test.ts",
+    "src/components/gameStageCueEffects.test.ts",
+    "src/components/gameStageFairyPresentation.test.ts",
+    "src/components/gameStageFeedback.test.ts",
+    "src/components/gameStageHUD.test.ts",
+    "src/components/gameStageMotion.test.ts",
+    "src/components/gameStagePhasePresentation.test.ts",
+    "src/components/gameStageTargetCallout.test.ts",
+    "src/components/gameStageWormVisuals.test.ts",
+    "src/components/welcomeHeroPresentation.test.ts",
+    "src/components/welcomeLaunchLoader.test.ts",
+    "src/components/welcomeLaunchMedia.test.ts",
+    "src/components/wormRanchLevelFlow.test.ts",
+    "src/game/continuousColorTargets.test.ts",
+    "src/game/engine.continuous.test.ts",
+    "src/game/engine.interaction.test.ts",
+    "src/game/engine.step.test.ts",
+    "src/game/engine.world.test.ts",
+    "src/game/engineSpecialWorm.test.ts",
+    "src/game/levels.test.ts",
+    "src/lib/analytics.test.ts",
+    ".superpowers/brainstorm/985943-1778153903/state/server.log",
+    ".superpowers/brainstorm/985943-1778153903/state/server.pid"
+  ],
+  "estimated_reclamation": {
+    "bytes": 0,
+    "files": 0,
+    "ci_seconds": 0
+  },
+  "safety": {
+    "dry_run": true,
+    "stash_created": false,
+    "rollback_script": ""
+  }
+}

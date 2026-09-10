@@ -1,0 +1,151 @@
+{
+  "user_prompt_analysis": {
+    "intent": "dead-code-removal",
+    "scope": "monorepo",
+    "aggressiveness": "aggressive",
+    "constraints_from_user": []
+  },
+  "language_specific_practices": {
+    "unknown": {
+      "tools": [],
+      "patterns": [],
+      "entry_point_heuristics": []
+    },
+    "markdown": {
+      "tools": [],
+      "patterns": [],
+      "entry_point_heuristics": []
+    },
+    "typescript": {
+      "tools": [
+        {
+          "name": "knip",
+          "version": "latest",
+          "confidence": 0.95,
+          "config_example": "knip.json"
+        },
+        {
+          "name": "ts-prune",
+          "version": "latest",
+          "confidence": 0.7,
+          "note": "legacy, limited"
+        },
+        {
+          "name": "repowise get_dead_code",
+          "confidence": 0.98,
+          "note": "graph-aware, paid tier"
+        }
+      ],
+      "patterns": [
+        "barrel file exports",
+        "type-only imports",
+        "conditional exports"
+      ],
+      "entry_point_heuristics": [
+        "next.js pages",
+        "vite entry",
+        "jest config",
+        "storybook"
+      ]
+    },
+    "json": {
+      "tools": [],
+      "patterns": [],
+      "entry_point_heuristics": []
+    },
+    "html": {
+      "tools": [],
+      "patterns": [],
+      "entry_point_heuristics": []
+    },
+    "javascript": {
+      "tools": [
+        {
+          "name": "knip",
+          "version": "latest",
+          "confidence": 0.95,
+          "config_example": "knip.json"
+        },
+        {
+          "name": "ts-prune",
+          "version": "latest",
+          "confidence": 0.7,
+          "note": "legacy, limited"
+        },
+        {
+          "name": "repowise get_dead_code",
+          "confidence": 0.98,
+          "note": "graph-aware, paid tier"
+        }
+      ],
+      "patterns": [
+        "barrel file exports",
+        "type-only imports",
+        "conditional exports"
+      ],
+      "entry_point_heuristics": [
+        "next.js pages",
+        "vite entry",
+        "jest config",
+        "storybook"
+      ]
+    },
+    "css": {
+      "tools": [],
+      "patterns": [],
+      "entry_point_heuristics": []
+    }
+  },
+  "general_practices": [
+    {
+      "practice": "Start with one signal type (unused exports)",
+      "source": "repowise blog",
+      "priority": 1
+    },
+    {
+      "practice": "Sort by confidence, remove in small patches",
+      "source": "repowise blog",
+      "priority": 2
+    },
+    {
+      "practice": "Verify with production profiling before removing structural dead code",
+      "source": "FlagShark",
+      "priority": 3
+    },
+    {
+      "practice": "Check framework entry points before removing \"unreferenced\" files",
+      "source": "Knip docs",
+      "priority": 1
+    },
+    {
+      "practice": "Add guardrails: dry-run → stash → confirm → commit",
+      "source": "dcg pattern",
+      "priority": 0
+    }
+  ],
+  "tool_recommendations": [
+    {
+      "tool": "knip",
+      "install": "pnpm add -D knip",
+      "run": "knip --reporter=json",
+      "output_schema": "KnipReport"
+    },
+    {
+      "tool": "depcheck",
+      "install": "npx depcheck@7.16.4",
+      "run": "depcheck --json",
+      "output_schema": "DepcheckReport"
+    },
+    {
+      "tool": "bundle-analyzer",
+      "install": "@next/bundle-analyzer",
+      "run": "ANALYZE=true pnpm build",
+      "note": "visual bundle inspection"
+    }
+  ],
+  "future_proofing": {
+    "ci_integration": "Add knip to CI pipeline with --fail-on-issues",
+    "precommit_hook": "husky + lint-staged for knip",
+    "dependency_budget": "Set bundle size budgets in webpack/next.config"
+  }
+}

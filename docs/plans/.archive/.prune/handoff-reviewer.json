@@ -1,0 +1,6108 @@
+{
+  "metadata": {
+    "target_path": "/home/ewaldt/Documents/VS/GAMES/Worm ranch",
+    "scan_timestamp": "2026-08-19T18:24:07.209Z",
+    "scan_duration_ms": 3161,
+    "git_root": "/home/ewaldt/Documents/VS/GAMES/Worm ranch",
+    "git_branch": "main",
+    "git_commit": "28d5b46"
+  },
+  "tree_diagram": "├── .copilotignore 🔴 0.1KB\n├── .env.local 🔴 1.3KB\n├── .gitignore 🔴 0.6KB\n├── AGENTS.md 🔴 1.0KB\n├── HANDOVER.md 🔴 5.3KB\n├── README.md 🔴 3.4KB\n├── SECURITY.md 🔴 0.6KB\n├── knip.jsonc 🔴 0.7KB\n├── next-env.d.ts 🔴 0.2KB\n├── package.json 🔴 1.0KB\n├── surgical-pruning-0819-Worm ranch.html 🔴 750.3KB\n├── task.md 🔴 2.7KB\n├── .prune/\n│   ├── PRUNE_MANIFEST.json 🔴 93.3KB\n│   ├── audit-report.json 🔴 80.2KB\n│   ├── handoff-researcher.json 🔴 3.7KB\n│   ├── handoff-reviewer.json 🔴 1203.7KB\n│   └── suggestions.json 🔴 77.6KB\n├── .vscode/\n│   └── settings.json 🔴 0.1KB\n├── docs/\n│   ├── README.md 🔴 1.1KB\n│   ├── audio-sources.md 🔴 0.9KB\n│   ├── jobcard.md 🔴 1.5KB\n│   ├── surgical-pruning-0819-Worm ranch.html 🔴 742.6KB\n│   ├── visual-redesign-spec.md 🔴 15.2KB\n│   ├── plans/\n│   │   ├── worm-ranch-plan.md 🔴 4.2KB\n│   │   └── .archive/\n│   │       ├── 2026-05-31-color-target-relaunch-plan.md 🔴 21.4KB\n│   │       ├── 2026-06-01-separate-game-mode-flow.md 🔴 13.5KB\n│   │       ├── 2026-08-18-audit-SECURITY.md 🔴 1.2KB\n│   │       ├── 2026-08-18-audit-TRACEABILITY.md 🔴 1.5KB\n│   │       ├── 2026-08-18-codebase-audit-and-refactor-recommendations.md 🔴 26.5KB\n│   │       ├── 2026-08-18-codebase-audit-debrief.md 🔴 8.8KB\n│   │       ├── 2026-08-19-plan-archive-audit-debrief.md 🔴 4.2KB\n│   │       ├── HERMES_PLAN.ai.json 🔴 1.1KB\n│   │       ├── HERMES_PLAN.html 🔴 5.7KB\n│   │       └── worm-ranch-plan.md 🔴 4.2KB\n│   └── superpowers/\n│       └── specs/\n│           └── 2026-06-01-game-mode-flow-design.md 🔴 6.9KB\n├── public/\n│   ├── file.svg 🔴 0.4KB\n│   ├── globe.svg 🔴 1.0KB\n│   ├── next.svg 🔴 1.3KB\n│   ├── sw.js 🔴 0.2KB\n│   ├── vercel.svg 🔴 0.1KB\n│   ├── window.svg 🔴 0.4KB\n│   ├── worm-ranch-icon.svg 🔴 0.6KB\n│   ├── art/\n│   │   ├── welcome-memory-desktop.webp 🔴 131.7KB\n│   │   ├── welcome-memory-mobile.webp 🔴 100.4KB\n│   │   ├── worm-ranch-launch-intro.mp4 🔴 3088.6KB\n│   │   ├── worm-ranch-launch-poster.png 🔴 8613.0KB\n│   │   └── Gameplay backdrops/\n│   │       ├── 243-2436830_evil-clipart-baby-devil-sexy-devil-cartoon.jpeg 🔴 66.3KB\n│   │       ├── Grasspastures.jpeg 🔴 8.4KB\n│   │       ├── desert-landscape-with-sparse-vegetation_1308-178017.avif 🔴 22.0KB\n│   │       ├── istockphoto-866482364-612x612.jpg 🔴 59.5KB\n│   │       ├── output.mp4 🔴 12500.7KB\n│   │       ├── top-view-city-with-desert_70347-2005.avif 🔴 24.8KB\n│   │       ├── top-view-countryside-with-forest-grass-with-stones-trees_70347-5426.avif 🔴 109.7KB\n│   │       └── vector-top-view-of-the-countryside.jpg 🔴 40.9KB\n│   ├── fonts/\n│   │   └── SpaceGrotesk-VariableFont_wght.woff2 🔴 48.1KB\n│   └── audio/\n│       └── gameplay/\n│           ├── ATTRIBUTION.txt 🔴 0.5KB\n│           ├── western-gunshot.mp3 🔴 12.9KB\n│           └── whip-crack.mp3 🔴 13.7KB\n├── scripts/\n│   └── run-next-with-fallback.mjs 🔴 2.6KB\n├── memories/\n│   └── repo/\n│       └── design-context.md 🔴 2.9KB\n├── src/\n│   ├── app/\n│   │   ├── favicon.ico 🔴 25.3KB\n│   │   ├── globals.css 🔴 3.0KB\n│   │   ├── layout.tsx 🔴 0.7KB\n│   │   ├── manifest.ts 🔴 0.5KB\n│   │   ├── page.tsx 🔴 0.1KB\n│   │   └── api/\n│   │       └── events/\n│   │           └── route.ts 🔴 1.0KB\n│   ├── components/\n│   │   ├── EndlessGameOverWindow.module.css 🔴 1.6KB\n│   │   ├── EndlessGameOverWindow.tsx 🔴 1.0KB\n│   │   ├── GameHUD.tsx 🔴 0.7KB\n│   │   ├── GameModeScreen.module.css 🔴 2.5KB\n│   │   ├── GameModeScreen.tsx 🔴 2.1KB\n│   │   ├── GameStage.interaction.test.ts 🔴 14.9KB\n│   │   ├── GameStage.module.css 🔴 13.3KB\n│   │   ├── GameStage.render.test.ts 🔴 7.1KB\n│   │   ├── GameStage.tsx 🔴 18.3KB\n│   │   ├── GameStageOverlay.tsx 🔴 2.5KB\n│   │   ├── GameStagePhaseBadge.module.css 🔴 2.5KB\n│   │   ├── HomeScreen.module.css 🔴 2.2KB\n│   │   ├── HomeScreen.test.ts 🔴 1.0KB\n│   │   ├── HomeScreen.tsx 🔴 1.2KB\n│   │   ├── ResultsScreen.module.css 🔴 3.0KB\n│   │   ├── ScreenTransition.module.css 🔴 1.0KB\n│   │   ├── ScreenTransition.tsx 🔴 0.8KB\n│   │   ├── SettingsScreen.module.css 🔴 2.8KB\n│   │   ├── SettingsScreen.test.ts 🔴 0.9KB\n│   │   ├── SettingsScreen.tsx 🔴 3.1KB\n│   │   ├── WelcomeLaunchLoader.module.css 🔴 2.8KB\n│   │   ├── WelcomeLaunchLoader.tsx 🔴 3.1KB\n│   │   ├── WelcomeScreen.module.css 🔴 7.7KB\n│   │   ├── WelcomeScreen.test.ts 🔴 3.5KB\n│   │   ├── WelcomeScreen.tsx 🔴 6.3KB\n│   │   ├── WormRanchApp.module.css 🔴 4.0KB\n│   │   ├── WormRanchApp.test.ts 🔴 9.7KB\n│   │   ├── WormRanchApp.tsx 🔴 13.5KB\n│   │   ├── WormRanchAppMotion.module.css 🔴 3.3KB\n│   │   ├── WormRanchGameExit.module.css 🔴 1.5KB\n│   │   ├── WormRanchGameExit.test.ts 🔴 1.1KB\n│   │   ├── WormRanchGameExit.tsx 🔴 0.9KB\n│   │   ├── WormRanchInstallPrompt.module.css 🔴 1.9KB\n│   │   ├── WormRanchInstallPrompt.test.ts 🔴 0.8KB\n│   │   ├── WormRanchInstallPrompt.tsx 🔴 1.2KB\n│   │   ├── WormRanchShellHeader.module.css 🔴 2.4KB\n│   │   ├── WormRanchShellHeader.test.ts 🔴 1.1KB\n│   │   ├── WormRanchShellHeader.tsx 🔴 1.6KB\n│   │   ├── gameStageActionEcho.test.ts 🔴 10.5KB\n│   │   ├── gameStageActionEcho.ts 🔴 3.9KB\n│   │   ├── gameStageAudio.test.ts 🔴 7.2KB\n│   │   ├── gameStageAudio.ts 🔴 4.6KB\n│   │   ├── gameStageBackdropCanvas.ts 🔴 2.9KB\n│   │   ├── gameStageBackdropRotation.test.ts 🔴 1.4KB\n│   │   ├── gameStageBackdropRotation.ts 🔴 0.8KB\n│   │   ├── gameStageCanvas.ts 🔴 2.9KB\n│   │   ├── gameStageCueEffects.test.ts 🔴 5.9KB\n│   │   ├── gameStageFairyPresentation.test.ts 🔴 2.7KB\n│   │   ├── gameStageFairyPresentation.ts 🔴 5.6KB\n│   │   ├── gameStageFeedback.test.ts 🔴 3.1KB\n│   │   ├── gameStageFeedback.ts 🔴 1.5KB\n│   │   ├── gameStageHUD.test.ts 🔴 0.8KB\n│   │   ├── gameStageKeyboard.ts 🔴 1.3KB\n│   │   ├── gameStageMotion.test.ts 🔴 2.2KB\n│   │   ├── gameStageMotion.ts 🔴 7.3KB\n│   │   ├── gameStageParticles.ts 🔴 9.5KB\n│   │   ├── gameStagePhasePresentation.test.ts 🔴 5.0KB\n│   │   ├── gameStagePhasePresentation.ts 🔴 8.6KB\n│   │   ├── gameStagePresentation.ts 🔴 7.0KB\n│   │   ├── gameStageTargetCallout.test.ts 🔴 1.9KB\n│   │   ├── gameStageTargetCallout.ts 🔴 0.9KB\n│   │   ├── gameStageTestHelpers.ts 🔴 9.7KB\n│   │   ├── gameStageWormCanvas.ts 🔴 9.1KB\n│   │   ├── gameStageWormVisuals.test.ts 🔴 6.6KB\n│   │   ├── gameStageWormVisuals.ts 🔴 3.5KB\n│   │   ├── useInstallPrompt.ts 🔴 2.1KB\n│   │   ├── welcomeHeroPresentation.test.ts 🔴 2.3KB\n│   │   ├── welcomeHeroPresentation.ts 🔴 2.2KB\n│   │   ├── welcomeLaunchLoader.test.ts 🔴 3.8KB\n│   │   ├── welcomeLaunchLoader.ts 🔴 2.6KB\n│   │   ├── welcomeLaunchMedia.test.ts 🔴 1.6KB\n│   │   ├── welcomeLaunchMedia.ts 🔴 0.8KB\n│   │   ├── wormRanchLevelFlow.test.ts 🔴 1.0KB\n│   │   └── wormRanchLevelFlow.ts 🔴 0.5KB\n│   ├── game/\n│   │   ├── constants.ts 🔴 0.6KB\n│   │   ├── continuousColorTargets.test.ts 🔴 4.4KB\n│   │   ├── continuousColorTargets.ts 🔴 2.8KB\n│   │   ├── detection.ts 🔴 0.8KB\n│   │   ├── engine.continuous.test.ts 🔴 10.5KB\n│   │   ├── engine.interaction.test.ts 🔴 5.2KB\n│   │   ├── engine.step.test.ts 🔴 8.3KB\n│   │   ├── engine.ts 🔴 12.4KB\n│   │   ├── engine.world.test.ts 🔴 1.4KB\n│   │   ├── engineContinuous.ts 🔴 1.5KB\n│   │   ├── engineFairies.ts 🔴 2.9KB\n│   │   ├── enginePhase.ts 🔴 1.9KB\n│   │   ├── engineSpecialWorm.test.ts 🔴 7.8KB\n│   │   ├── engineTestHelpers.ts 🔴 2.8KB\n│   │   ├── engineUtils.ts 🔴 0.8KB\n│   │   ├── gameModes.ts 🔴 0.1KB\n│   │   ├── levels.test.ts 🔴 2.1KB\n│   │   ├── levels.ts 🔴 2.2KB\n│   │   ├── movement.ts 🔴 2.7KB\n│   │   ├── rules.ts 🔴 2.0KB\n│   │   ├── specialWorms.ts 🔴 3.3KB\n│   │   ├── types.ts 🔴 3.8KB\n│   │   └── wormColors.ts 🔴 0.8KB\n│   └── lib/\n│       ├── analytics.test.ts 🔴 2.1KB\n│       ├── analytics.ts 🔴 3.0KB\n│       ├── backdropPreload.ts 🔴 0.6KB\n│       ├── logger.ts 🔴 2.6KB\n│       └── wormRanchSettings.ts 🔴 2.9KB\n└── .superpowers/\n    └── brainstorm/\n        └── 985943-1778153903/\n            ├── content/\n            │   └── art-direction-1.html 🔴 4.7KB\n            └── state/\n                ├── server-stopped 🔴 0.1KB\n                ├── server.log 🔴 0.8KB\n                └── server.pid 🔴 0.0KB\n",
+  "file_inventory": [
+    {
+      "path": ".copilotignore",
+      "size_bytes": 82,
+      "lines": 7,
+      "language": "unknown",
+      "last_modified": "2026-05-06T07:18:59.832Z",
+      "git_history": {
+        "first_commit": "2026-05-06T08:25:26.000Z",
+        "last_commit": "2026-05-06T08:25:26.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 1,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": ".env.local",
+      "size_bytes": 1280,
+      "lines": 3,
+      "language": "unknown",
+      "last_modified": "2026-08-01T13:32:02.733Z",
+      "git_history": {
+        "first_commit": "2026-08-19T18:24:04.213Z",
+        "last_commit": "2026-08-19T18:24:04.213Z",
+        "commit_count": 0,
+        "authors": []
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 1,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": ".gitignore",
+      "size_bytes": 578,
+      "lines": 45,
+      "language": "unknown",
+      "last_modified": "2026-08-01T13:06:11.067Z",
+      "git_history": {
+        "first_commit": "2026-05-06T07:05:30.000Z",
+        "last_commit": "2026-08-01T13:07:10.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 1,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "AGENTS.md",
+      "size_bytes": 1024,
+      "lines": 16,
+      "language": "markdown",
+      "last_modified": "2026-06-14T06:34:35.024Z",
+      "git_history": {
+        "first_commit": "2026-05-06T07:05:30.000Z",
+        "last_commit": "2026-06-14T06:40:29.000Z",
+        "commit_count": 5,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 1,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "HANDOVER.md",
+      "size_bytes": 5430,
+      "lines": 73,
+      "language": "markdown",
+      "last_modified": "2026-08-19T13:28:30.839Z",
+      "git_history": {
+        "first_commit": "2026-08-19T18:24:04.247Z",
+        "last_commit": "2026-08-19T18:24:04.247Z",
+        "commit_count": 0,
+        "authors": []
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 1,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "README.md",
+      "size_bytes": 3492,
+      "lines": 67,
+      "language": "markdown",
+      "last_modified": "2026-06-14T06:33:51.631Z",
+      "git_history": {
+        "first_commit": "2026-05-06T07:05:30.000Z",
+        "last_commit": "2026-06-14T06:40:29.000Z",
+        "commit_count": 9,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 1,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "SECURITY.md",
+      "size_bytes": 619,
+      "lines": 22,
+      "language": "markdown",
+      "last_modified": "2026-08-19T01:01:37.141Z",
+      "git_history": {
+        "first_commit": "2026-08-19T00:43:39.000Z",
+        "last_commit": "2026-08-19T00:43:39.000Z",
+        "commit_count": 1,
+        "authors": [
+          "PicKaBoo"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 1,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "knip.jsonc",
+      "size_bytes": 706,
+      "lines": 31,
+      "language": "unknown",
+      "last_modified": "2026-08-19T01:01:37.142Z",
+      "git_history": {
+        "first_commit": "2026-08-18T23:56:09.000Z",
+        "last_commit": "2026-08-18T23:56:09.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 1,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "next-env.d.ts",
+      "size_bytes": 247,
+      "lines": 7,
+      "language": "typescript",
+      "last_modified": "2026-06-01T00:46:25.477Z",
+      "git_history": {
+        "first_commit": "2026-08-19T18:24:04.288Z",
+        "last_commit": "2026-08-19T18:24:04.288Z",
+        "commit_count": 0,
+        "authors": []
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./.next/types/routes.d.ts"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 1,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "package.json",
+      "size_bytes": 1012,
+      "lines": 41,
+      "language": "json",
+      "last_modified": "2026-08-19T01:01:37.144Z",
+      "git_history": {
+        "first_commit": "2026-05-06T07:05:30.000Z",
+        "last_commit": "2026-08-18T23:56:09.000Z",
+        "commit_count": 17,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 1,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": true
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "surgical-pruning-0819-Worm ranch.html",
+      "size_bytes": 768267,
+      "lines": 10946,
+      "language": "html",
+      "last_modified": "2026-08-19T13:41:25.051Z",
+      "git_history": {
+        "first_commit": "2026-08-19T18:24:04.317Z",
+        "last_commit": "2026-08-19T18:24:04.317Z",
+        "commit_count": 0,
+        "authors": []
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 1,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "task.md",
+      "size_bytes": 2799,
+      "lines": 36,
+      "language": "markdown",
+      "last_modified": "2026-05-08T03:34:23.597Z",
+      "git_history": {
+        "first_commit": "2026-05-06T08:25:26.000Z",
+        "last_commit": "2026-05-08T03:34:35.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 1,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": ".prune/PRUNE_MANIFEST.json",
+      "size_bytes": 95552,
+      "lines": 2046,
+      "language": "json",
+      "last_modified": "2026-08-19T13:41:25.057Z",
+      "git_history": {
+        "first_commit": "2026-08-19T18:24:04.337Z",
+        "last_commit": "2026-08-19T18:24:04.337Z",
+        "commit_count": 0,
+        "authors": []
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": ".prune/audit-report.json",
+      "size_bytes": 82119,
+      "lines": 1435,
+      "language": "json",
+      "last_modified": "2026-08-19T13:41:25.069Z",
+      "git_history": {
+        "first_commit": "2026-08-19T18:24:04.350Z",
+        "last_commit": "2026-08-19T18:24:04.350Z",
+        "commit_count": 0,
+        "authors": []
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": ".prune/handoff-researcher.json",
+      "size_bytes": 3822,
+      "lines": 161,
+      "language": "json",
+      "last_modified": "2026-08-19T13:41:25.019Z",
+      "git_history": {
+        "first_commit": "2026-08-19T18:24:04.360Z",
+        "last_commit": "2026-08-19T18:24:04.360Z",
+        "commit_count": 0,
+        "authors": []
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": ".prune/handoff-reviewer.json",
+      "size_bytes": 1232596,
+      "lines": 40934,
+      "language": "json",
+      "last_modified": "2026-08-19T13:41:25.018Z",
+      "git_history": {
+        "first_commit": "2026-08-19T18:24:04.377Z",
+        "last_commit": "2026-08-19T18:24:04.377Z",
+        "commit_count": 0,
+        "authors": []
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": ".prune/suggestions.json",
+      "size_bytes": 79465,
+      "lines": 246,
+      "language": "json",
+      "last_modified": "2026-08-19T13:41:25.072Z",
+      "git_history": {
+        "first_commit": "2026-08-19T18:24:04.386Z",
+        "last_commit": "2026-08-19T18:24:04.386Z",
+        "commit_count": 0,
+        "authors": []
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": ".vscode/settings.json",
+      "size_bytes": 123,
+      "lines": 4,
+      "language": "json",
+      "last_modified": "2026-05-22T13:21:34.627Z",
+      "git_history": {
+        "first_commit": "2026-05-06T15:42:36.000Z",
+        "last_commit": "2026-05-22T13:49:46.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/README.md",
+      "size_bytes": 1091,
+      "lines": 17,
+      "language": "markdown",
+      "last_modified": "2026-08-19T01:01:37.141Z",
+      "git_history": {
+        "first_commit": "2026-06-14T06:40:29.000Z",
+        "last_commit": "2026-08-19T00:44:27.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/audio-sources.md",
+      "size_bytes": 872,
+      "lines": 22,
+      "language": "markdown",
+      "last_modified": "2026-05-08T04:09:01.089Z",
+      "git_history": {
+        "first_commit": "2026-05-08T03:34:35.000Z",
+        "last_commit": "2026-05-08T04:19:42.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/jobcard.md",
+      "size_bytes": 1499,
+      "lines": 12,
+      "language": "markdown",
+      "last_modified": "2026-08-19T00:59:51.972Z",
+      "git_history": {
+        "first_commit": "2026-05-06T08:25:26.000Z",
+        "last_commit": "2026-08-13T15:29:28.000Z",
+        "commit_count": 14,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/surgical-pruning-0819-Worm ranch.html",
+      "size_bytes": 760392,
+      "lines": 10842,
+      "language": "html",
+      "last_modified": "2026-08-19T01:00:53.985Z",
+      "git_history": {
+        "first_commit": "2026-08-19T18:24:04.449Z",
+        "last_commit": "2026-08-19T18:24:04.449Z",
+        "commit_count": 0,
+        "authors": []
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/visual-redesign-spec.md",
+      "size_bytes": 15592,
+      "lines": 385,
+      "language": "markdown",
+      "last_modified": "2026-06-14T03:36:46.656Z",
+      "git_history": {
+        "first_commit": "2026-06-14T06:24:47.000Z",
+        "last_commit": "2026-06-14T06:24:47.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/file.svg",
+      "size_bytes": 391,
+      "lines": 1,
+      "language": "unknown",
+      "last_modified": "2026-05-06T07:05:30.823Z",
+      "git_history": {
+        "first_commit": "2026-05-06T07:05:30.000Z",
+        "last_commit": "2026-05-06T07:05:30.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/globe.svg",
+      "size_bytes": 1035,
+      "lines": 1,
+      "language": "unknown",
+      "last_modified": "2026-05-06T07:05:30.828Z",
+      "git_history": {
+        "first_commit": "2026-05-06T07:05:30.000Z",
+        "last_commit": "2026-05-06T07:05:30.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/next.svg",
+      "size_bytes": 1375,
+      "lines": 1,
+      "language": "unknown",
+      "last_modified": "2026-05-06T07:05:30.828Z",
+      "git_history": {
+        "first_commit": "2026-05-06T07:05:30.000Z",
+        "last_commit": "2026-05-06T07:05:30.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/sw.js",
+      "size_bytes": 181,
+      "lines": 7,
+      "language": "javascript",
+      "last_modified": "2026-05-07T10:14:01.716Z",
+      "git_history": {
+        "first_commit": "2026-05-07T11:22:49.000Z",
+        "last_commit": "2026-05-07T11:22:49.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/vercel.svg",
+      "size_bytes": 128,
+      "lines": 1,
+      "language": "unknown",
+      "last_modified": "2026-05-06T07:05:30.828Z",
+      "git_history": {
+        "first_commit": "2026-05-06T07:05:30.000Z",
+        "last_commit": "2026-05-06T07:05:30.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/window.svg",
+      "size_bytes": 385,
+      "lines": 1,
+      "language": "unknown",
+      "last_modified": "2026-05-06T07:05:30.828Z",
+      "git_history": {
+        "first_commit": "2026-05-06T07:05:30.000Z",
+        "last_commit": "2026-05-06T07:05:30.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/worm-ranch-icon.svg",
+      "size_bytes": 620,
+      "lines": 8,
+      "language": "unknown",
+      "last_modified": "2026-05-07T10:14:01.716Z",
+      "git_history": {
+        "first_commit": "2026-05-07T11:22:49.000Z",
+        "last_commit": "2026-05-07T11:22:49.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "scripts/run-next-with-fallback.mjs",
+      "size_bytes": 2682,
+      "lines": 113,
+      "language": "unknown",
+      "last_modified": "2026-05-07T15:58:00.563Z",
+      "git_history": {
+        "first_commit": "2026-05-07T17:04:34.000Z",
+        "last_commit": "2026-05-07T17:04:34.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 2,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/plans/worm-ranch-plan.md",
+      "size_bytes": 4311,
+      "lines": 83,
+      "language": "markdown",
+      "last_modified": "2026-08-19T01:01:37.142Z",
+      "git_history": {
+        "first_commit": "2026-05-06T08:25:26.000Z",
+        "last_commit": "2026-08-19T00:25:55.000Z",
+        "commit_count": 13,
+        "authors": [
+          "Hermes Agent",
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "memories/repo/design-context.md",
+      "size_bytes": 2970,
+      "lines": 16,
+      "language": "markdown",
+      "last_modified": "2026-05-07T17:03:23.444Z",
+      "git_history": {
+        "first_commit": "2026-05-06T08:25:26.000Z",
+        "last_commit": "2026-05-07T17:04:34.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/art/welcome-memory-desktop.webp",
+      "size_bytes": 134838,
+      "lines": 548,
+      "language": "unknown",
+      "last_modified": "2026-05-07T16:56:17.868Z",
+      "git_history": {
+        "first_commit": "2026-05-07T11:22:49.000Z",
+        "last_commit": "2026-05-07T17:04:34.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/art/welcome-memory-mobile.webp",
+      "size_bytes": 102848,
+      "lines": 406,
+      "language": "unknown",
+      "last_modified": "2026-05-07T16:57:45.324Z",
+      "git_history": {
+        "first_commit": "2026-05-07T11:22:49.000Z",
+        "last_commit": "2026-05-07T17:04:34.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/art/worm-ranch-launch-intro.mp4",
+      "size_bytes": 3162679,
+      "lines": 12275,
+      "language": "unknown",
+      "last_modified": "2026-05-07T14:22:42.488Z",
+      "git_history": {
+        "first_commit": "2026-05-07T14:42:25.000Z",
+        "last_commit": "2026-05-07T14:42:25.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/art/worm-ranch-launch-poster.png",
+      "size_bytes": 8819677,
+      "lines": 38925,
+      "language": "unknown",
+      "last_modified": "2026-05-07T14:22:42.496Z",
+      "git_history": {
+        "first_commit": "2026-05-07T14:42:25.000Z",
+        "last_commit": "2026-05-07T14:42:25.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/fonts/SpaceGrotesk-VariableFont_wght.woff2",
+      "size_bytes": 49256,
+      "lines": 198,
+      "language": "unknown",
+      "last_modified": "2026-08-01T13:06:02.068Z",
+      "git_history": {
+        "first_commit": "2026-08-01T13:07:10.000Z",
+        "last_commit": "2026-08-01T13:07:10.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/app/favicon.ico",
+      "size_bytes": 25931,
+      "lines": 31,
+      "language": "unknown",
+      "last_modified": "2026-05-06T07:05:30.821Z",
+      "git_history": {
+        "first_commit": "2026-05-06T07:05:30.000Z",
+        "last_commit": "2026-05-06T07:05:30.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/app/globals.css",
+      "size_bytes": 3061,
+      "lines": 123,
+      "language": "css",
+      "last_modified": "2026-08-19T01:01:37.144Z",
+      "git_history": {
+        "first_commit": "2026-05-06T07:05:30.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 5,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/app/layout.tsx"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "size_bytes": 724,
+      "lines": 33,
+      "language": "typescript",
+      "last_modified": "2026-05-07T10:14:01.579Z",
+      "git_history": {
+        "first_commit": "2026-05-06T07:05:30.000Z",
+        "last_commit": "2026-05-07T11:22:49.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./globals.css",
+          "external:next",
+          "external:next/font/google"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "metadata"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/app/manifest.ts",
+      "size_bytes": 517,
+      "lines": 21,
+      "language": "typescript",
+      "last_modified": "2026-05-07T10:14:01.580Z",
+      "git_history": {
+        "first_commit": "2026-05-07T11:22:49.000Z",
+        "last_commit": "2026-05-07T11:22:49.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:next"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/app/page.tsx",
+      "size_bytes": 121,
+      "lines": 6,
+      "language": "typescript",
+      "last_modified": "2026-05-06T07:18:59.892Z",
+      "git_history": {
+        "first_commit": "2026-05-06T07:05:30.000Z",
+        "last_commit": "2026-05-06T08:25:26.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/components/WormRanchApp"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/EndlessGameOverWindow.module.css",
+      "size_bytes": 1673,
+      "lines": 94,
+      "language": "css",
+      "last_modified": "2026-08-19T01:01:37.144Z",
+      "git_history": {
+        "first_commit": "2026-08-18T15:05:52.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/components/EndlessGameOverWindow.tsx"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/EndlessGameOverWindow.tsx",
+      "size_bytes": 1018,
+      "lines": 33,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.144Z",
+      "git_history": {
+        "first_commit": "2026-08-18T15:05:52.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./EndlessGameOverWindow.module.css",
+          "external:@/game/types"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "EndlessGameOverWindowProps",
+          "EndlessGameOverWindow"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/GameHUD.tsx",
+      "size_bytes": 683,
+      "lines": 33,
+      "language": "typescript",
+      "last_modified": "2026-05-30T01:58:37.877Z",
+      "git_history": {
+        "first_commit": "2026-05-24T07:42:41.000Z",
+        "last_commit": "2026-05-27T00:38:42.000Z",
+        "commit_count": 2,
+        "authors": [
+          "copilot-swe-agent[bot]",
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:react"
+        ],
+        "imported_by": [
+          "src/components/GameStageOverlay.tsx",
+          "src/components/gameStageHUD.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/GameModeScreen.module.css",
+      "size_bytes": 2546,
+      "lines": 137,
+      "language": "css",
+      "last_modified": "2026-06-14T06:57:04.895Z",
+      "git_history": {
+        "first_commit": "2026-06-14T07:44:08.000Z",
+        "last_commit": "2026-06-14T07:44:08.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/components/GameModeScreen.tsx"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/GameModeScreen.tsx",
+      "size_bytes": 2125,
+      "lines": 71,
+      "language": "typescript",
+      "last_modified": "2026-06-14T06:56:07.452Z",
+      "git_history": {
+        "first_commit": "2026-06-14T07:44:08.000Z",
+        "last_commit": "2026-06-14T07:44:08.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./GameModeScreen.module.css",
+          "external:react"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "GameModeScreenProps",
+          "GameModeScreen"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/GameStage.interaction.test.ts",
+      "size_bytes": 15303,
+      "lines": 477,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.144Z",
+      "git_history": {
+        "first_commit": "2026-08-18T18:57:32.000Z",
+        "last_commit": "2026-08-18T18:57:32.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./GameStage",
+          "internal:./GameStage.module.css",
+          "internal:./gameStageTestHelpers",
+          "internal:./gameStageTestHelpers",
+          "internal:./gameStageTestHelpers",
+          "external:vitest",
+          "external:react",
+          "external:react-dom/server",
+          "external:@/game/types"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/GameStage.module.css",
+      "size_bytes": 13577,
+      "lines": 658,
+      "language": "css",
+      "last_modified": "2026-08-19T01:01:37.144Z",
+      "git_history": {
+        "first_commit": "2026-05-06T08:25:26.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 11,
+        "authors": [
+          "TeacherEvan",
+          "copilot-swe-agent[bot]"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/components/GameStage.interaction.test.ts",
+          "src/components/GameStage.render.test.ts",
+          "src/components/GameStage.tsx",
+          "src/components/GameStageOverlay.tsx",
+          "src/components/gameStageActionEcho.test.ts",
+          "src/components/gameStageTestHelpers.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/GameStage.render.test.ts",
+      "size_bytes": 7286,
+      "lines": 233,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.144Z",
+      "git_history": {
+        "first_commit": "2026-08-18T18:57:32.000Z",
+        "last_commit": "2026-08-18T18:57:32.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./GameStage",
+          "internal:./GameStage.module.css",
+          "internal:./gameStageTestHelpers",
+          "external:vitest",
+          "external:react",
+          "external:react-dom/server",
+          "external:@/game/types"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/GameStage.tsx",
+      "size_bytes": 18694,
+      "lines": 478,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.144Z",
+      "git_history": {
+        "first_commit": "2026-05-06T08:25:26.000Z",
+        "last_commit": "2026-08-18T18:57:32.000Z",
+        "commit_count": 22,
+        "authors": [
+          "TeacherEvan",
+          "copilot-swe-agent[bot]"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./GameStage.module.css",
+          "internal:./GameStageOverlay",
+          "internal:./gameStageTargetCallout",
+          "internal:./gameStageActionEcho",
+          "external:react",
+          "external:@/components/gameStageAudio",
+          "external:@/components/gameStageKeyboard",
+          "external:@/components/gameStageMotion",
+          "external:@/components/gameStageParticles",
+          "external:@/components/gameStageFeedback",
+          "external:@/components/gameStagePhasePresentation",
+          "external:@/lib/analytics",
+          "external:@/game/detection",
+          "external:@/game/levels",
+          "external:@/game/types",
+          "external:@/lib/logger",
+          "external:@/game/gameModes"
+        ],
+        "imported_by": [
+          "src/components/GameStage.interaction.test.ts",
+          "src/components/GameStage.render.test.ts",
+          "src/components/gameStageActionEcho.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "GameStage"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/GameStageOverlay.tsx",
+      "size_bytes": 2590,
+      "lines": 77,
+      "language": "typescript",
+      "last_modified": "2026-06-01T02:41:13.754Z",
+      "git_history": {
+        "first_commit": "2026-05-31T21:22:07.000Z",
+        "last_commit": "2026-06-01T03:52:32.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./GameStage.module.css",
+          "internal:./GameStagePhaseBadge.module.css",
+          "internal:./GameHUD",
+          "internal:./gameStageTargetCallout",
+          "external:react",
+          "external:@/components/gameStagePresentation",
+          "external:@/components/gameStageMotion"
+        ],
+        "imported_by": [
+          "src/components/GameStage.tsx"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "GameStageOverlay"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/GameStagePhaseBadge.module.css",
+      "size_bytes": 2540,
+      "lines": 94,
+      "language": "css",
+      "last_modified": "2026-05-07T14:10:42.518Z",
+      "git_history": {
+        "first_commit": "2026-05-07T14:42:25.000Z",
+        "last_commit": "2026-05-07T14:42:25.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/components/GameStageOverlay.tsx"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/HomeScreen.module.css",
+      "size_bytes": 2280,
+      "lines": 120,
+      "language": "css",
+      "last_modified": "2026-08-19T01:01:37.144Z",
+      "git_history": {
+        "first_commit": "2026-05-07T13:12:53.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 4,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/components/HomeScreen.tsx"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/HomeScreen.test.ts",
+      "size_bytes": 983,
+      "lines": 26,
+      "language": "typescript",
+      "last_modified": "2026-05-31T21:21:43.280Z",
+      "git_history": {
+        "first_commit": "2026-05-07T13:12:53.000Z",
+        "last_commit": "2026-05-31T21:22:07.000Z",
+        "commit_count": 4,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./HomeScreen",
+          "external:vitest",
+          "external:react",
+          "external:react-dom/server"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/HomeScreen.tsx",
+      "size_bytes": 1179,
+      "lines": 34,
+      "language": "typescript",
+      "last_modified": "2026-05-07T16:11:20.255Z",
+      "git_history": {
+        "first_commit": "2026-05-07T13:12:53.000Z",
+        "last_commit": "2026-05-07T17:04:34.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./HomeScreen.module.css",
+          "external:react"
+        ],
+        "imported_by": [
+          "src/components/HomeScreen.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "HomeScreen"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/ResultsScreen.module.css",
+      "size_bytes": 3072,
+      "lines": 160,
+      "language": "css",
+      "last_modified": "2026-08-19T01:01:37.145Z",
+      "git_history": {
+        "first_commit": "2026-05-07T13:12:53.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/ScreenTransition.module.css",
+      "size_bytes": 998,
+      "lines": 70,
+      "language": "css",
+      "last_modified": "2026-06-14T06:57:47.722Z",
+      "git_history": {
+        "first_commit": "2026-06-14T07:44:08.000Z",
+        "last_commit": "2026-06-14T07:44:08.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/components/ScreenTransition.tsx"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/ScreenTransition.tsx",
+      "size_bytes": 775,
+      "lines": 29,
+      "language": "typescript",
+      "last_modified": "2026-06-14T06:57:23.377Z",
+      "git_history": {
+        "first_commit": "2026-06-14T07:44:08.000Z",
+        "last_commit": "2026-06-14T07:44:08.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./ScreenTransition.module.css",
+          "external:react"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "ScreenTransitionProps",
+          "ScreenTransition"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/SettingsScreen.module.css",
+      "size_bytes": 2881,
+      "lines": 156,
+      "language": "css",
+      "last_modified": "2026-08-19T01:01:37.145Z",
+      "git_history": {
+        "first_commit": "2026-05-07T13:12:53.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/components/SettingsScreen.tsx"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/SettingsScreen.test.ts",
+      "size_bytes": 956,
+      "lines": 27,
+      "language": "typescript",
+      "last_modified": "2026-05-07T12:56:32.086Z",
+      "git_history": {
+        "first_commit": "2026-05-07T13:12:53.000Z",
+        "last_commit": "2026-05-07T13:12:53.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./SettingsScreen",
+          "external:vitest",
+          "external:react",
+          "external:react-dom/server"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/SettingsScreen.tsx",
+      "size_bytes": 3179,
+      "lines": 97,
+      "language": "typescript",
+      "last_modified": "2026-05-07T15:47:05.463Z",
+      "git_history": {
+        "first_commit": "2026-05-07T13:12:53.000Z",
+        "last_commit": "2026-05-07T17:04:34.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./SettingsScreen.module.css",
+          "external:@/game/detection"
+        ],
+        "imported_by": [
+          "src/components/SettingsScreen.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "SettingsScreen"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/WelcomeLaunchLoader.module.css",
+      "size_bytes": 2896,
+      "lines": 133,
+      "language": "css",
+      "last_modified": "2026-08-19T01:01:37.145Z",
+      "git_history": {
+        "first_commit": "2026-05-07T15:27:25.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/components/WelcomeLaunchLoader.tsx"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/WelcomeLaunchLoader.tsx",
+      "size_bytes": 3144,
+      "lines": 89,
+      "language": "typescript",
+      "last_modified": "2026-05-07T15:06:55.375Z",
+      "git_history": {
+        "first_commit": "2026-05-07T15:27:25.000Z",
+        "last_commit": "2026-05-07T15:27:25.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./WelcomeLaunchLoader.module.css",
+          "external:react"
+        ],
+        "imported_by": [
+          "src/components/WelcomeScreen.tsx"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "WelcomeLaunchLoader"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/WelcomeScreen.module.css",
+      "size_bytes": 7884,
+      "lines": 391,
+      "language": "css",
+      "last_modified": "2026-08-19T01:01:37.145Z",
+      "git_history": {
+        "first_commit": "2026-05-07T09:44:15.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 7,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/components/WelcomeScreen.tsx"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/WelcomeScreen.test.ts",
+      "size_bytes": 3560,
+      "lines": 97,
+      "language": "typescript",
+      "last_modified": "2026-06-01T01:30:01.712Z",
+      "git_history": {
+        "first_commit": "2026-05-07T14:42:25.000Z",
+        "last_commit": "2026-06-01T01:30:36.000Z",
+        "commit_count": 7,
+        "authors": [
+          "TeacherEvan",
+          "copilot-swe-agent[bot]"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:vitest",
+          "external:react",
+          "external:react-dom/server"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/WelcomeScreen.tsx",
+      "size_bytes": 6486,
+      "lines": 174,
+      "language": "typescript",
+      "last_modified": "2026-06-01T00:40:04.918Z",
+      "git_history": {
+        "first_commit": "2026-05-07T09:44:15.000Z",
+        "last_commit": "2026-06-01T01:30:36.000Z",
+        "commit_count": 9,
+        "authors": [
+          "TeacherEvan",
+          "copilot-swe-agent[bot]"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./WelcomeScreen.module.css",
+          "internal:./WelcomeLaunchLoader",
+          "external:react",
+          "external:next/image"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "WelcomeScreen"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/WormRanchApp.module.css",
+      "size_bytes": 4102,
+      "lines": 216,
+      "language": "css",
+      "last_modified": "2026-08-19T01:01:37.145Z",
+      "git_history": {
+        "first_commit": "2026-05-06T08:25:26.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 8,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/components/WormRanchApp.tsx"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/WormRanchApp.test.ts",
+      "size_bytes": 9964,
+      "lines": 227,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.145Z",
+      "git_history": {
+        "first_commit": "2026-05-07T19:54:26.000Z",
+        "last_commit": "2026-08-18T18:57:32.000Z",
+        "commit_count": 5,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:vitest",
+          "external:react",
+          "external:react-dom/server"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/WormRanchApp.tsx",
+      "size_bytes": 13859,
+      "lines": 413,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.145Z",
+      "git_history": {
+        "first_commit": "2026-05-06T08:25:26.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 14,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./WormRanchApp.module.css",
+          "external:react",
+          "external:@/components/GameStage",
+          "external:@/components/HomeScreen",
+          "external:@/components/WormRanchInstallPrompt",
+          "external:@/components/WormRanchGameExit",
+          "external:@/components/SettingsScreen",
+          "external:@/components/WelcomeScreen",
+          "external:@/components/WormRanchShellHeader",
+          "external:@/components/GameModeScreen",
+          "external:@/components/ScreenTransition",
+          "external:@/components/wormRanchLevelFlow",
+          "external:@/lib/analytics",
+          "external:@/game/detection",
+          "external:@/game/levels",
+          "external:@/game/rules",
+          "external:@/lib/logger",
+          "external:@/game/gameModes",
+          "external:@/game/types",
+          "external:@/components/EndlessGameOverWindow",
+          "external:@/components/useInstallPrompt",
+          "external:@/lib/backdropPreload"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "WormRanchApp"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/WormRanchAppMotion.module.css",
+      "size_bytes": 3383,
+      "lines": 194,
+      "language": "css",
+      "last_modified": "2026-05-07T09:27:45.215Z",
+      "git_history": {
+        "first_commit": "2026-05-07T09:44:15.000Z",
+        "last_commit": "2026-05-07T09:44:15.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/WormRanchGameExit.module.css",
+      "size_bytes": 1577,
+      "lines": 72,
+      "language": "css",
+      "last_modified": "2026-08-19T01:01:37.145Z",
+      "git_history": {
+        "first_commit": "2026-05-07T11:22:49.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/components/WormRanchGameExit.tsx"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/WormRanchGameExit.test.ts",
+      "size_bytes": 1081,
+      "lines": 33,
+      "language": "typescript",
+      "last_modified": "2026-05-07T11:10:32.994Z",
+      "git_history": {
+        "first_commit": "2026-05-07T11:22:49.000Z",
+        "last_commit": "2026-05-07T11:22:49.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./WormRanchGameExit",
+          "external:vitest",
+          "external:react",
+          "external:react-dom/server"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/WormRanchGameExit.tsx",
+      "size_bytes": 876,
+      "lines": 31,
+      "language": "typescript",
+      "last_modified": "2026-05-07T11:10:56.484Z",
+      "git_history": {
+        "first_commit": "2026-05-07T11:22:49.000Z",
+        "last_commit": "2026-05-07T11:22:49.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./WormRanchGameExit.module.css",
+          "external:@/game/detection"
+        ],
+        "imported_by": [
+          "src/components/WormRanchGameExit.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "WormRanchGameExit"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/WormRanchInstallPrompt.module.css",
+      "size_bytes": 1965,
+      "lines": 112,
+      "language": "css",
+      "last_modified": "2026-08-19T01:01:37.145Z",
+      "git_history": {
+        "first_commit": "2026-05-07T11:22:49.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/components/WormRanchInstallPrompt.tsx"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/WormRanchInstallPrompt.test.ts",
+      "size_bytes": 855,
+      "lines": 23,
+      "language": "typescript",
+      "last_modified": "2026-05-07T10:59:02.952Z",
+      "git_history": {
+        "first_commit": "2026-05-07T11:22:49.000Z",
+        "last_commit": "2026-05-07T11:22:49.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./WormRanchInstallPrompt",
+          "external:vitest",
+          "external:react",
+          "external:react-dom/server"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/WormRanchInstallPrompt.tsx",
+      "size_bytes": 1277,
+      "lines": 44,
+      "language": "typescript",
+      "last_modified": "2026-05-07T10:59:02.937Z",
+      "git_history": {
+        "first_commit": "2026-05-07T11:22:49.000Z",
+        "last_commit": "2026-05-07T11:22:49.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./WormRanchInstallPrompt.module.css"
+        ],
+        "imported_by": [
+          "src/components/WormRanchInstallPrompt.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "WormRanchInstallPrompt"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/WormRanchShellHeader.module.css",
+      "size_bytes": 2435,
+      "lines": 129,
+      "language": "css",
+      "last_modified": "2026-08-19T01:01:37.145Z",
+      "git_history": {
+        "first_commit": "2026-05-07T09:44:15.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/components/WormRanchShellHeader.tsx"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/WormRanchShellHeader.test.ts",
+      "size_bytes": 1089,
+      "lines": 34,
+      "language": "typescript",
+      "last_modified": "2026-05-07T22:38:18.897Z",
+      "git_history": {
+        "first_commit": "2026-05-07T09:44:15.000Z",
+        "last_commit": "2026-05-07T22:41:57.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./WormRanchShellHeader",
+          "external:vitest",
+          "external:react",
+          "external:react-dom/server"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/WormRanchShellHeader.tsx",
+      "size_bytes": 1606,
+      "lines": 51,
+      "language": "typescript",
+      "last_modified": "2026-05-07T22:38:18.881Z",
+      "git_history": {
+        "first_commit": "2026-05-07T09:44:15.000Z",
+        "last_commit": "2026-05-07T22:41:57.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./WormRanchShellHeader.module.css",
+          "external:@/game/detection"
+        ],
+        "imported_by": [
+          "src/components/WormRanchShellHeader.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "WormRanchShellHeader"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStageActionEcho.test.ts",
+      "size_bytes": 10762,
+      "lines": 377,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.146Z",
+      "git_history": {
+        "first_commit": "2026-08-18T18:57:32.000Z",
+        "last_commit": "2026-08-18T18:57:32.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./GameStage",
+          "internal:./gameStageActionEcho",
+          "internal:./GameStage.module.css",
+          "external:vitest",
+          "external:react",
+          "external:react-dom/server",
+          "external:@/game/types"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/gameStageActionEcho.ts",
+      "size_bytes": 3960,
+      "lines": 146,
+      "language": "typescript",
+      "last_modified": "2026-05-08T05:39:34.053Z",
+      "git_history": {
+        "first_commit": "2026-05-08T05:48:26.000Z",
+        "last_commit": "2026-05-08T05:48:26.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:react",
+          "external:@/game/detection",
+          "external:@/game/types"
+        ],
+        "imported_by": [
+          "src/components/GameStage.tsx",
+          "src/components/gameStageActionEcho.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "StageActionEcho",
+          "useLatestValue",
+          "useStageActionEcho",
+          "getStageActionEcho"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStageAudio.test.ts",
+      "size_bytes": 7415,
+      "lines": 217,
+      "language": "typescript",
+      "last_modified": "2026-05-08T04:11:13.465Z",
+      "git_history": {
+        "first_commit": "2026-05-08T03:34:35.000Z",
+        "last_commit": "2026-05-08T04:19:42.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:vitest"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/gameStageAudio.ts",
+      "size_bytes": 4716,
+      "lines": 190,
+      "language": "typescript",
+      "last_modified": "2026-05-08T04:11:13.469Z",
+      "git_history": {
+        "first_commit": "2026-05-08T03:34:35.000Z",
+        "last_commit": "2026-05-08T04:19:42.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/game/types"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "GAME_STAGE_AUDIO_CYCLE_LENGTH",
+          "GameStageAudioCue",
+          "GameStageAudioResolution",
+          "GameStageAudioController",
+          "normalizeGameStageAudioCycleStep",
+          "resolveNextGameStageAudioCue",
+          "createGameStageAudioController"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStageBackdropCanvas.ts",
+      "size_bytes": 2992,
+      "lines": 93,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.146Z",
+      "git_history": {
+        "first_commit": "2026-08-18T15:05:52.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/game/types"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "drawStaticStageBackdrop",
+          "drawPointerCorral"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStageBackdropRotation.test.ts",
+      "size_bytes": 1441,
+      "lines": 30,
+      "language": "typescript",
+      "last_modified": "2026-05-07T18:55:45.680Z",
+      "git_history": {
+        "first_commit": "2026-05-07T17:04:34.000Z",
+        "last_commit": "2026-05-07T19:54:26.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./gameStageBackdropRotation",
+          "external:node:fs",
+          "external:node:path",
+          "external:node:url",
+          "external:vitest"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/gameStageBackdropRotation.ts",
+      "size_bytes": 839,
+      "lines": 17,
+      "language": "typescript",
+      "last_modified": "2026-05-07T19:18:05.617Z",
+      "git_history": {
+        "first_commit": "2026-05-07T17:04:34.000Z",
+        "last_commit": "2026-05-07T19:54:26.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/game/levels"
+        ],
+        "imported_by": [
+          "src/components/gameStageBackdropRotation.test.ts",
+          "src/components/wormRanchLevelFlow.test.ts",
+          "src/components/wormRanchLevelFlow.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "GAMEPLAY_BACKDROP_URLS",
+          "getGameplayBackdropUrlForLevel"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStageCanvas.ts",
+      "size_bytes": 2944,
+      "lines": 102,
+      "language": "typescript",
+      "last_modified": "2026-05-31T21:21:43.273Z",
+      "git_history": {
+        "first_commit": "2026-05-31T21:22:07.000Z",
+        "last_commit": "2026-05-31T21:22:07.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/components/gameStagePresentation",
+          "external:@/game/detection",
+          "external:@/game/types"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "CanvasBounds",
+          "StaticBackdropCache",
+          "getCappedCanvasDpr",
+          "getVisibleSummary",
+          "formatStageTime",
+          "updateCanvasBounds",
+          "prepareStaticBackdrop"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStageCueEffects.test.ts",
+      "size_bytes": 5999,
+      "lines": 177,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.146Z",
+      "git_history": {
+        "first_commit": "2026-08-01T13:07:10.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:vitest"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/gameStageFairyPresentation.test.ts",
+      "size_bytes": 2726,
+      "lines": 90,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.146Z",
+      "git_history": {
+        "first_commit": "2026-05-07T09:44:15.000Z",
+        "last_commit": "2026-08-18T18:57:32.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./gameStageFairyPresentation",
+          "external:vitest",
+          "external:@/game/types"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/gameStageFairyPresentation.ts",
+      "size_bytes": 5717,
+      "lines": 167,
+      "language": "typescript",
+      "last_modified": "2026-05-08T04:15:01.232Z",
+      "git_history": {
+        "first_commit": "2026-05-06T15:42:36.000Z",
+        "last_commit": "2026-05-08T04:19:42.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/game/types"
+        ],
+        "imported_by": [
+          "src/components/gameStageFairyPresentation.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "FAIRY_MORPH_EMOJI",
+          "FairyMorphFrame",
+          "drawFairyMorph",
+          "getFairyMorphFrame"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStageFeedback.test.ts",
+      "size_bytes": 3130,
+      "lines": 83,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.146Z",
+      "git_history": {
+        "first_commit": "2026-08-18T18:57:32.000Z",
+        "last_commit": "2026-08-18T18:57:32.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./gameStageFeedback",
+          "external:vitest",
+          "external:@/game/types"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/gameStageFeedback.ts",
+      "size_bytes": 1574,
+      "lines": 54,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.146Z",
+      "git_history": {
+        "first_commit": "2026-08-18T18:57:32.000Z",
+        "last_commit": "2026-08-18T18:57:32.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/game/types",
+          "external:@/components/gameStagePresentation",
+          "external:@/components/gameStageParticles"
+        ],
+        "imported_by": [
+          "src/components/gameStageFeedback.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "createStageFeedbackItem",
+          "getActionParticleBurst"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStageHUD.test.ts",
+      "size_bytes": 818,
+      "lines": 21,
+      "language": "typescript",
+      "last_modified": "2026-05-30T01:58:37.880Z",
+      "git_history": {
+        "first_commit": "2026-05-24T07:42:41.000Z",
+        "last_commit": "2026-05-27T00:38:42.000Z",
+        "commit_count": 2,
+        "authors": [
+          "copilot-swe-agent[bot]",
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./GameHUD",
+          "external:react",
+          "external:react-dom/server",
+          "external:vitest"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/gameStageKeyboard.ts",
+      "size_bytes": 1366,
+      "lines": 39,
+      "language": "typescript",
+      "last_modified": "2026-05-07T16:31:51.798Z",
+      "git_history": {
+        "first_commit": "2026-05-07T17:04:34.000Z",
+        "last_commit": "2026-05-07T17:04:34.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/game/types"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "KeyboardTargetMode",
+          "getKeyboardTargetId",
+          "getKeyboardStatus"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStageMotion.test.ts",
+      "size_bytes": 2215,
+      "lines": 68,
+      "language": "typescript",
+      "last_modified": "2026-08-01T12:54:47.654Z",
+      "git_history": {
+        "first_commit": "2026-05-07T09:44:15.000Z",
+        "last_commit": "2026-08-01T13:07:10.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan",
+          "copilot-swe-agent[bot]"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./gameStageMotion",
+          "external:vitest",
+          "external:@/game/types"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/gameStageMotion.ts",
+      "size_bytes": 7435,
+      "lines": 252,
+      "language": "typescript",
+      "last_modified": "2026-08-01T12:56:14.722Z",
+      "git_history": {
+        "first_commit": "2026-05-07T09:44:15.000Z",
+        "last_commit": "2026-08-01T13:07:10.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/game/types"
+        ],
+        "imported_by": [
+          "src/components/gameStageMotion.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "StageMotionCue",
+          "MotionFeedback",
+          "getMotionFeedback",
+          "CueEffect",
+          "getCueEffect",
+          "getBaggedBumpEffect",
+          "getRemainingDipEffect",
+          "getFairyBurstEffect",
+          "getTimerAlertEffect"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStageParticles.ts",
+      "size_bytes": 9762,
+      "lines": 352,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.146Z",
+      "git_history": {
+        "first_commit": "2026-08-01T13:07:10.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "Particle",
+          "ParticleBurstConfig",
+          "ParticleTone",
+          "createBurst",
+          "createBurstFromTone",
+          "stepParticles",
+          "drawParticles",
+          "ReducedFlash",
+          "createReducedFlash",
+          "stepReducedFlash",
+          "drawReducedFlash"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStagePhasePresentation.test.ts",
+      "size_bytes": 5140,
+      "lines": 159,
+      "language": "typescript",
+      "last_modified": "2026-06-01T03:00:44.091Z",
+      "git_history": {
+        "first_commit": "2026-05-06T15:42:36.000Z",
+        "last_commit": "2026-06-01T03:52:32.000Z",
+        "commit_count": 8,
+        "authors": [
+          "TeacherEvan",
+          "copilot-swe-agent[bot]"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./gameStagePhasePresentation",
+          "external:vitest",
+          "external:@/game/engine",
+          "external:@/game/engine",
+          "external:@/game/levels"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/gameStagePhasePresentation.ts",
+      "size_bytes": 8835,
+      "lines": 324,
+      "language": "typescript",
+      "last_modified": "2026-08-19T13:01:59.696Z",
+      "git_history": {
+        "first_commit": "2026-05-06T11:02:15.000Z",
+        "last_commit": "2026-08-19T13:26:41.000Z",
+        "commit_count": 10,
+        "authors": [
+          "TeacherEvan",
+          "copilot-swe-agent[bot]"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/game/detection",
+          "external:@/game/levels",
+          "external:@/game/types"
+        ],
+        "imported_by": [
+          "src/components/gameStagePhasePresentation.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "StagePresentation",
+          "getStagePresentation"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStagePresentation.ts",
+      "size_bytes": 7143,
+      "lines": 219,
+      "language": "typescript",
+      "last_modified": "2026-08-19T13:01:59.694Z",
+      "git_history": {
+        "first_commit": "2026-05-06T11:02:15.000Z",
+        "last_commit": "2026-08-19T13:26:41.000Z",
+        "commit_count": 14,
+        "authors": [
+          "TeacherEvan",
+          "copilot-swe-agent[bot]"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/game/detection",
+          "external:@/components/gameStageFairyPresentation",
+          "external:@/components/gameStagePhasePresentation",
+          "external:@/components/gameStageWormCanvas",
+          "external:@/components/gameStageBackdropCanvas",
+          "external:@/game/engine",
+          "external:@/game/levels",
+          "external:@/game/types"
+        ],
+        "imported_by": [
+          "src/components/gameStageWormVisuals.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "StageFeedback",
+          "StatusItem",
+          "StageStaticBackdrop",
+          "StageCopy",
+          "renderStage",
+          "stepFeedback",
+          "areSummariesEqual",
+          "buildStatusItems",
+          "getStageCopy"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStageTargetCallout.test.ts",
+      "size_bytes": 1942,
+      "lines": 84,
+      "language": "typescript",
+      "last_modified": "2026-06-01T02:53:47.590Z",
+      "git_history": {
+        "first_commit": "2026-05-31T21:22:07.000Z",
+        "last_commit": "2026-06-01T03:52:32.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./gameStageTargetCallout",
+          "external:vitest",
+          "external:@/game/types"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/gameStageTargetCallout.ts",
+      "size_bytes": 886,
+      "lines": 38,
+      "language": "typescript",
+      "last_modified": "2026-06-01T02:40:24.428Z",
+      "git_history": {
+        "first_commit": "2026-05-31T21:22:07.000Z",
+        "last_commit": "2026-06-01T03:52:32.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/game/types"
+        ],
+        "imported_by": [
+          "src/components/GameStage.tsx",
+          "src/components/GameStageOverlay.tsx",
+          "src/components/gameStageTargetCallout.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "StageTargetCallout",
+          "getTargetCallout"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStageTestHelpers.ts",
+      "size_bytes": 9897,
+      "lines": 353,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.146Z",
+      "git_history": {
+        "first_commit": "2026-08-18T18:57:32.000Z",
+        "last_commit": "2026-08-18T18:57:32.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./GameStage.module.css",
+          "external:vitest",
+          "external:@/game/types"
+        ],
+        "imported_by": [
+          "src/components/GameStage.interaction.test.ts",
+          "src/components/GameStage.render.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "InteractionHarnessOptions",
+          "StageInteractionEvent",
+          "flattenElementText",
+          "findElementTextByClassName",
+          "findStatusPill",
+          "resolveFunctionComponent"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStageWormCanvas.ts",
+      "size_bytes": 9359,
+      "lines": 287,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.146Z",
+      "git_history": {
+        "first_commit": "2026-08-18T15:05:52.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/components/gameStageWormVisuals",
+          "external:@/game/types"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "drawWorm",
+          "traceWormBody",
+          "getWormStateChip"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/gameStageWormVisuals.test.ts",
+      "size_bytes": 6792,
+      "lines": 239,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.147Z",
+      "git_history": {
+        "first_commit": "2026-05-08T03:34:35.000Z",
+        "last_commit": "2026-08-18T18:57:32.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan",
+          "copilot-swe-agent[bot]"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./gameStagePresentation",
+          "external:vitest",
+          "external:@/game/engine",
+          "external:@/game/detection",
+          "external:@/game/types"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/gameStageWormVisuals.ts",
+      "size_bytes": 3563,
+      "lines": 120,
+      "language": "typescript",
+      "last_modified": "2026-06-01T03:04:23.988Z",
+      "git_history": {
+        "first_commit": "2026-05-08T03:34:35.000Z",
+        "last_commit": "2026-06-01T03:52:32.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/game/types",
+          "external:@/game/wormColors"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "PSYCHEDELIC_WORM_BLINK_PERIOD_MS",
+          "PsychedelicWormVisualFrame",
+          "StandardWormVisualFrame",
+          "getStandardWormVisualFrame",
+          "getPsychedelicWormVisualFrame"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/useInstallPrompt.ts",
+      "size_bytes": 2148,
+      "lines": 75,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.147Z",
+      "git_history": {
+        "first_commit": "2026-08-18T15:05:52.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:react"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "useInstallPrompt"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/welcomeHeroPresentation.test.ts",
+      "size_bytes": 2325,
+      "lines": 49,
+      "language": "typescript",
+      "last_modified": "2026-05-30T01:58:37.881Z",
+      "git_history": {
+        "first_commit": "2026-05-07T09:44:15.000Z",
+        "last_commit": "2026-05-27T01:54:24.000Z",
+        "commit_count": 6,
+        "authors": [
+          "copilot-swe-agent[bot]",
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:vitest"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/welcomeHeroPresentation.ts",
+      "size_bytes": 2210,
+      "lines": 68,
+      "language": "typescript",
+      "last_modified": "2026-05-30T01:58:37.881Z",
+      "git_history": {
+        "first_commit": "2026-05-07T09:44:15.000Z",
+        "last_commit": "2026-05-27T01:54:24.000Z",
+        "commit_count": 6,
+        "authors": [
+          "copilot-swe-agent[bot]",
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "MOBILE_LAYOUT_MAX_WIDTH",
+          "WelcomeHeroLayout",
+          "WelcomeHeroCropIntent",
+          "WelcomeHeroOverlayStrength",
+          "WelcomeHeroTextSafeZone",
+          "WelcomeHeroVariant",
+          "WelcomeHeroPresentation",
+          "WelcomeHeroPresentationOptions",
+          "getWelcomeHeroLayout",
+          "getWelcomeHeroPresentation",
+          "getWelcomeHeroVariant"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/welcomeLaunchLoader.test.ts",
+      "size_bytes": 3866,
+      "lines": 101,
+      "language": "typescript",
+      "last_modified": "2026-06-01T00:41:49.503Z",
+      "git_history": {
+        "first_commit": "2026-05-07T15:27:25.000Z",
+        "last_commit": "2026-06-01T01:30:36.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:vitest"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/welcomeLaunchLoader.ts",
+      "size_bytes": 2684,
+      "lines": 111,
+      "language": "typescript",
+      "last_modified": "2026-06-01T00:39:40.123Z",
+      "git_history": {
+        "first_commit": "2026-05-07T15:27:25.000Z",
+        "last_commit": "2026-06-01T01:30:36.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./welcomeLaunchMedia"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "WelcomeLaunchLoaderSnapshot",
+          "WelcomeLaunchLoaderPhase",
+          "getWelcomeLaunchLoaderProgress",
+          "getWelcomeLaunchLoaderPhase",
+          "getNextWelcomeLaunchLoaderDisplayProgress",
+          "shouldShowWelcomeLaunchLoader"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/welcomeLaunchMedia.test.ts",
+      "size_bytes": 1678,
+      "lines": 40,
+      "language": "typescript",
+      "last_modified": "2026-06-01T00:33:00.320Z",
+      "git_history": {
+        "first_commit": "2026-05-07T14:42:25.000Z",
+        "last_commit": "2026-06-01T01:30:36.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:vitest"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/welcomeLaunchMedia.ts",
+      "size_bytes": 852,
+      "lines": 37,
+      "language": "typescript",
+      "last_modified": "2026-06-01T01:17:01.656Z",
+      "git_history": {
+        "first_commit": "2026-05-07T14:42:25.000Z",
+        "last_commit": "2026-06-01T01:30:36.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/components/welcomeLaunchLoader.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "WelcomeLaunchMediaState",
+          "WelcomeLaunchMediaEvent",
+          "getInitialWelcomeLaunchMediaState",
+          "getNextWelcomeLaunchMediaState"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/components/wormRanchLevelFlow.test.ts",
+      "size_bytes": 973,
+      "lines": 29,
+      "language": "typescript",
+      "last_modified": "2026-05-31T21:21:43.295Z",
+      "git_history": {
+        "first_commit": "2026-05-07T19:54:26.000Z",
+        "last_commit": "2026-05-31T21:22:07.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./gameStageBackdropRotation",
+          "internal:./wormRanchLevelFlow",
+          "external:vitest"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/components/wormRanchLevelFlow.ts",
+      "size_bytes": 548,
+      "lines": 21,
+      "language": "typescript",
+      "last_modified": "2026-05-31T21:21:43.281Z",
+      "git_history": {
+        "first_commit": "2026-05-07T19:54:26.000Z",
+        "last_commit": "2026-05-31T21:22:07.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./gameStageBackdropRotation",
+          "external:@/game/levels"
+        ],
+        "imported_by": [
+          "src/components/wormRanchLevelFlow.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "GameplayRunPlan",
+          "getGameplayRunPlan",
+          "getInitialGameplayRunPlan"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/constants.ts",
+      "size_bytes": 631,
+      "lines": 17,
+      "language": "typescript",
+      "last_modified": "2026-06-14T05:48:09.801Z",
+      "git_history": {
+        "first_commit": "2026-06-14T06:24:27.000Z",
+        "last_commit": "2026-06-14T06:24:27.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/game/engineFairies.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "BLINK_RECOVER_MS",
+          "WORM_HIT_RADIUS_FACTOR",
+          "DIRECTION_EPSILON",
+          "CONTINUOUS_SPAWN_INTERVAL_MS",
+          "SPEED_MULTIPLIER_CAP",
+          "SPEED_RAMP_PER_SECOND",
+          "FAIRY_MORPH_DURATION_MS"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/continuousColorTargets.test.ts",
+      "size_bytes": 4501,
+      "lines": 138,
+      "language": "typescript",
+      "last_modified": "2026-06-01T02:47:05.081Z",
+      "git_history": {
+        "first_commit": "2026-05-31T21:22:07.000Z",
+        "last_commit": "2026-06-01T03:52:32.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./rules",
+          "internal:./specialWorms",
+          "internal:./wormColors",
+          "external:vitest"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/game/continuousColorTargets.ts",
+      "size_bytes": 2873,
+      "lines": 106,
+      "language": "typescript",
+      "last_modified": "2026-06-01T02:34:53.171Z",
+      "git_history": {
+        "first_commit": "2026-05-31T21:22:07.000Z",
+        "last_commit": "2026-06-01T03:52:32.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./wormColors",
+          "internal:./types"
+        ],
+        "imported_by": [
+          "src/game/engineContinuous.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "CONTINUOUS_COLOR_TARGET_GOAL",
+          "CONTINUOUS_COLOR_TARGET_FLASH_MS",
+          "createContinuousColorTargetState",
+          "registerContinuousColorRemoval",
+          "resetContinuousColorTargetVisibility",
+          "isContinuousColorTargetVisible"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/detection.ts",
+      "size_bytes": 792,
+      "lines": 29,
+      "language": "typescript",
+      "last_modified": "2026-05-06T07:18:59.897Z",
+      "git_history": {
+        "first_commit": "2026-05-06T08:25:26.000Z",
+        "last_commit": "2026-05-06T08:25:26.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/game/engine.ts",
+          "src/game/levels.ts",
+          "src/game/rules.ts",
+          "src/game/types.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "DisplayProfile",
+          "DisplayMode",
+          "DisplaySnapshot",
+          "detectDisplayProfile"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/engine.continuous.test.ts",
+      "size_bytes": 10754,
+      "lines": 376,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.147Z",
+      "git_history": {
+        "first_commit": "2026-08-18T18:57:32.000Z",
+        "last_commit": "2026-08-18T18:57:32.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./rules",
+          "internal:./wormColors",
+          "external:vitest"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/game/engine.interaction.test.ts",
+      "size_bytes": 5313,
+      "lines": 197,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.147Z",
+      "git_history": {
+        "first_commit": "2026-08-18T18:57:32.000Z",
+        "last_commit": "2026-08-18T18:57:32.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./rules",
+          "internal:./wormColors",
+          "external:vitest"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/game/engine.step.test.ts",
+      "size_bytes": 8515,
+      "lines": 312,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.147Z",
+      "git_history": {
+        "first_commit": "2026-08-18T18:57:32.000Z",
+        "last_commit": "2026-08-18T18:57:32.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./rules",
+          "internal:./wormColors",
+          "external:vitest"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/game/engine.ts",
+      "size_bytes": 12745,
+      "lines": 443,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.147Z",
+      "git_history": {
+        "first_commit": "2026-05-06T08:25:26.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 15,
+        "authors": [
+          "TeacherEvan",
+          "copilot-swe-agent[bot]"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./detection",
+          "internal:./movement",
+          "internal:./rules",
+          "internal:./specialWorms",
+          "internal:./engineFairies",
+          "internal:./engineContinuous",
+          "internal:./enginePhase",
+          "internal:./engineUtils"
+        ],
+        "imported_by": [
+          "src/game/engine.world.test.ts",
+          "src/game/engineSpecialWorm.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "CreateWorldOptions",
+          "createEngineRuntime",
+          "createWorld",
+          "startContinuousMode",
+          "stopContinuousMode",
+          "startRound",
+          "resizeWorld",
+          "setPointer",
+          "triggerTouchRush",
+          "stepWorld",
+          "findWormIdAtPoint",
+          "applyMiss",
+          "applyAccuratePress",
+          "getSummary"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/engine.world.test.ts",
+      "size_bytes": 1434,
+      "lines": 36,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.147Z",
+      "git_history": {
+        "first_commit": "2026-08-18T18:57:32.000Z",
+        "last_commit": "2026-08-18T23:56:09.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./rules",
+          "internal:./engine",
+          "internal:./engineTestHelpers",
+          "external:vitest"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/game/engineContinuous.ts",
+      "size_bytes": 1537,
+      "lines": 50,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.147Z",
+      "git_history": {
+        "first_commit": "2026-08-18T15:05:52.000Z",
+        "last_commit": "2026-08-18T18:57:32.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./types",
+          "internal:./types",
+          "internal:./continuousColorTargets",
+          "internal:./wormColors",
+          "internal:./specialWorms"
+        ],
+        "imported_by": [
+          "src/game/engine.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "spawnContinuousWorm",
+          "refillContinuousWorms",
+          "getTargetColorSummary"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/engineFairies.ts",
+      "size_bytes": 2957,
+      "lines": 104,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.147Z",
+      "git_history": {
+        "first_commit": "2026-08-18T15:05:52.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./types",
+          "internal:./types",
+          "internal:./constants"
+        ],
+        "imported_by": [
+          "src/game/engine.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "createFairy",
+          "advanceFairies",
+          "getFairyState"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/enginePhase.ts",
+      "size_bytes": 1915,
+      "lines": 74,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.147Z",
+      "git_history": {
+        "first_commit": "2026-08-18T15:05:52.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./types",
+          "internal:./types"
+        ],
+        "imported_by": [
+          "src/game/engine.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "advanceWormTimers",
+          "syncWormStates",
+          "updateRoundPhase"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/engineSpecialWorm.test.ts",
+      "size_bytes": 7999,
+      "lines": 264,
+      "language": "typescript",
+      "last_modified": "2026-05-31T13:36:02.487Z",
+      "git_history": {
+        "first_commit": "2026-05-08T03:34:35.000Z",
+        "last_commit": "2026-05-31T21:22:07.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./engine",
+          "internal:./specialWorms",
+          "internal:./wormColors",
+          "external:vitest"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/game/engineTestHelpers.ts",
+      "size_bytes": 2898,
+      "lines": 109,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.148Z",
+      "git_history": {
+        "first_commit": "2026-08-18T18:57:32.000Z",
+        "last_commit": "2026-08-18T23:56:09.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:vitest"
+        ],
+        "imported_by": [
+          "src/game/engine.world.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "createDeterministicOptions",
+          "createFixedRuntime",
+          "getSnapshot",
+          "createActiveDesktopWorld",
+          "createContinuousActiveWorld",
+          "getActiveWormCount",
+          "getActiveStandardWormIdByColor",
+          "captureDesktopWorms"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/engineUtils.ts",
+      "size_bytes": 855,
+      "lines": 22,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.148Z",
+      "git_history": {
+        "first_commit": "2026-08-18T15:05:52.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./types"
+        ],
+        "imported_by": [
+          "src/game/engine.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "randomBetween",
+          "clamp",
+          "getWormSpeed"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/gameModes.ts",
+      "size_bytes": 120,
+      "lines": 3,
+      "language": "typescript",
+      "last_modified": "2026-06-14T06:55:38.288Z",
+      "git_history": {
+        "first_commit": "2026-06-14T07:44:08.000Z",
+        "last_commit": "2026-06-14T07:44:08.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "GameplayMode",
+          "DEFAULT_GAMEPLAY_MODE"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/levels.test.ts",
+      "size_bytes": 2181,
+      "lines": 57,
+      "language": "typescript",
+      "last_modified": "2026-05-08T04:15:01.230Z",
+      "git_history": {
+        "first_commit": "2026-05-07T19:54:26.000Z",
+        "last_commit": "2026-05-08T04:19:42.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./levels",
+          "external:vitest"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/game/levels.ts",
+      "size_bytes": 2204,
+      "lines": 76,
+      "language": "typescript",
+      "last_modified": "2026-05-07T19:03:38.748Z",
+      "git_history": {
+        "first_commit": "2026-05-07T19:54:26.000Z",
+        "last_commit": "2026-05-07T19:54:26.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./detection"
+        ],
+        "imported_by": [
+          "src/game/levels.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "GameplayLevel",
+          "normalizeGameplayLevel",
+          "getNextGameplayLevel",
+          "getGameplayLevel",
+          "getGameplayLevelRules"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/movement.ts",
+      "size_bytes": 2804,
+      "lines": 92,
+      "language": "typescript",
+      "last_modified": "2026-05-07T09:08:48.516Z",
+      "git_history": {
+        "first_commit": "2026-05-06T15:42:36.000Z",
+        "last_commit": "2026-05-07T09:44:15.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./types"
+        ],
+        "imported_by": [
+          "src/game/engine.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "stepWormMovement"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/rules.ts",
+      "size_bytes": 2091,
+      "lines": 88,
+      "language": "typescript",
+      "last_modified": "2026-05-08T04:15:01.232Z",
+      "git_history": {
+        "first_commit": "2026-05-06T11:02:15.000Z",
+        "last_commit": "2026-05-08T04:19:42.000Z",
+        "commit_count": 4,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./detection"
+        ],
+        "imported_by": [
+          "src/game/continuousColorTargets.test.ts",
+          "src/game/engine.continuous.test.ts",
+          "src/game/engine.interaction.test.ts",
+          "src/game/engine.step.test.ts",
+          "src/game/engine.ts",
+          "src/game/engine.world.test.ts",
+          "src/game/specialWorms.ts",
+          "src/game/types.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "DesktopRules",
+          "MobileRules",
+          "ProfileRules",
+          "DESKTOP_RULES",
+          "MOBILE_RULES",
+          "PROFILE_RULES",
+          "getProfileRules"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/specialWorms.ts",
+      "size_bytes": 3342,
+      "lines": 116,
+      "language": "typescript",
+      "last_modified": "2026-05-31T13:20:56.880Z",
+      "git_history": {
+        "first_commit": "2026-05-08T03:34:35.000Z",
+        "last_commit": "2026-05-31T21:22:07.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./rules",
+          "internal:./types",
+          "internal:./wormColors"
+        ],
+        "imported_by": [
+          "src/game/continuousColorTargets.test.ts",
+          "src/game/engine.ts",
+          "src/game/engineContinuous.ts",
+          "src/game/engineSpecialWorm.test.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "createStandardWorm",
+          "createPsychedelicWorm",
+          "shouldSpawnPsychedelicWorm"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/types.ts",
+      "size_bytes": 3859,
+      "lines": 168,
+      "language": "typescript",
+      "last_modified": "2026-06-01T02:36:01.344Z",
+      "git_history": {
+        "first_commit": "2026-05-06T11:02:15.000Z",
+        "last_commit": "2026-06-01T03:52:32.000Z",
+        "commit_count": 8,
+        "authors": [
+          "TeacherEvan",
+          "copilot-swe-agent[bot]"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "internal:./detection",
+          "internal:./rules",
+          "internal:./wormColors"
+        ],
+        "imported_by": [
+          "src/game/continuousColorTargets.ts",
+          "src/game/engineContinuous.ts",
+          "src/game/engineFairies.ts",
+          "src/game/enginePhase.ts",
+          "src/game/engineUtils.ts",
+          "src/game/movement.ts",
+          "src/game/specialWorms.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "RoundPhase",
+          "DesktopWormState",
+          "MobileWormState",
+          "WormState",
+          "FairyState",
+          "Point",
+          "StandardWorm",
+          "PsychedelicWorm",
+          "Worm",
+          "WormVisualVariant",
+          "Fairy",
+          "ContinuousColorTargetState",
+          "GameSummaryTargetColor",
+          "GameSummary",
+          "RoundResult",
+          "ActionResult",
+          "EngineRuntime",
+          "GameWorld",
+          "isWormActive",
+          "isFairyVisible"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/game/wormColors.ts",
+      "size_bytes": 784,
+      "lines": 24,
+      "language": "typescript",
+      "last_modified": "2026-06-01T02:34:27.239Z",
+      "git_history": {
+        "first_commit": "2026-05-31T21:22:07.000Z",
+        "last_commit": "2026-06-01T03:52:32.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [
+          "src/game/continuousColorTargets.test.ts",
+          "src/game/continuousColorTargets.ts",
+          "src/game/engine.continuous.test.ts",
+          "src/game/engine.interaction.test.ts",
+          "src/game/engine.step.test.ts",
+          "src/game/engineContinuous.ts",
+          "src/game/engineSpecialWorm.test.ts",
+          "src/game/specialWorms.ts",
+          "src/game/types.ts"
+        ],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "STANDARD_WORM_COLORS",
+          "WormColorId",
+          "getStandardWormColor",
+          "getWormColorById"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/lib/analytics.test.ts",
+      "size_bytes": 2140,
+      "lines": 77,
+      "language": "typescript",
+      "last_modified": "2026-05-06T16:06:51.526Z",
+      "git_history": {
+        "first_commit": "2026-05-06T16:19:57.000Z",
+        "last_commit": "2026-05-06T16:19:57.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:vitest",
+          "external:@/lib/analytics",
+          "external:@/game/detection",
+          "external:@/game/types"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": true,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/lib/analytics.ts",
+      "size_bytes": 3122,
+      "lines": 121,
+      "language": "typescript",
+      "last_modified": "2026-05-06T16:06:45.582Z",
+      "git_history": {
+        "first_commit": "2026-05-06T11:02:15.000Z",
+        "last_commit": "2026-05-06T16:19:57.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/game/detection",
+          "external:@/game/types",
+          "external:@/lib/logger"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "PendingAnalyticsEvent",
+          "areDisplaySnapshotsEqual",
+          "getProfileDetectedDetails",
+          "getRoundTransitionEvents",
+          "getRoundEndedDetails",
+          "getFairyLifecycleEvents"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/lib/backdropPreload.ts",
+      "size_bytes": 613,
+      "lines": 32,
+      "language": "typescript",
+      "last_modified": "2026-08-19T01:01:37.148Z",
+      "git_history": {
+        "first_commit": "2026-08-18T15:05:52.000Z",
+        "last_commit": "2026-08-18T15:05:52.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/lib/logger.ts",
+      "size_bytes": 2674,
+      "lines": 123,
+      "language": "typescript",
+      "last_modified": "2026-05-06T11:35:43.611Z",
+      "git_history": {
+        "first_commit": "2026-05-06T08:25:26.000Z",
+        "last_commit": "2026-05-06T11:02:15.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/game/detection"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "ANALYTICS_EVENT_NAMES",
+          "EventName",
+          "AnalyticsEvent",
+          "createSilentLogger"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "src/lib/wormRanchSettings.ts",
+      "size_bytes": 2956,
+      "lines": 102,
+      "language": "typescript",
+      "last_modified": "2026-05-06T16:09:14.402Z",
+      "git_history": {
+        "first_commit": "2026-05-06T11:02:15.000Z",
+        "last_commit": "2026-05-06T16:19:57.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/game/detection",
+          "external:@/lib/logger"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 3,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [
+          "SettingsState",
+          "defaultSettings",
+          "subscribeToSettings",
+          "getStoredSettingsSnapshot",
+          "getStoredSettingsServerSnapshot",
+          "writeStoredSettings",
+          "areSettingsEqual",
+          "getSettingsDetails"
+        ],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0.4
+      }
+    },
+    {
+      "path": "docs/plans/.archive/2026-05-31-color-target-relaunch-plan.md",
+      "size_bytes": 21909,
+      "lines": 581,
+      "language": "markdown",
+      "last_modified": "2026-06-14T06:38:03.835Z",
+      "git_history": {
+        "first_commit": "2026-06-14T06:40:29.000Z",
+        "last_commit": "2026-06-14T06:40:29.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/plans/.archive/2026-06-01-separate-game-mode-flow.md",
+      "size_bytes": 13862,
+      "lines": 428,
+      "language": "markdown",
+      "last_modified": "2026-08-19T01:01:37.141Z",
+      "git_history": {
+        "first_commit": "2026-08-19T00:44:27.000Z",
+        "last_commit": "2026-08-19T00:44:27.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/plans/.archive/2026-08-18-audit-SECURITY.md",
+      "size_bytes": 1228,
+      "lines": 29,
+      "language": "markdown",
+      "last_modified": "2026-08-19T01:01:37.141Z",
+      "git_history": {
+        "first_commit": "2026-08-19T00:25:55.000Z",
+        "last_commit": "2026-08-19T00:25:55.000Z",
+        "commit_count": 1,
+        "authors": [
+          "Hermes Agent"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/plans/.archive/2026-08-18-audit-TRACEABILITY.md",
+      "size_bytes": 1547,
+      "lines": 26,
+      "language": "markdown",
+      "last_modified": "2026-08-19T01:01:37.141Z",
+      "git_history": {
+        "first_commit": "2026-08-19T00:25:55.000Z",
+        "last_commit": "2026-08-19T00:25:55.000Z",
+        "commit_count": 1,
+        "authors": [
+          "Hermes Agent"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/plans/.archive/2026-08-18-codebase-audit-and-refactor-recommendations.md",
+      "size_bytes": 27142,
+      "lines": 560,
+      "language": "markdown",
+      "last_modified": "2026-08-19T01:01:37.142Z",
+      "git_history": {
+        "first_commit": "2026-08-19T00:25:55.000Z",
+        "last_commit": "2026-08-19T00:25:55.000Z",
+        "commit_count": 1,
+        "authors": [
+          "Hermes Agent"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/plans/.archive/2026-08-18-codebase-audit-debrief.md",
+      "size_bytes": 8975,
+      "lines": 192,
+      "language": "markdown",
+      "last_modified": "2026-08-19T01:01:37.142Z",
+      "git_history": {
+        "first_commit": "2026-08-19T00:25:55.000Z",
+        "last_commit": "2026-08-19T00:25:55.000Z",
+        "commit_count": 1,
+        "authors": [
+          "Hermes Agent"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/plans/.archive/2026-08-19-plan-archive-audit-debrief.md",
+      "size_bytes": 4262,
+      "lines": 53,
+      "language": "markdown",
+      "last_modified": "2026-08-19T01:01:37.142Z",
+      "git_history": {
+        "first_commit": "2026-08-19T00:44:27.000Z",
+        "last_commit": "2026-08-19T00:44:27.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/plans/.archive/HERMES_PLAN.ai.json",
+      "size_bytes": 1132,
+      "lines": 40,
+      "language": "json",
+      "last_modified": "2026-08-15T11:55:45.585Z",
+      "git_history": {
+        "first_commit": "2026-08-19T18:24:06.511Z",
+        "last_commit": "2026-08-19T18:24:06.511Z",
+        "commit_count": 0,
+        "authors": []
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/plans/.archive/HERMES_PLAN.html",
+      "size_bytes": 5834,
+      "lines": 91,
+      "language": "html",
+      "last_modified": "2026-08-15T11:55:45.585Z",
+      "git_history": {
+        "first_commit": "2026-08-19T18:24:06.521Z",
+        "last_commit": "2026-08-19T18:24:06.521Z",
+        "commit_count": 0,
+        "authors": []
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/plans/.archive/worm-ranch-plan.md",
+      "size_bytes": 4344,
+      "lines": 80,
+      "language": "markdown",
+      "last_modified": "2026-06-14T06:37:44.849Z",
+      "git_history": {
+        "first_commit": "2026-06-14T06:40:29.000Z",
+        "last_commit": "2026-06-14T06:40:29.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-01-game-mode-flow-design.md",
+      "size_bytes": 7086,
+      "lines": 188,
+      "language": "markdown",
+      "last_modified": "2026-06-14T06:38:58.405Z",
+      "git_history": {
+        "first_commit": "2026-06-01T12:54:32.000Z",
+        "last_commit": "2026-06-14T06:40:29.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/art/Gameplay backdrops/243-2436830_evil-clipart-baby-devil-sexy-devil-cartoon.jpeg",
+      "size_bytes": 67862,
+      "lines": 201,
+      "language": "unknown",
+      "last_modified": "2026-08-05T00:45:04.761Z",
+      "git_history": {
+        "first_commit": "2026-08-13T14:52:17.000Z",
+        "last_commit": "2026-08-13T14:52:17.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/art/Gameplay backdrops/Grasspastures.jpeg",
+      "size_bytes": 8606,
+      "lines": 43,
+      "language": "unknown",
+      "last_modified": "2026-05-07T16:18:18.697Z",
+      "git_history": {
+        "first_commit": "2026-05-07T17:04:34.000Z",
+        "last_commit": "2026-05-07T17:04:34.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/art/Gameplay backdrops/desert-landscape-with-sparse-vegetation_1308-178017.avif",
+      "size_bytes": 22501,
+      "lines": 79,
+      "language": "unknown",
+      "last_modified": "2026-05-07T16:16:31.376Z",
+      "git_history": {
+        "first_commit": "2026-05-07T17:04:34.000Z",
+        "last_commit": "2026-05-07T17:04:34.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/art/Gameplay backdrops/istockphoto-866482364-612x612.jpg",
+      "size_bytes": 60920,
+      "lines": 248,
+      "language": "unknown",
+      "last_modified": "2026-05-07T16:18:41.730Z",
+      "git_history": {
+        "first_commit": "2026-05-07T17:04:34.000Z",
+        "last_commit": "2026-05-07T17:04:34.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/art/Gameplay backdrops/output.mp4",
+      "size_bytes": 12800766,
+      "lines": 49738,
+      "language": "unknown",
+      "last_modified": "2026-06-23T18:43:59.994Z",
+      "git_history": {
+        "first_commit": "2026-08-19T18:24:07.055Z",
+        "last_commit": "2026-08-19T18:24:07.055Z",
+        "commit_count": 0,
+        "authors": []
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/art/Gameplay backdrops/top-view-city-with-desert_70347-2005.avif",
+      "size_bytes": 25405,
+      "lines": 90,
+      "language": "unknown",
+      "last_modified": "2026-05-07T16:17:01.319Z",
+      "git_history": {
+        "first_commit": "2026-05-07T17:04:34.000Z",
+        "last_commit": "2026-05-07T17:04:34.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/art/Gameplay backdrops/top-view-countryside-with-forest-grass-with-stones-trees_70347-5426.avif",
+      "size_bytes": 112311,
+      "lines": 467,
+      "language": "unknown",
+      "last_modified": "2026-05-07T16:17:38.670Z",
+      "git_history": {
+        "first_commit": "2026-05-07T17:04:34.000Z",
+        "last_commit": "2026-05-07T17:04:34.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/art/Gameplay backdrops/vector-top-view-of-the-countryside.jpg",
+      "size_bytes": 41832,
+      "lines": 158,
+      "language": "unknown",
+      "last_modified": "2026-05-07T16:17:13.814Z",
+      "git_history": {
+        "first_commit": "2026-05-07T17:04:34.000Z",
+        "last_commit": "2026-05-07T17:04:34.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/audio/gameplay/ATTRIBUTION.txt",
+      "size_bytes": 472,
+      "lines": 15,
+      "language": "unknown",
+      "last_modified": "2026-05-08T04:09:01.094Z",
+      "git_history": {
+        "first_commit": "2026-05-08T03:34:35.000Z",
+        "last_commit": "2026-05-08T04:19:42.000Z",
+        "commit_count": 3,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/audio/gameplay/western-gunshot.mp3",
+      "size_bytes": 13181,
+      "lines": 39,
+      "language": "unknown",
+      "last_modified": "2026-05-08T03:41:59.709Z",
+      "git_history": {
+        "first_commit": "2026-05-08T03:53:09.000Z",
+        "last_commit": "2026-05-08T03:53:09.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "public/audio/gameplay/whip-crack.mp3",
+      "size_bytes": 14006,
+      "lines": 48,
+      "language": "unknown",
+      "last_modified": "2026-05-08T03:41:59.711Z",
+      "git_history": {
+        "first_commit": "2026-05-08T03:53:09.000Z",
+        "last_commit": "2026-05-08T03:53:09.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 4,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": ".superpowers/brainstorm/985943-1778153903/content/art-direction-1.html",
+      "size_bytes": 4789,
+      "lines": 63,
+      "language": "html",
+      "last_modified": "2026-05-07T11:45:51.581Z",
+      "git_history": {
+        "first_commit": "2026-05-07T13:12:53.000Z",
+        "last_commit": "2026-05-07T13:12:53.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 5,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": ".superpowers/brainstorm/985943-1778153903/state/server-stopped",
+      "size_bytes": 52,
+      "lines": 2,
+      "language": "unknown",
+      "last_modified": "2026-05-07T12:16:24.043Z",
+      "git_history": {
+        "first_commit": "2026-05-07T13:12:53.000Z",
+        "last_commit": "2026-05-07T13:12:53.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 5,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": ".superpowers/brainstorm/985943-1778153903/state/server.log",
+      "size_bytes": 820,
+      "lines": 6,
+      "language": "unknown",
+      "last_modified": "2026-05-07T12:16:24.043Z",
+      "git_history": {
+        "first_commit": "2026-05-07T13:12:53.000Z",
+        "last_commit": "2026-05-07T13:12:53.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 0,
+        "is_entry_point": true,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": ".superpowers/brainstorm/985943-1778153903/state/server.pid",
+      "size_bytes": 7,
+      "lines": 2,
+      "language": "unknown",
+      "last_modified": "2026-05-07T11:38:23.867Z",
+      "git_history": {
+        "first_commit": "2026-05-07T13:12:53.000Z",
+        "last_commit": "2026-05-07T13:12:53.000Z",
+        "commit_count": 1,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [],
+        "imported_by": [],
+        "entry_point_distance": 0,
+        "is_entry_point": true,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    },
+    {
+      "path": "src/app/api/events/route.ts",
+      "size_bytes": 998,
+      "lines": 30,
+      "language": "typescript",
+      "last_modified": "2026-05-06T14:38:14.206Z",
+      "git_history": {
+        "first_commit": "2026-05-06T08:25:26.000Z",
+        "last_commit": "2026-05-06T11:02:15.000Z",
+        "commit_count": 2,
+        "authors": [
+          "TeacherEvan"
+        ]
+      },
+      "dependency_graph": {
+        "imports": [
+          "external:@/lib/logger"
+        ],
+        "imported_by": [],
+        "entry_point_distance": 5,
+        "is_entry_point": false,
+        "is_test": false,
+        "is_config": false
+      },
+      "dead_code_signals": {
+        "unused_exports": [],
+        "unreachable": false,
+        "zero_references": true,
+        "confidence": 0
+      }
+    }
+  ],
+  "folder_summary": [
+    {
+      "path": ".",
+      "file_count": 12,
+      "total_bytes": 785536,
+      "languages": {
+        "unknown": 4,
+        "markdown": 5,
+        "typescript": 1,
+        "json": 1,
+        "html": 1
+      },
+      "oldest_doc": "2026-05-06T07:18:59.832Z",
+      "newest_doc": "2026-08-19T13:41:25.051Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": ".prune",
+      "file_count": 5,
+      "total_bytes": 1493554,
+      "languages": {
+        "json": 5
+      },
+      "oldest_doc": "2026-08-19T13:41:25.018Z",
+      "newest_doc": "2026-08-19T13:41:25.072Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": ".vscode",
+      "file_count": 1,
+      "total_bytes": 123,
+      "languages": {
+        "json": 1
+      },
+      "oldest_doc": "2026-05-22T13:21:34.627Z",
+      "newest_doc": "2026-05-22T13:21:34.627Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": "docs",
+      "file_count": 5,
+      "total_bytes": 779446,
+      "languages": {
+        "markdown": 4,
+        "html": 1
+      },
+      "oldest_doc": "2026-05-08T04:09:01.089Z",
+      "newest_doc": "2026-08-19T01:01:37.141Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": "public",
+      "file_count": 7,
+      "total_bytes": 4115,
+      "languages": {
+        "unknown": 6,
+        "javascript": 1
+      },
+      "oldest_doc": "2026-05-06T07:05:30.823Z",
+      "newest_doc": "2026-05-07T10:14:01.716Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": "scripts",
+      "file_count": 1,
+      "total_bytes": 2682,
+      "languages": {
+        "unknown": 1
+      },
+      "oldest_doc": "2026-05-07T15:58:00.563Z",
+      "newest_doc": "2026-05-07T15:58:00.563Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": "docs/plans",
+      "file_count": 1,
+      "total_bytes": 4311,
+      "languages": {
+        "markdown": 1
+      },
+      "oldest_doc": "2026-08-19T01:01:37.142Z",
+      "newest_doc": "2026-08-19T01:01:37.142Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": "memories/repo",
+      "file_count": 1,
+      "total_bytes": 2970,
+      "languages": {
+        "markdown": 1
+      },
+      "oldest_doc": "2026-05-07T17:03:23.444Z",
+      "newest_doc": "2026-05-07T17:03:23.444Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": "public/art",
+      "file_count": 4,
+      "total_bytes": 12220042,
+      "languages": {
+        "unknown": 4
+      },
+      "oldest_doc": "2026-05-07T14:22:42.488Z",
+      "newest_doc": "2026-05-07T16:57:45.324Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": "public/fonts",
+      "file_count": 1,
+      "total_bytes": 49256,
+      "languages": {
+        "unknown": 1
+      },
+      "oldest_doc": "2026-08-01T13:06:02.068Z",
+      "newest_doc": "2026-08-01T13:06:02.068Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": "src/app",
+      "file_count": 5,
+      "total_bytes": 30354,
+      "languages": {
+        "unknown": 1,
+        "css": 1,
+        "typescript": 3
+      },
+      "oldest_doc": "2026-05-06T07:05:30.821Z",
+      "newest_doc": "2026-08-19T01:01:37.144Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": "src/components",
+      "file_count": 74,
+      "total_bytes": 299029,
+      "languages": {
+        "css": 15,
+        "typescript": 59
+      },
+      "oldest_doc": "2026-05-07T09:27:45.215Z",
+      "newest_doc": "2026-08-19T13:01:59.696Z",
+      "dead_code_candidates": 0,
+      "protected_files": 24
+    },
+    {
+      "path": "src/game",
+      "file_count": 23,
+      "total_bytes": 83104,
+      "languages": {
+        "typescript": 23
+      },
+      "oldest_doc": "2026-05-06T07:18:59.897Z",
+      "newest_doc": "2026-08-19T01:01:37.148Z",
+      "dead_code_candidates": 0,
+      "protected_files": 7
+    },
+    {
+      "path": "src/lib",
+      "file_count": 5,
+      "total_bytes": 11505,
+      "languages": {
+        "typescript": 5
+      },
+      "oldest_doc": "2026-05-06T11:35:43.611Z",
+      "newest_doc": "2026-08-19T01:01:37.148Z",
+      "dead_code_candidates": 0,
+      "protected_files": 1
+    },
+    {
+      "path": "docs/plans/.archive",
+      "file_count": 10,
+      "total_bytes": 90235,
+      "languages": {
+        "markdown": 8,
+        "json": 1,
+        "html": 1
+      },
+      "oldest_doc": "2026-06-14T06:37:44.849Z",
+      "newest_doc": "2026-08-19T01:01:37.142Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": "docs/superpowers/specs",
+      "file_count": 1,
+      "total_bytes": 7086,
+      "languages": {
+        "markdown": 1
+      },
+      "oldest_doc": "2026-06-14T06:38:58.405Z",
+      "newest_doc": "2026-06-14T06:38:58.405Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": "public/art/Gameplay backdrops",
+      "file_count": 8,
+      "total_bytes": 13140203,
+      "languages": {
+        "unknown": 8
+      },
+      "oldest_doc": "2026-05-07T16:16:31.376Z",
+      "newest_doc": "2026-08-05T00:45:04.761Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": "public/audio/gameplay",
+      "file_count": 3,
+      "total_bytes": 27659,
+      "languages": {
+        "unknown": 3
+      },
+      "oldest_doc": "2026-05-08T03:41:59.709Z",
+      "newest_doc": "2026-05-08T04:09:01.094Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": ".superpowers/brainstorm/985943-1778153903/content",
+      "file_count": 1,
+      "total_bytes": 4789,
+      "languages": {
+        "html": 1
+      },
+      "oldest_doc": "2026-05-07T11:45:51.581Z",
+      "newest_doc": "2026-05-07T11:45:51.581Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    },
+    {
+      "path": ".superpowers/brainstorm/985943-1778153903/state",
+      "file_count": 3,
+      "total_bytes": 879,
+      "languages": {
+        "unknown": 3
+      },
+      "oldest_doc": "2026-05-07T11:38:23.867Z",
+      "newest_doc": "2026-05-07T12:16:24.043Z",
+      "dead_code_candidates": 0,
+      "protected_files": 2
+    },
+    {
+      "path": "src/app/api/events",
+      "file_count": 1,
+      "total_bytes": 998,
+      "languages": {
+        "typescript": 1
+      },
+      "oldest_doc": "2026-05-06T14:38:14.206Z",
+      "newest_doc": "2026-05-06T14:38:14.206Z",
+      "dead_code_candidates": 0,
+      "protected_files": 0
+    }
+  ],
+  "effected_systems": [
+    {
+      "name": "build",
+      "impact": {
+        "bundle_size_reduction_est_kb": 0
+      },
+      "heuristic": true
+    },
+    {
+      "name": "ci",
+      "impact": {
+        "time_saved_seconds_est": 0
+      },
+      "heuristic": true
+    },
+    {
+      "name": "cognitive_load",
+      "impact": {
+        "files_removable": 0
+      },
+      "heuristic": true
+    }
+  ],
+  "constraints": {
+    "exclusion_patterns_applied": [
+      ".git/",
+      ".github/",
+      ".gitlab/",
+      ".husky/",
+      "package-lock.json",
+      "yarn.lock",
+      "pnpm-lock.yaml",
+      "Cargo.lock",
+      ".env",
+      "*.pem",
+      "*.key",
+      "*.cert",
+      "secrets/",
+      ".aws/",
+      ".ssh/",
+      "node_modules/",
+      ".venv/",
+      "venv/",
+      "dist/",
+      "build/",
+      ".next/",
+      ".vercel/",
+      "*config*",
+      "*setup*",
+      "*.config.*",
+      "docker*",
+      "main.*",
+      "index.*",
+      "app.*",
+      "server.*",
+      "cli.*",
+      "*.test.*",
+      "*.spec.*",
+      "__tests__/",
+      "tests/",
+      "cypress/"
+    ],
+    "languages_detected": [
+      "unknown",
+      "markdown",
+      "typescript",
+      "json",
+      "html",
+      "javascript",
+      "css"
+    ],
+    "frameworks_detected": [],
+    "package_managers": [
+      "npm"
+    ],
+    "monorepo": true
+  },
+  "external_knip_issues": []
+}

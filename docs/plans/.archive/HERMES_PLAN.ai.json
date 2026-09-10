@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "repo": "Worm ranch",
+    "group": "GAMES",
+    "generated": "2026-08-15 18:55",
+    "branch": "main",
+    "commits": "41",
+    "lang": "Node/JS",
+    "status": "proposed"
+  },
+  "items": [
+    {
+      "area": "Game modes",
+      "action": "Land docs/plans/worm-ranch-plan (separate desktop/mobile rule sets, continuous play)."
+    },
+    {
+      "area": "Color target",
+      "action": "Finalize color-target relaunch (2s directive + named stable colors)."
+    },
+    {
+      "area": "HUD",
+      "action": "Keep mobile Beat-bell timer persistent in HUD."
+    }
+  ],
+  "instructions": "Worm ranch (GAMES): proposed workstreams. Agent reads HERMES_PLAN.html ticks: approve(a)=implement, change(c)=revisit/clarify, skip=ignore. Compact form below.",
+  "compact": [
+    {
+      "a": "G",
+      "summary": "Land docs/plans/worm-ranch-plan (separate desktop/mobile rule sets, continuous play)."
+    },
+    {
+      "a": "C",
+      "summary": "Finalize color-target relaunch (2s directive + named stable colors)."
+    },
+    {
+      "a": "H",
+      "summary": "Keep mobile Beat-bell timer persistent in HUD."
+    }
+  ]
+}

@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surgical Pruning Plan — /home/ewaldt/Documents/VS/GAMES/Worm ranch</title>
+<style>
+  :root {
+    --bg: #0b0e17;
+    --bg-2: #121726;
+    --bg-3: #1a2236;
+    --fg: #e6ecff;
+    --muted: #8b97b8;
+    --accent: #6ea8fe;
+    --accent-2: #4cc9b0;
+    --danger: #ff6b6b;
+    --warn: #ffd166;
+    --ok: #4cc9b0;
+    --border: #232c44;
+    --shadow: 0 8px 30px rgba(0,0,0,0.45);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: radial-gradient(1200px 600px at 70% -10%, #16203a 0%, var(--bg) 60%);
+    color: var(--fg);
+    min-height: 100vh;
+    padding: 32px 20px 64px;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  header {
+    display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px;
+    justify-content: space-between; margin-bottom: 20px;
+  }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: 0.3px; }
+  .sub { color: var(--muted); font-size: 13px; }
+  .stats { display: flex; gap: 12px; flex-wrap: wrap; }
+  .stat {
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 10px 14px; min-width: 120px;
+  }
+  .stat .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+  .stat .v { font-size: 18px; font-weight: 600; margin-top: 2px; }
+  .stat .v.accent { color: var(--accent-2); }
+  .panel {
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 14px; box-shadow: var(--shadow); overflow: hidden;
+  }
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+  }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    background: var(--bg-3); color: var(--muted); border: 1px solid var(--border);
+    border-radius: 999px; padding: 6px 14px; font-size: 13px; cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .chip:hover { color: var(--fg); }
+  .chip.active { background: var(--accent); color: #06101f; border-color: var(--accent); font-weight: 600; }
+  .spacer { flex: 1; }
+  button.action {
+    border: none; border-radius: 10px; padding: 9px 16px; font-size: 13px;
+    font-weight: 600; cursor: pointer; color: #06101f;
+  }
+  .btn-prune { background: var(--danger); }
+  .btn-dry { background: var(--warn); }
+  .btn-export { background: var(--accent); }
+  .summary { padding: 10px 16px; font-size: 13px; color: var(--accent-2); min-height: 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    text-align: left; padding: 10px 14px; color: var(--muted);
+    border-bottom: 1px solid var(--border); font-weight: 600; position: sticky; top: 0;
+    background: var(--bg-2);
+  }
+  tbody td { padding: 9px 14px; border-bottom: 1px solid var(--bg-3); vertical-align: middle; }
+  tbody tr:hover { background: var(--bg-3); }
+  td.c { width: 36px; text-align: center; }
+  td.path { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
+  td.num { text-align: right; color: var(--muted); white-space: nowrap; }
+  .signal { color: var(--muted); font-size: 12px; }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
+  }
+  .badge-autoprune { background: rgba(255,107,107,0.16); color: var(--danger); }
+  .badge-review { background: rgba(255,209,102,0.16); color: var(--warn); }
+  .badge-manual { background: rgba(139,151,184,0.16); color: var(--muted); }
+  .badge-protected { background: rgba(76,201,176,0.16); color: var(--ok); }
+  footer { color: var(--muted); font-size: 11px; margin-top: 16px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Surgical Pruning Plan</h1>
+      <div class="sub">Target: <code>/home/ewaldt/Documents/VS/GAMES/Worm ranch</code> · git: 28d5b46</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">Candidate files</div><div class="v">172</div></div>
+      <div class="stat"><div class="k">Reclaimable</div><div class="v accent">0 B</div></div>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div class="toolbar">
+      <div class="chips"><button class="chip active" data-group="All">All</button>
+<button class="chip " data-group="Auto-prune">Auto-prune</button>
+<button class="chip " data-group="Review">Review</button>
+<button class="chip " data-group="Manual">Manual</button>
+<button class="chip " data-group="Protected">Protected</button></div>
+      <div class="spacer"></div>
+      <button class="action btn-export" id="exportBtn">EXPORT PLAN</button>
+      <button class="action btn-dry" id="dryBtn">DRY RUN</button>
+      <button class="action btn-prune" id="pruneBtn">PRUNE</button>
+    </div>
+    <div class="summary" id="summary"></div>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Path</th>
+          <th style="text-align:right">Size</th>
+          <th style="text-align:right">Confidence</th>
+          <th>Signals</th>
+          <th>Group</th>
+        </tr>
+      </thead>
+      <tbody>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb0"  ></td>
+      <td class="path">.copilotignore</td>
+      <td class="num">82 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb1"  ></td>
+      <td class="path">.env.local</td>
+      <td class="num">1 280 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb2"  ></td>
+      <td class="path">.gitignore</td>
+      <td class="num">578 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb3"  ></td>
+      <td class="path">AGENTS.md</td>
+      <td class="num">1 024 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb4"  ></td>
+      <td class="path">HANDOVER.md</td>
+      <td class="num">5 430 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb5"  ></td>
+      <td class="path">README.md</td>
+      <td class="num">3 492 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb6"  ></td>
+      <td class="path">SECURITY.md</td>
+      <td class="num">619 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb7"  ></td>
+      <td class="path">knip.jsonc</td>
+      <td class="num">706 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb8"  ></td>
+      <td class="path">next-env.d.ts</td>
+      <td class="num">247 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb9"  ></td>
+      <td class="path">package.json</td>
+      <td class="num">1 012 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb10"  ></td>
+      <td class="path">surgical-pruning-0819-Worm ranch.html</td>
+      <td class="num">768 267 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb11"  ></td>
+      <td class="path">task.md</td>
+      <td class="num">2 799 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb12"  ></td>
+      <td class="path">.prune/PRUNE_MANIFEST.json</td>
+      <td class="num">95 552 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb13"  ></td>
+      <td class="path">.prune/audit-report.json</td>
+      <td class="num">82 119 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb14"  ></td>
+      <td class="path">.prune/handoff-researcher.json</td>
+      <td class="num">3 822 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb15"  ></td>
+      <td class="path">.prune/handoff-reviewer.json</td>
+      <td class="num">1 232 596 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb16"  ></td>
+      <td class="path">.prune/suggestions.json</td>
+      <td class="num">79 465 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb17"  ></td>
+      <td class="path">.vscode/settings.json</td>
+      <td class="num">123 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb18"  ></td>
+      <td class="path">docs/README.md</td>
+      <td class="num">1 091 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb19"  ></td>
+      <td class="path">docs/audio-sources.md</td>
+      <td class="num">872 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb20"  ></td>
+      <td class="path">docs/jobcard.md</td>
+      <td class="num">1 499 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb21"  ></td>
+      <td class="path">docs/surgical-pruning-0819-Worm ranch.html</td>
+      <td class="num">760 392 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb22"  ></td>
+      <td class="path">docs/visual-redesign-spec.md</td>
+      <td class="num">15 592 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb23"  ></td>
+      <td class="path">public/file.svg</td>
+      <td class="num">391 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb24"  ></td>
+      <td class="path">public/globe.svg</td>
+      <td class="num">1 035 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb25"  ></td>
+      <td class="path">public/next.svg</td>
+      <td class="num">1 375 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb26"  ></td>
+      <td class="path">public/sw.js</td>
+      <td class="num">181 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb27"  ></td>
+      <td class="path">public/vercel.svg</td>
+      <td class="num">128 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb28"  ></td>
+      <td class="path">public/window.svg</td>
+      <td class="num">385 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb29"  ></td>
+      <td class="path">public/worm-ranch-icon.svg</td>
+      <td class="num">620 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb30"  ></td>
+      <td class="path">scripts/run-next-with-fallback.mjs</td>
+      <td class="num">2 682 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb31"  ></td>
+      <td class="path">docs/plans/worm-ranch-plan.md</td>
+      <td class="num">4 311 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb32"  ></td>
+      <td class="path">memories/repo/design-context.md</td>
+      <td class="num">2 970 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb33"  ></td>
+      <td class="path">public/art/welcome-memory-desktop.webp</td>
+      <td class="num">134 838 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb34"  ></td>
+      <td class="path">public/art/welcome-memory-mobile.webp</td>
+      <td class="num">102 848 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb35"  ></td>
+      <td class="path">public/art/worm-ranch-launch-intro.mp4</td>
+      <td class="num">3 162 679 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb36"  ></td>
+      <td class="path">public/art/worm-ranch-launch-poster.png</td>
+      <td class="num">8 819 677 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb37"  ></td>
+      <td class="path">public/fonts/SpaceGrotesk-VariableFont_wght.woff2</td>
+      <td class="num">49 256 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb38"  ></td>
+      <td class="path">src/app/favicon.ico</td>
+      <td class="num">25 931 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb39"  ></td>
+      <td class="path">src/app/globals.css</td>
+      <td class="num">3 061 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb40"  ></td>
+      <td class="path">src/app/layout.tsx</td>
+      <td class="num">724 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">1 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb41"  ></td>
+      <td class="path">src/app/manifest.ts</td>
+      <td class="num">517 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb42"  ></td>
+      <td class="path">src/app/page.tsx</td>
+      <td class="num">121 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb43"  ></td>
+      <td class="path">src/components/EndlessGameOverWindow.module.css</td>
+      <td class="num">1 673 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb44"  ></td>
+      <td class="path">src/components/EndlessGameOverWindow.tsx</td>
+      <td class="num">1 018 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">2 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb45"  ></td>
+      <td class="path">src/components/GameHUD.tsx</td>
+      <td class="num">683 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb46"  ></td>
+      <td class="path">src/components/GameModeScreen.module.css</td>
+      <td class="num">2 546 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb47"  ></td>
+      <td class="path">src/components/GameModeScreen.tsx</td>
+      <td class="num">2 125 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">2 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb48"  disabled></td>
+      <td class="path">src/components/GameStage.interaction.test.ts</td>
+      <td class="num">15 303 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb49"  ></td>
+      <td class="path">src/components/GameStage.module.css</td>
+      <td class="num">13 577 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb50"  disabled></td>
+      <td class="path">src/components/GameStage.render.test.ts</td>
+      <td class="num">7 286 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb51"  ></td>
+      <td class="path">src/components/GameStage.tsx</td>
+      <td class="num">18 694 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">1 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb52"  ></td>
+      <td class="path">src/components/GameStageOverlay.tsx</td>
+      <td class="num">2 590 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">1 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb53"  ></td>
+      <td class="path">src/components/GameStagePhaseBadge.module.css</td>
+      <td class="num">2 540 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb54"  ></td>
+      <td class="path">src/components/HomeScreen.module.css</td>
+      <td class="num">2 280 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb55"  disabled></td>
+      <td class="path">src/components/HomeScreen.test.ts</td>
+      <td class="num">983 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb56"  ></td>
+      <td class="path">src/components/HomeScreen.tsx</td>
+      <td class="num">1 179 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">1 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb57"  ></td>
+      <td class="path">src/components/ResultsScreen.module.css</td>
+      <td class="num">3 072 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb58"  ></td>
+      <td class="path">src/components/ScreenTransition.module.css</td>
+      <td class="num">998 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb59"  ></td>
+      <td class="path">src/components/ScreenTransition.tsx</td>
+      <td class="num">775 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">2 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb60"  ></td>
+      <td class="path">src/components/SettingsScreen.module.css</td>
+      <td class="num">2 881 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb61"  disabled></td>
+      <td class="path">src/components/SettingsScreen.test.ts</td>
+      <td class="num">956 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb62"  ></td>
+      <td class="path">src/components/SettingsScreen.tsx</td>
+      <td class="num">3 179 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">1 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb63"  ></td>
+      <td class="path">src/components/WelcomeLaunchLoader.module.css</td>
+      <td class="num">2 896 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb64"  ></td>
+      <td class="path">src/components/WelcomeLaunchLoader.tsx</td>
+      <td class="num">3 144 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">1 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb65"  ></td>
+      <td class="path">src/components/WelcomeScreen.module.css</td>
+      <td class="num">7 884 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb66"  disabled></td>
+      <td class="path">src/components/WelcomeScreen.test.ts</td>
+      <td class="num">3 560 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb67"  ></td>
+      <td class="path">src/components/WelcomeScreen.tsx</td>
+      <td class="num">6 486 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">1 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb68"  ></td>
+      <td class="path">src/components/WormRanchApp.module.css</td>
+      <td class="num">4 102 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb69"  disabled></td>
+      <td class="path">src/components/WormRanchApp.test.ts</td>
+      <td class="num">9 964 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb70"  ></td>
+      <td class="path">src/components/WormRanchApp.tsx</td>
+      <td class="num">13 859 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">1 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb71"  ></td>
+      <td class="path">src/components/WormRanchAppMotion.module.css</td>
+      <td class="num">3 383 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb72"  ></td>
+      <td class="path">src/components/WormRanchGameExit.module.css</td>
+      <td class="num">1 577 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb73"  disabled></td>
+      <td class="path">src/components/WormRanchGameExit.test.ts</td>
+      <td class="num">1 081 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb74"  ></td>
+      <td class="path">src/components/WormRanchGameExit.tsx</td>
+      <td class="num">876 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">1 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb75"  ></td>
+      <td class="path">src/components/WormRanchInstallPrompt.module.css</td>
+      <td class="num">1 965 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb76"  disabled></td>
+      <td class="path">src/components/WormRanchInstallPrompt.test.ts</td>
+      <td class="num">855 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb77"  ></td>
+      <td class="path">src/components/WormRanchInstallPrompt.tsx</td>
+      <td class="num">1 277 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">1 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb78"  ></td>
+      <td class="path">src/components/WormRanchShellHeader.module.css</td>
+      <td class="num">2 435 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb79"  disabled></td>
+      <td class="path">src/components/WormRanchShellHeader.test.ts</td>
+      <td class="num">1 089 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb80"  ></td>
+      <td class="path">src/components/WormRanchShellHeader.tsx</td>
+      <td class="num">1 606 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">1 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb81"  disabled></td>
+      <td class="path">src/components/gameStageActionEcho.test.ts</td>
+      <td class="num">10 762 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb82"  ></td>
+      <td class="path">src/components/gameStageActionEcho.ts</td>
+      <td class="num">3 960 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">4 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb83"  disabled></td>
+      <td class="path">src/components/gameStageAudio.test.ts</td>
+      <td class="num">7 415 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb84"  ></td>
+      <td class="path">src/components/gameStageAudio.ts</td>
+      <td class="num">4 716 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">7 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb85"  ></td>
+      <td class="path">src/components/gameStageBackdropCanvas.ts</td>
+      <td class="num">2 992 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">2 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb86"  disabled></td>
+      <td class="path">src/components/gameStageBackdropRotation.test.ts</td>
+      <td class="num">1 441 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb87"  ></td>
+      <td class="path">src/components/gameStageBackdropRotation.ts</td>
+      <td class="num">839 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">2 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb88"  ></td>
+      <td class="path">src/components/gameStageCanvas.ts</td>
+      <td class="num">2 944 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">7 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb89"  disabled></td>
+      <td class="path">src/components/gameStageCueEffects.test.ts</td>
+      <td class="num">5 999 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb90"  disabled></td>
+      <td class="path">src/components/gameStageFairyPresentation.test.ts</td>
+      <td class="num">2 726 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb91"  ></td>
+      <td class="path">src/components/gameStageFairyPresentation.ts</td>
+      <td class="num">5 717 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">4 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb92"  disabled></td>
+      <td class="path">src/components/gameStageFeedback.test.ts</td>
+      <td class="num">3 130 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb93"  ></td>
+      <td class="path">src/components/gameStageFeedback.ts</td>
+      <td class="num">1 574 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">2 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb94"  disabled></td>
+      <td class="path">src/components/gameStageHUD.test.ts</td>
+      <td class="num">818 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb95"  ></td>
+      <td class="path">src/components/gameStageKeyboard.ts</td>
+      <td class="num">1 366 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">3 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb96"  disabled></td>
+      <td class="path">src/components/gameStageMotion.test.ts</td>
+      <td class="num">2 215 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb97"  ></td>
+      <td class="path">src/components/gameStageMotion.ts</td>
+      <td class="num">7 435 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">9 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb98"  ></td>
+      <td class="path">src/components/gameStageParticles.ts</td>
+      <td class="num">9 762 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">11 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb99"  disabled></td>
+      <td class="path">src/components/gameStagePhasePresentation.test.ts</td>
+      <td class="num">5 140 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb100"  ></td>
+      <td class="path">src/components/gameStagePhasePresentation.ts</td>
+      <td class="num">8 835 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">2 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb101"  ></td>
+      <td class="path">src/components/gameStagePresentation.ts</td>
+      <td class="num">7 143 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">9 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb102"  disabled></td>
+      <td class="path">src/components/gameStageTargetCallout.test.ts</td>
+      <td class="num">1 942 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb103"  ></td>
+      <td class="path">src/components/gameStageTargetCallout.ts</td>
+      <td class="num">886 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">2 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb104"  ></td>
+      <td class="path">src/components/gameStageTestHelpers.ts</td>
+      <td class="num">9 897 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">6 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb105"  ></td>
+      <td class="path">src/components/gameStageWormCanvas.ts</td>
+      <td class="num">9 359 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">3 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb106"  disabled></td>
+      <td class="path">src/components/gameStageWormVisuals.test.ts</td>
+      <td class="num">6 792 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb107"  ></td>
+      <td class="path">src/components/gameStageWormVisuals.ts</td>
+      <td class="num">3 563 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">5 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb108"  ></td>
+      <td class="path">src/components/useInstallPrompt.ts</td>
+      <td class="num">2 148 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">1 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb109"  disabled></td>
+      <td class="path">src/components/welcomeHeroPresentation.test.ts</td>
+      <td class="num">2 325 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb110"  ></td>
+      <td class="path">src/components/welcomeHeroPresentation.ts</td>
+      <td class="num">2 210 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">11 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb111"  disabled></td>
+      <td class="path">src/components/welcomeLaunchLoader.test.ts</td>
+      <td class="num">3 866 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb112"  ></td>
+      <td class="path">src/components/welcomeLaunchLoader.ts</td>
+      <td class="num">2 684 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">6 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb113"  disabled></td>
+      <td class="path">src/components/welcomeLaunchMedia.test.ts</td>
+      <td class="num">1 678 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb114"  ></td>
+      <td class="path">src/components/welcomeLaunchMedia.ts</td>
+      <td class="num">852 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">4 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb115"  disabled></td>
+      <td class="path">src/components/wormRanchLevelFlow.test.ts</td>
+      <td class="num">973 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb116"  ></td>
+      <td class="path">src/components/wormRanchLevelFlow.ts</td>
+      <td class="num">548 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">3 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb117"  ></td>
+      <td class="path">src/game/constants.ts</td>
+      <td class="num">631 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">7 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb118"  disabled></td>
+      <td class="path">src/game/continuousColorTargets.test.ts</td>
+      <td class="num">4 501 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb119"  ></td>
+      <td class="path">src/game/continuousColorTargets.ts</td>
+      <td class="num">2 873 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">6 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb120"  ></td>
+      <td class="path">src/game/detection.ts</td>
+      <td class="num">792 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">4 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb121"  disabled></td>
+      <td class="path">src/game/engine.continuous.test.ts</td>
+      <td class="num">10 754 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb122"  disabled></td>
+      <td class="path">src/game/engine.interaction.test.ts</td>
+      <td class="num">5 313 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb123"  disabled></td>
+      <td class="path">src/game/engine.step.test.ts</td>
+      <td class="num">8 515 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb124"  ></td>
+      <td class="path">src/game/engine.ts</td>
+      <td class="num">12 745 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">14 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb125"  disabled></td>
+      <td class="path">src/game/engine.world.test.ts</td>
+      <td class="num">1 434 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb126"  ></td>
+      <td class="path">src/game/engineContinuous.ts</td>
+      <td class="num">1 537 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">3 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb127"  ></td>
+      <td class="path">src/game/engineFairies.ts</td>
+      <td class="num">2 957 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">3 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb128"  ></td>
+      <td class="path">src/game/enginePhase.ts</td>
+      <td class="num">1 915 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">3 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb129"  disabled></td>
+      <td class="path">src/game/engineSpecialWorm.test.ts</td>
+      <td class="num">7 999 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb130"  ></td>
+      <td class="path">src/game/engineTestHelpers.ts</td>
+      <td class="num">2 898 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">8 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb131"  ></td>
+      <td class="path">src/game/engineUtils.ts</td>
+      <td class="num">855 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">3 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb132"  ></td>
+      <td class="path">src/game/gameModes.ts</td>
+      <td class="num">120 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">2 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb133"  disabled></td>
+      <td class="path">src/game/levels.test.ts</td>
+      <td class="num">2 181 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb134"  ></td>
+      <td class="path">src/game/levels.ts</td>
+      <td class="num">2 204 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">5 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb135"  ></td>
+      <td class="path">src/game/movement.ts</td>
+      <td class="num">2 804 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">1 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb136"  ></td>
+      <td class="path">src/game/rules.ts</td>
+      <td class="num">2 091 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">7 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb137"  ></td>
+      <td class="path">src/game/specialWorms.ts</td>
+      <td class="num">3 342 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">3 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb138"  ></td>
+      <td class="path">src/game/types.ts</td>
+      <td class="num">3 859 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">20 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb139"  ></td>
+      <td class="path">src/game/wormColors.ts</td>
+      <td class="num">784 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">4 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb140"  disabled></td>
+      <td class="path">src/lib/analytics.test.ts</td>
+      <td class="num">2 140 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb141"  ></td>
+      <td class="path">src/lib/analytics.ts</td>
+      <td class="num">3 122 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">6 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb142"  ></td>
+      <td class="path">src/lib/backdropPreload.ts</td>
+      <td class="num">613 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb143"  ></td>
+      <td class="path">src/lib/logger.ts</td>
+      <td class="num">2 674 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">4 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb144"  ></td>
+      <td class="path">src/lib/wormRanchSettings.ts</td>
+      <td class="num">2 956 B</td>
+      <td class="num">40%</td>
+      <td><span class="signal">8 unused export(s), 0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb145"  ></td>
+      <td class="path">docs/plans/.archive/2026-05-31-color-target-relaunch-plan.md</td>
+      <td class="num">21 909 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb146"  ></td>
+      <td class="path">docs/plans/.archive/2026-06-01-separate-game-mode-flow.md</td>
+      <td class="num">13 862 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb147"  ></td>
+      <td class="path">docs/plans/.archive/2026-08-18-audit-SECURITY.md</td>
+      <td class="num">1 228 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb148"  ></td>
+      <td class="path">docs/plans/.archive/2026-08-18-audit-TRACEABILITY.md</td>
+      <td class="num">1 547 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb149"  ></td>
+      <td class="path">docs/plans/.archive/2026-08-18-codebase-audit-and-refactor-recommendations.md</td>
+      <td class="num">27 142 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb150"  ></td>
+      <td class="path">docs/plans/.archive/2026-08-18-codebase-audit-debrief.md</td>
+      <td class="num">8 975 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb151"  ></td>
+      <td class="path">docs/plans/.archive/2026-08-19-plan-archive-audit-debrief.md</td>
+      <td class="num">4 262 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb152"  ></td>
+      <td class="path">docs/plans/.archive/HERMES_PLAN.ai.json</td>
+      <td class="num">1 132 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb153"  ></td>
+      <td class="path">docs/plans/.archive/HERMES_PLAN.html</td>
+      <td class="num">5 834 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb154"  ></td>
+      <td class="path">docs/plans/.archive/worm-ranch-plan.md</td>
+      <td class="num">4 344 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb155"  ></td>
+      <td class="path">docs/superpowers/specs/2026-06-01-game-mode-flow-design.md</td>
+      <td class="num">7 086 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb156"  ></td>
+      <td class="path">public/art/Gameplay backdrops/243-2436830_evil-clipart-baby-devil-sexy-devil-cartoon.jpeg</td>
+      <td class="num">67 862 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb157"  ></td>
+      <td class="path">public/art/Gameplay backdrops/Grasspastures.jpeg</td>
+      <td class="num">8 606 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb158"  ></td>
+      <td class="path">public/art/Gameplay backdrops/desert-landscape-with-sparse-vegetation_1308-178017.avif</td>
+      <td class="num">22 501 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb159"  ></td>
+      <td class="path">public/art/Gameplay backdrops/istockphoto-866482364-612x612.jpg</td>
+      <td class="num">60 920 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb160"  ></td>
+      <td class="path">public/art/Gameplay backdrops/output.mp4</td>
+      <td class="num">12 800 766 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb161"  ></td>
+      <td class="path">public/art/Gameplay backdrops/top-view-city-with-desert_70347-2005.avif</td>
+      <td class="num">25 405 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb162"  ></td>
+      <td class="path">public/art/Gameplay backdrops/top-view-countryside-with-forest-grass-with-stones-trees_70347-5426.avif</td>
+      <td class="num">112 311 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb163"  ></td>
+      <td class="path">public/art/Gameplay backdrops/vector-top-view-of-the-countryside.jpg</td>
+      <td class="num">41 832 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb164"  ></td>
+      <td class="path">public/audio/gameplay/ATTRIBUTION.txt</td>
+      <td class="num">472 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb165"  ></td>
+      <td class="path">public/audio/gameplay/western-gunshot.mp3</td>
+      <td class="num">13 181 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb166"  ></td>
+      <td class="path">public/audio/gameplay/whip-crack.mp3</td>
+      <td class="num">14 006 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb167"  ></td>
+      <td class="path">.superpowers/brainstorm/985943-1778153903/content/art-direction-1.html</td>
+      <td class="num">4 789 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb168"  ></td>
+      <td class="path">.superpowers/brainstorm/985943-1778153903/state/server-stopped</td>
+      <td class="num">52 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb169"  disabled></td>
+      <td class="path">.superpowers/brainstorm/985943-1778153903/state/server.log</td>
+      <td class="num">820 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Protected">
+      <td class="c"><input type="checkbox" id="cb170"  disabled></td>
+      <td class="path">.superpowers/brainstorm/985943-1778153903/state/server.pid</td>
+      <td class="num">7 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-protected">Protected</span></td>
+    </tr>
+<tr data-group="Manual">
+      <td class="c"><input type="checkbox" id="cb171"  ></td>
+      <td class="path">src/app/api/events/route.ts</td>
+      <td class="num">998 B</td>
+      <td class="num">0%</td>
+      <td><span class="signal">0 references</span></td>
+      <td><span class="badge badge-manual">Manual</span></td>
+    </tr>
+      </tbody>
+    </table>
+  </div>
+  <footer>Self-contained pruning plan · built by @surgical-pruning/planner</footer>
+</div>
+
+<script id="plan-data" type="application/json">{"target":"/home/ewaldt/Documents/VS/GAMES/Worm ranch","gitCommit":"28d5b46","reclaimableBytes":0,"totalFiles":172,"rows":[{"path":".copilotignore","size":82,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":".env.local","size":1280,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":".gitignore","size":578,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"AGENTS.md","size":1024,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"HANDOVER.md","size":5430,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"README.md","size":3492,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"SECURITY.md","size":619,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"knip.jsonc","size":706,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"next-env.d.ts","size":247,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"package.json","size":1012,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"surgical-pruning-0819-Worm ranch.html","size":768267,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"task.md","size":2799,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":".prune/PRUNE_MANIFEST.json","size":95552,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":".prune/audit-report.json","size":82119,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":".prune/handoff-researcher.json","size":3822,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":".prune/handoff-reviewer.json","size":1232596,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":".prune/suggestions.json","size":79465,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":".vscode/settings.json","size":123,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/README.md","size":1091,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/audio-sources.md","size":872,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/jobcard.md","size":1499,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/surgical-pruning-0819-Worm ranch.html","size":760392,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/visual-redesign-spec.md","size":15592,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/file.svg","size":391,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/globe.svg","size":1035,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/next.svg","size":1375,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/sw.js","size":181,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/vercel.svg","size":128,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/window.svg","size":385,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/worm-ranch-icon.svg","size":620,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"scripts/run-next-with-fallback.mjs","size":2682,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/plans/worm-ranch-plan.md","size":4311,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"memories/repo/design-context.md","size":2970,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/art/welcome-memory-desktop.webp","size":134838,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/art/welcome-memory-mobile.webp","size":102848,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/art/worm-ranch-launch-intro.mp4","size":3162679,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/art/worm-ranch-launch-poster.png","size":8819677,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/fonts/SpaceGrotesk-VariableFont_wght.woff2","size":49256,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/app/favicon.ico","size":25931,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/app/globals.css","size":3061,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/app/layout.tsx","size":724,"confidence":0.4,"group":"Manual","action":"keep","signal":"1 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/app/manifest.ts","size":517,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/app/page.tsx","size":121,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/EndlessGameOverWindow.module.css","size":1673,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/EndlessGameOverWindow.tsx","size":1018,"confidence":0.4,"group":"Manual","action":"keep","signal":"2 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/GameHUD.tsx","size":683,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/GameModeScreen.module.css","size":2546,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/GameModeScreen.tsx","size":2125,"confidence":0.4,"group":"Manual","action":"keep","signal":"2 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/GameStage.interaction.test.ts","size":15303,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/GameStage.module.css","size":13577,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/GameStage.render.test.ts","size":7286,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/GameStage.tsx","size":18694,"confidence":0.4,"group":"Manual","action":"keep","signal":"1 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/GameStageOverlay.tsx","size":2590,"confidence":0.4,"group":"Manual","action":"keep","signal":"1 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/GameStagePhaseBadge.module.css","size":2540,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/HomeScreen.module.css","size":2280,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/HomeScreen.test.ts","size":983,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/HomeScreen.tsx","size":1179,"confidence":0.4,"group":"Manual","action":"keep","signal":"1 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/ResultsScreen.module.css","size":3072,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/ScreenTransition.module.css","size":998,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/ScreenTransition.tsx","size":775,"confidence":0.4,"group":"Manual","action":"keep","signal":"2 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/SettingsScreen.module.css","size":2881,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/SettingsScreen.test.ts","size":956,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/SettingsScreen.tsx","size":3179,"confidence":0.4,"group":"Manual","action":"keep","signal":"1 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/WelcomeLaunchLoader.module.css","size":2896,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/WelcomeLaunchLoader.tsx","size":3144,"confidence":0.4,"group":"Manual","action":"keep","signal":"1 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/WelcomeScreen.module.css","size":7884,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/WelcomeScreen.test.ts","size":3560,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/WelcomeScreen.tsx","size":6486,"confidence":0.4,"group":"Manual","action":"keep","signal":"1 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/WormRanchApp.module.css","size":4102,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/WormRanchApp.test.ts","size":9964,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/WormRanchApp.tsx","size":13859,"confidence":0.4,"group":"Manual","action":"keep","signal":"1 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/WormRanchAppMotion.module.css","size":3383,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/WormRanchGameExit.module.css","size":1577,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/WormRanchGameExit.test.ts","size":1081,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/WormRanchGameExit.tsx","size":876,"confidence":0.4,"group":"Manual","action":"keep","signal":"1 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/WormRanchInstallPrompt.module.css","size":1965,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/WormRanchInstallPrompt.test.ts","size":855,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/WormRanchInstallPrompt.tsx","size":1277,"confidence":0.4,"group":"Manual","action":"keep","signal":"1 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/WormRanchShellHeader.module.css","size":2435,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/components/WormRanchShellHeader.test.ts","size":1089,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/WormRanchShellHeader.tsx","size":1606,"confidence":0.4,"group":"Manual","action":"keep","signal":"1 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStageActionEcho.test.ts","size":10762,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/gameStageActionEcho.ts","size":3960,"confidence":0.4,"group":"Manual","action":"keep","signal":"4 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStageAudio.test.ts","size":7415,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/gameStageAudio.ts","size":4716,"confidence":0.4,"group":"Manual","action":"keep","signal":"7 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStageBackdropCanvas.ts","size":2992,"confidence":0.4,"group":"Manual","action":"keep","signal":"2 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStageBackdropRotation.test.ts","size":1441,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/gameStageBackdropRotation.ts","size":839,"confidence":0.4,"group":"Manual","action":"keep","signal":"2 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStageCanvas.ts","size":2944,"confidence":0.4,"group":"Manual","action":"keep","signal":"7 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStageCueEffects.test.ts","size":5999,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/gameStageFairyPresentation.test.ts","size":2726,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/gameStageFairyPresentation.ts","size":5717,"confidence":0.4,"group":"Manual","action":"keep","signal":"4 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStageFeedback.test.ts","size":3130,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/gameStageFeedback.ts","size":1574,"confidence":0.4,"group":"Manual","action":"keep","signal":"2 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStageHUD.test.ts","size":818,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/gameStageKeyboard.ts","size":1366,"confidence":0.4,"group":"Manual","action":"keep","signal":"3 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStageMotion.test.ts","size":2215,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/gameStageMotion.ts","size":7435,"confidence":0.4,"group":"Manual","action":"keep","signal":"9 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStageParticles.ts","size":9762,"confidence":0.4,"group":"Manual","action":"keep","signal":"11 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStagePhasePresentation.test.ts","size":5140,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/gameStagePhasePresentation.ts","size":8835,"confidence":0.4,"group":"Manual","action":"keep","signal":"2 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStagePresentation.ts","size":7143,"confidence":0.4,"group":"Manual","action":"keep","signal":"9 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStageTargetCallout.test.ts","size":1942,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/gameStageTargetCallout.ts","size":886,"confidence":0.4,"group":"Manual","action":"keep","signal":"2 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStageTestHelpers.ts","size":9897,"confidence":0.4,"group":"Manual","action":"keep","signal":"6 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStageWormCanvas.ts","size":9359,"confidence":0.4,"group":"Manual","action":"keep","signal":"3 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/gameStageWormVisuals.test.ts","size":6792,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/gameStageWormVisuals.ts","size":3563,"confidence":0.4,"group":"Manual","action":"keep","signal":"5 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/useInstallPrompt.ts","size":2148,"confidence":0.4,"group":"Manual","action":"keep","signal":"1 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/welcomeHeroPresentation.test.ts","size":2325,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/welcomeHeroPresentation.ts","size":2210,"confidence":0.4,"group":"Manual","action":"keep","signal":"11 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/welcomeLaunchLoader.test.ts","size":3866,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/welcomeLaunchLoader.ts","size":2684,"confidence":0.4,"group":"Manual","action":"keep","signal":"6 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/welcomeLaunchMedia.test.ts","size":1678,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/welcomeLaunchMedia.ts","size":852,"confidence":0.4,"group":"Manual","action":"keep","signal":"4 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/components/wormRanchLevelFlow.test.ts","size":973,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/components/wormRanchLevelFlow.ts","size":548,"confidence":0.4,"group":"Manual","action":"keep","signal":"3 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/constants.ts","size":631,"confidence":0.4,"group":"Manual","action":"keep","signal":"7 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/continuousColorTargets.test.ts","size":4501,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/game/continuousColorTargets.ts","size":2873,"confidence":0.4,"group":"Manual","action":"keep","signal":"6 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/detection.ts","size":792,"confidence":0.4,"group":"Manual","action":"keep","signal":"4 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/engine.continuous.test.ts","size":10754,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/game/engine.interaction.test.ts","size":5313,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/game/engine.step.test.ts","size":8515,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/game/engine.ts","size":12745,"confidence":0.4,"group":"Manual","action":"keep","signal":"14 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/engine.world.test.ts","size":1434,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/game/engineContinuous.ts","size":1537,"confidence":0.4,"group":"Manual","action":"keep","signal":"3 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/engineFairies.ts","size":2957,"confidence":0.4,"group":"Manual","action":"keep","signal":"3 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/enginePhase.ts","size":1915,"confidence":0.4,"group":"Manual","action":"keep","signal":"3 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/engineSpecialWorm.test.ts","size":7999,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/game/engineTestHelpers.ts","size":2898,"confidence":0.4,"group":"Manual","action":"keep","signal":"8 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/engineUtils.ts","size":855,"confidence":0.4,"group":"Manual","action":"keep","signal":"3 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/gameModes.ts","size":120,"confidence":0.4,"group":"Manual","action":"keep","signal":"2 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/levels.test.ts","size":2181,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/game/levels.ts","size":2204,"confidence":0.4,"group":"Manual","action":"keep","signal":"5 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/movement.ts","size":2804,"confidence":0.4,"group":"Manual","action":"keep","signal":"1 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/rules.ts","size":2091,"confidence":0.4,"group":"Manual","action":"keep","signal":"7 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/specialWorms.ts","size":3342,"confidence":0.4,"group":"Manual","action":"keep","signal":"3 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/types.ts","size":3859,"confidence":0.4,"group":"Manual","action":"keep","signal":"20 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/game/wormColors.ts","size":784,"confidence":0.4,"group":"Manual","action":"keep","signal":"4 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/lib/analytics.test.ts","size":2140,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/lib/analytics.ts","size":3122,"confidence":0.4,"group":"Manual","action":"keep","signal":"6 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/lib/backdropPreload.ts","size":613,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"src/lib/logger.ts","size":2674,"confidence":0.4,"group":"Manual","action":"keep","signal":"4 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"src/lib/wormRanchSettings.ts","size":2956,"confidence":0.4,"group":"Manual","action":"keep","signal":"8 unused export(s), 0 references","reason":"Low confidence (40%) — manual only"},{"path":"docs/plans/.archive/2026-05-31-color-target-relaunch-plan.md","size":21909,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/plans/.archive/2026-06-01-separate-game-mode-flow.md","size":13862,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/plans/.archive/2026-08-18-audit-SECURITY.md","size":1228,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/plans/.archive/2026-08-18-audit-TRACEABILITY.md","size":1547,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/plans/.archive/2026-08-18-codebase-audit-and-refactor-recommendations.md","size":27142,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/plans/.archive/2026-08-18-codebase-audit-debrief.md","size":8975,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/plans/.archive/2026-08-19-plan-archive-audit-debrief.md","size":4262,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/plans/.archive/HERMES_PLAN.ai.json","size":1132,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/plans/.archive/HERMES_PLAN.html","size":5834,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/plans/.archive/worm-ranch-plan.md","size":4344,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"docs/superpowers/specs/2026-06-01-game-mode-flow-design.md","size":7086,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/art/Gameplay backdrops/243-2436830_evil-clipart-baby-devil-sexy-devil-cartoon.jpeg","size":67862,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/art/Gameplay backdrops/Grasspastures.jpeg","size":8606,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/art/Gameplay backdrops/desert-landscape-with-sparse-vegetation_1308-178017.avif","size":22501,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/art/Gameplay backdrops/istockphoto-866482364-612x612.jpg","size":60920,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/art/Gameplay backdrops/output.mp4","size":12800766,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/art/Gameplay backdrops/top-view-city-with-desert_70347-2005.avif","size":25405,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/art/Gameplay backdrops/top-view-countryside-with-forest-grass-with-stones-trees_70347-5426.avif","size":112311,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/art/Gameplay backdrops/vector-top-view-of-the-countryside.jpg","size":41832,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/audio/gameplay/ATTRIBUTION.txt","size":472,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/audio/gameplay/western-gunshot.mp3","size":13181,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":"public/audio/gameplay/whip-crack.mp3","size":14006,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":".superpowers/brainstorm/985943-1778153903/content/art-direction-1.html","size":4789,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":".superpowers/brainstorm/985943-1778153903/state/server-stopped","size":52,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"},{"path":".superpowers/brainstorm/985943-1778153903/state/server.log","size":820,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":".superpowers/brainstorm/985943-1778153903/state/server.pid","size":7,"confidence":0,"group":"Protected","action":"keep","signal":"0 references","reason":"Protected path — never pruned"},{"path":"src/app/api/events/route.ts","size":998,"confidence":0,"group":"Manual","action":"keep","signal":"0 references","reason":"Low confidence (0%) — manual only"}]}</script>
+<script>
+(function () {
+  var PLAN = JSON.parse(document.getElementById("plan-data").textContent);
+  var GROUPS = ["Auto-prune", "Review", "Manual", "Protected"];
+  var active = {};
+  GROUPS.forEach(function (g) { active[g] = true; });
+
+  function applyFilters() {
+    var rows = document.querySelectorAll("tr[data-group]");
+    for (var i = 0; i < rows.length; i++) {
+      var g = rows[i].getAttribute("data-group");
+      rows[i].style.display = active[g] ? "" : "none";
+    }
+  }
+
+  function syncChips() {
+    var chips = document.querySelectorAll(".chip");
+    for (var c = 0; c < chips.length; c++) {
+      var g = chips[c].getAttribute("data-group");
+      if (g === "All") {
+        var allOn = GROUPS.every(function (x) { return active[x]; });
+        chips[c].classList.toggle("active", allOn);
+      } else {
+        chips[c].classList.toggle("active", !!active[g]);
+      }
+    }
+  }
+
+  var chips = document.querySelectorAll(".chip");
+  for (var c = 0; c < chips.length; c++) {
+    chips[c].addEventListener("click", function () {
+      var g = this.getAttribute("data-group");
+      if (g === "All") {
+        GROUPS.forEach(function (x) { active[x] = true; });
+      } else {
+        active[g] = !active[g];
+      }
+      syncChips();
+      applyFilters();
+    });
+  }
+
+  function buildManifest(dryRun) {
+    var selected = [];
+    var protectedSkipped = [];
+    var bytes = 0;
+    var files = 0;
+    for (var i = 0; i < PLAN.rows.length; i++) {
+      var r = PLAN.rows[i];
+      if (r.group === "Protected") {
+        protectedSkipped.push(r.path);
+        continue;
+      }
+      var cb = document.getElementById("cb" + i);
+      var checked = cb ? cb.checked : (r.action === "delete");
+      var action = checked ? "delete" : "keep";
+      if (action === "delete") {
+        bytes += r.size;
+        files += 1;
+      }
+      selected.push({
+        path: r.path,
+        action: action,
+        confidence: r.confidence,
+        reason: r.reason
+      });
+    }
+    return {
+      timestamp: new Date().toISOString(),
+      target_path: PLAN.target,
+      git_commit: PLAN.gitCommit,
+      selected_files: selected,
+      protected_skipped: protectedSkipped,
+      estimated_reclamation: { bytes: bytes, files: files, ci_seconds: 0 },
+      safety: { dry_run: dryRun, stash_created: false, rollback_script: "" }
+    };
+  }
+
+  function runPrune(dryRun) {
+    var PRUNE_MANIFEST = buildManifest(dryRun);
+    var del = PRUNE_MANIFEST.estimated_reclamation;
+    console.log("[PRUNING-PLANNER] " + (dryRun ? "DRY RUN" : "PRUNE") +
+      " — files: " + del.files + ", bytes: " + del.bytes);
+    document.getElementById("summary").textContent =
+      (dryRun ? "DRY RUN" : "PRUNE") + ": " + del.files + " file(s), " +
+      del.bytes.toLocaleString() + " bytes" +
+      (dryRun ? " (no changes written)" : "");
+    return PRUNE_MANIFEST;
+  }
+
+  function exportPlan() {
+    var m = buildManifest(false);
+    var blob = new Blob([JSON.stringify(m, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "PRUNE_MANIFEST.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  document.getElementById("pruneBtn").addEventListener("click", function () { runPrune(false); });
+  document.getElementById("dryBtn").addEventListener("click", function () { runPrune(true); });
+  document.getElementById("exportBtn").addEventListener("click", exportPlan);
+
+  applyFilters();
+})();
+</script>
+</body>
+</html>

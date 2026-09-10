@@ -1,0 +1,136 @@
+{
+  "suggestions": [
+    {
+      "id": "s1",
+      "priority": "HIGH",
+      "category": "architecture",
+      "title": "Split god module surgical-pruning-0819-Worm ranch.html",
+      "finding": "File has 10946 lines and is flagged as a god_module (severity medium).",
+      "action": "Extract responsibilities into smaller modules; add barrel exports to preserve public API.",
+      "source": "https://martinfowler.com/bliki/GodObject.html",
+      "effort": "M",
+      "impact": "Improved maintainability and reviewability."
+    },
+    {
+      "id": "s2",
+      "priority": "HIGH",
+      "category": "architecture",
+      "title": "Split god module .prune/PRUNE_MANIFEST.json",
+      "finding": "File has 2046 lines and is flagged as a god_module (severity medium).",
+      "action": "Extract responsibilities into smaller modules; add barrel exports to preserve public API.",
+      "source": "https://martinfowler.com/bliki/GodObject.html",
+      "effort": "M",
+      "impact": "Improved maintainability and reviewability."
+    },
+    {
+      "id": "s3",
+      "priority": "HIGH",
+      "category": "architecture",
+      "title": "Split god module .prune/audit-report.json",
+      "finding": "File has 1435 lines and is flagged as a god_module (severity medium).",
+      "action": "Extract responsibilities into smaller modules; add barrel exports to preserve public API.",
+      "source": "https://martinfowler.com/bliki/GodObject.html",
+      "effort": "M",
+      "impact": "Improved maintainability and reviewability."
+    },
+    {
+      "id": "s4",
+      "priority": "HIGH",
+      "category": "architecture",
+      "title": "Split god module .prune/handoff-reviewer.json",
+      "finding": "File has 40934 lines and is flagged as a god_module (severity medium).",
+      "action": "Extract responsibilities into smaller modules; add barrel exports to preserve public API.",
+      "source": "https://martinfowler.com/bliki/GodObject.html",
+      "effort": "M",
+      "impact": "Improved maintainability and reviewability."
+    },
+    {
+      "id": "s5",
+      "priority": "HIGH",
+      "category": "architecture",
+      "title": "Split god module docs/surgical-pruning-0819-Worm ranch.html",
+      "finding": "File has 10842 lines and is flagged as a god_module (severity medium).",
+      "action": "Extract responsibilities into smaller modules; add barrel exports to preserve public API.",
+      "source": "https://martinfowler.com/bliki/GodObject.html",
+      "effort": "M",
+      "impact": "Improved maintainability and reviewability."
+    },
+    {
+      "id": "s6",
+      "priority": "HIGH",
+      "category": "architecture",
+      "title": "Split god module public/art/worm-ranch-launch-intro.mp4",
+      "finding": "File has 12275 lines and is flagged as a god_module (severity medium).",
+      "action": "Extract responsibilities into smaller modules; add barrel exports to preserve public API.",
+      "source": "https://martinfowler.com/bliki/GodObject.html",
+      "effort": "M",
+      "impact": "Improved maintainability and reviewability."
+    },
+    {
+      "id": "s7",
+      "priority": "HIGH",
+      "category": "architecture",
+      "title": "Split god module public/art/worm-ranch-launch-poster.png",
+      "finding": "File has 38925 lines and is flagged as a god_module (severity medium).",
+      "action": "Extract responsibilities into smaller modules; add barrel exports to preserve public API.",
+      "source": "https://martinfowler.com/bliki/GodObject.html",
+      "effort": "M",
+      "impact": "Improved maintainability and reviewability."
+    },
+    {
+      "id": "s8",
+      "priority": "HIGH",
+      "category": "architecture",
+      "title": "Split god module public/art/Gameplay backdrops/output.mp4",
+      "finding": "File has 49738 lines and is flagged as a god_module (severity medium).",
+      "action": "Extract responsibilities into smaller modules; add barrel exports to preserve public API.",
+      "source": "https://martinfowler.com/bliki/GodObject.html",
+      "effort": "M",
+      "impact": "Improved maintainability and reviewability."
+    },
+    {
+      "id": "s9",
+      "priority": "MEDIUM",
+      "category": "dead-code",
+      "title": "Remove 137 orphaned file(s)",
+      "finding": "Detected orphaned files with zero references: .copilotignore, .env.local, .gitignore, AGENTS.md, HANDOVER.md, README.md, SECURITY.md, knip.jsonc, next-env.d.ts, surgical-pruning-0819-Worm ranch.html, task.md, .prune/PRUNE_MANIFEST.json, .prune/audit-report.json, .prune/handoff-researcher.json, .prune/handoff-reviewer.json, .prune/suggestions.json, .vscode/settings.json, docs/README.md, docs/audio-sources.md, docs/jobcard.md, docs/surgical-pruning-0819-Worm ranch.html, docs/visual-redesign-spec.md, public/file.svg, public/globe.svg, public/next.svg, public/sw.js, public/vercel.svg, public/window.svg, public/worm-ranch-icon.svg, scripts/run-next-with-fallback.mjs, docs/plans/worm-ranch-plan.md, memories/repo/design-context.md, public/art/welcome-memory-desktop.webp, public/art/welcome-memory-mobile.webp, public/art/worm-ranch-launch-intro.mp4, public/art/worm-ranch-launch-poster.png, public/fonts/SpaceGrotesk-VariableFont_wght.woff2, src/app/favicon.ico, src/app/globals.css, src/app/layout.tsx, src/app/manifest.ts, src/app/page.tsx, src/components/EndlessGameOverWindow.module.css, src/components/EndlessGameOverWindow.tsx, src/components/GameHUD.tsx, src/components/GameModeScreen.module.css, src/components/GameModeScreen.tsx, src/components/GameStage.module.css, src/components/GameStage.tsx, src/components/GameStageOverlay.tsx, src/components/GameStagePhaseBadge.module.css, src/components/HomeScreen.module.css, src/components/HomeScreen.tsx, src/components/ResultsScreen.module.css, src/components/ScreenTransition.module.css, src/components/ScreenTransition.tsx, src/components/SettingsScreen.module.css, src/components/SettingsScreen.tsx, src/components/WelcomeLaunchLoader.module.css, src/components/WelcomeLaunchLoader.tsx, src/components/WelcomeScreen.module.css, src/components/WelcomeScreen.tsx, src/components/WormRanchApp.module.css, src/components/WormRanchApp.tsx, src/components/WormRanchAppMotion.module.css, src/components/WormRanchGameExit.module.css, src/components/WormRanchGameExit.tsx, src/components/WormRanchInstallPrompt.module.css, src/components/WormRanchInstallPrompt.tsx, src/components/WormRanchShellHeader.module.css, src/components/WormRanchShellHeader.tsx, src/components/gameStageActionEcho.ts, src/components/gameStageAudio.ts, src/components/gameStageBackdropCanvas.ts, src/components/gameStageBackdropRotation.ts, src/components/gameStageCanvas.ts, src/components/gameStageFairyPresentation.ts, src/components/gameStageFeedback.ts, src/components/gameStageKeyboard.ts, src/components/gameStageMotion.ts, src/components/gameStageParticles.ts, src/components/gameStagePhasePresentation.ts, src/components/gameStagePresentation.ts, src/components/gameStageTargetCallout.ts, src/components/gameStageTestHelpers.ts, src/components/gameStageWormCanvas.ts, src/components/gameStageWormVisuals.ts, src/components/useInstallPrompt.ts, src/components/welcomeHeroPresentation.ts, src/components/welcomeLaunchLoader.ts, src/components/welcomeLaunchMedia.ts, src/components/wormRanchLevelFlow.ts, src/game/constants.ts, src/game/continuousColorTargets.ts, src/game/detection.ts, src/game/engine.ts, src/game/engineContinuous.ts, src/game/engineFairies.ts, src/game/enginePhase.ts, src/game/engineTestHelpers.ts, src/game/engineUtils.ts, src/game/gameModes.ts, src/game/levels.ts, src/game/movement.ts, src/game/rules.ts, src/game/specialWorms.ts, src/game/types.ts, src/game/wormColors.ts, src/lib/analytics.ts, src/lib/backdropPreload.ts, src/lib/logger.ts, src/lib/wormRanchSettings.ts, docs/plans/.archive/2026-05-31-color-target-relaunch-plan.md, docs/plans/.archive/2026-06-01-separate-game-mode-flow.md, docs/plans/.archive/2026-08-18-audit-SECURITY.md, docs/plans/.archive/2026-08-18-audit-TRACEABILITY.md, docs/plans/.archive/2026-08-18-codebase-audit-and-refactor-recommendations.md, docs/plans/.archive/2026-08-18-codebase-audit-debrief.md, docs/plans/.archive/2026-08-19-plan-archive-audit-debrief.md, docs/plans/.archive/HERMES_PLAN.ai.json, docs/plans/.archive/HERMES_PLAN.html, docs/plans/.archive/worm-ranch-plan.md, docs/superpowers/specs/2026-06-01-game-mode-flow-design.md, public/art/Gameplay backdrops/243-2436830_evil-clipart-baby-devil-sexy-devil-cartoon.jpeg, public/art/Gameplay backdrops/Grasspastures.jpeg, public/art/Gameplay backdrops/desert-landscape-with-sparse-vegetation_1308-178017.avif, public/art/Gameplay backdrops/istockphoto-866482364-612x612.jpg, public/art/Gameplay backdrops/output.mp4, public/art/Gameplay backdrops/top-view-city-with-desert_70347-2005.avif, public/art/Gameplay backdrops/top-view-countryside-with-forest-grass-with-stones-trees_70347-5426.avif, public/art/Gameplay backdrops/vector-top-view-of-the-countryside.jpg, public/audio/gameplay/ATTRIBUTION.txt, public/audio/gameplay/western-gunshot.mp3, public/audio/gameplay/whip-crack.mp3, .superpowers/brainstorm/985943-1778153903/content/art-direction-1.html, .superpowers/brainstorm/985943-1778153903/state/server-stopped, src/app/api/events/route.ts.",
+      "action": "Review and delete orphaned files via the planner (dry-run first), then commit in a scoped PR.",
+      "source": "https://knip.dev/guide",
+      "effort": "S",
+      "impact": "Reduced surface area and bundle size."
+    },
+    {
+      "id": "s10",
+      "priority": "HIGH",
+      "category": "ci",
+      "title": "Add knip to CI",
+      "finding": "No automated dead-code detection is configured.",
+      "action": "pnpm add -D knip && knip --reporter=json",
+      "source": "https://github.com/webpro-nl/knip",
+      "effort": "S",
+      "impact": "Continuous dead-code detection on every PR."
+    },
+    {
+      "id": "s11",
+      "priority": "MEDIUM",
+      "category": "ci",
+      "title": "Add husky pre-commit guard",
+      "finding": "No pre-commit hook guards against accidental commits of dead/large files.",
+      "action": "pnpm add -D husky && husky init",
+      "source": "https://typicode.github.io/husky/",
+      "effort": "S",
+      "impact": "Cheap safety net before each commit."
+    },
+    {
+      "id": "s12",
+      "priority": "LOW",
+      "category": "performance",
+      "title": "Set a bundle size budget",
+      "finding": "No enforced size budget for the build output.",
+      "action": "Configure a size-limit check in CI to fail on unexpected growth.",
+      "source": "https://nextjs.org/docs/app/building-your-application/optimizing",
+      "effort": "M",
+      "impact": "Prevents silent bundle bloat."
+    }
+  ]
+}
