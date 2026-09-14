@@ -25,6 +25,7 @@ import {
 import { getCueEffect, getMotionFeedback, type StageMotionCue } from "@/components/gameStageMotion";
 import { createBurstFromTone, drawParticles, stepParticles, type Particle } from "@/components/gameStageParticles";
 import { createStageFeedbackItem, getActionParticleBurst } from "@/components/gameStageFeedback";
+import { isActionableResult } from "@/components/gameStageActionHelpers";
 import { getStagePresentation } from "@/components/gameStagePhasePresentation";
 import { getFairyLifecycleEvents, getRoundEndedDetails, getRoundTransitionEvents } from "@/lib/analytics";
 import {
@@ -244,12 +245,12 @@ export function GameStage({
     };
 
     const handleAction = (result: ActionResult) => {
-      if (result.kind === "tag" || result.kind === "teleport" || result.kind === "collect") {
+      if (isActionableResult(result)) {
         audioController.play(result);
       }
       showActionEchoRef.current(result);
 
-      if (result.kind === "collect" || result.kind === "tag" || result.kind === "teleport") {
+      if (isActionableResult(result)) {
         pushFeedback(result);
         if (result.kind === "collect") {
           onEventRef.current("worm_collected", { wormId: result.wormId, collected: result.collected });
