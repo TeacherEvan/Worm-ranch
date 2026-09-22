@@ -15,7 +15,9 @@ type StageCopy = {
   hint: string;
 };
 
-type OverlayDensity = "standard" | "compact";
+type OverlayDensity = "standard" | "compact" | "focused" | "cinematic";
+
+export type DensityPreference = "auto" | "focused" | "cinematic";
 
 export type StagePresentation = {
   phaseLabel: string;
@@ -24,7 +26,7 @@ export type StagePresentation = {
   copy: StageCopy;
   overlayDensity: OverlayDensity;
   overlayKey: string;
-  countdownOverlay: { value: string; progress: number } | null;
+  countdownOverlay: { value: string; progress: number; tickMs: number } | null;
   fieldBanner: string | null;
 };
 
@@ -40,6 +42,7 @@ export function getStagePresentation(
   summary: GameSummary,
   profile: DisplayProfile = summary.profile,
   level = 1,
+  densityPreference: DensityPreference = "auto",
 ): StagePresentation {
   const rules = getGameplayLevelRules(profile, level);
   const viewSummary = profile === summary.profile ? summary : { ...summary, profile };
@@ -52,7 +55,7 @@ export function getStagePresentation(
     phaseChipLabel,
     statusItems: buildStatusItemsForSummary(viewSummary, rules),
     copy,
-    overlayDensity: getOverlayDensity(viewSummary),
+    overlayDensity: getOverlayDensity(viewSummary, densityPreference),
     overlayKey: getOverlayKey(viewSummary),
     countdownOverlay:
       viewSummary.phase === "introCountdown"
@@ -62,6 +65,7 @@ export function getStagePresentation(
               rules.introCountdownMs > 0
                 ? Math.max(0, Math.min(1, viewSummary.countdownMs / rules.introCountdownMs))
                 : 0,
+            tickMs: Math.max(0, viewSummary.countdownMs % 1000),
           }
         : null,
     fieldBanner:
@@ -71,7 +75,20 @@ export function getStagePresentation(
   };
 }
 
-function getOverlayDensity(summary: GameSummary): OverlayDensity {
+function getOverlayDensity(summary: GameSummary, densityPreference: DensityPreference = "auto"): OverlayDensity {
+  if (densityPreference === "focused" || densityPreference === "cinematic") {
+    return densityPreference;
+  }
+
+  // Adaptive auto mode (spec section 5): immersion rises with intensity.
+  if (summary.phase === "blinkBand" || summary.phase === "ghostFinale") {
+    return "focused";
+  }
+
+  if (summary.phase === "gameOver" || summary.phase === "resolved") {
+    return "cinematic";
+  }
+
   return summary.profile === "mobile" ? "compact" : "standard";
 }
 

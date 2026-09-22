@@ -14,7 +14,7 @@
   --text: #F5F4E9;
   --text-dim: #9AA3AC;
 
-  /* Legacies (for backward compat during transition) */
+  /* Legacies (kept: still referenced by ~10 component stylesheets; remove only in a dedicated token-migration slice) */
   --bg-soft: rgba(13, 28, 43, 0.8);
   --panel: var(--bg-glass);
   --panel-strong: rgba(10, 19, 31, 0.92);
@@ -86,8 +86,30 @@ select {
   font: inherit;
 }
 
+/* Press micro-interaction (matches lib/microInteractions press scale).
+   Component-level :active rules keep precedence where defined. */
 button {
   border: 0;
+  transition: transform 120ms ease-out;
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
+
+  button:active {
+    transform: none;
+  }
+}
+
+/* In-app reduced-motion toggle (mirrors the media query above). */
+[data-motion="reduced"] button:active {
+  transform: none;
 }
 
 :where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {

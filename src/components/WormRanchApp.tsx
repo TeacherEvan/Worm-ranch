@@ -309,6 +309,8 @@ export function WormRanchApp() {
       className={styles.page}
       data-motion={settings.reducedMotion ? "reduced" : "full"}
       data-screen={screen}
+      data-crt={settings.crtOverlay ? "on" : "off"}
+      data-density={settings.displayDensity}
     >
       {screen !== "game" && screen !== "modeMenu" && screen !== "transition" && (
         screen === "welcome" ? (
@@ -351,9 +353,13 @@ export function WormRanchApp() {
         <SettingsScreen
           analyticsEnabled={settings.analyticsEnabled}
           displayMode={settings.displayMode}
+          crtOverlay={settings.crtOverlay}
+          displayDensity={settings.displayDensity}
           onAnalyticsEnabledChange={(value) => updateSetting("analyticsEnabled", value)}
           onBack={() => beginTransition({ screen: "home" })}
           onDisplayModeChange={(value) => updateSetting("displayMode", value)}
+          onCrtOverlayChange={(value) => updateSetting("crtOverlay", value)}
+          onDisplayDensityChange={(value) => updateSetting("displayDensity", value)}
           onReducedMotionChange={(value) => updateSetting("reducedMotion", value)}
           onStart={() => beginTransition({ screen: "modeMenu" })}
           reducedMotion={settings.reducedMotion}
@@ -378,7 +384,10 @@ export function WormRanchApp() {
       )}
 
       {screen === "game" && (
-        <section className={`${styles.screen} ${styles.gameScreen}`}>
+        <section
+          className={`${styles.screen} ${styles.gameScreen}`}
+          data-density={settings.displayDensity}
+        >
           <GameStage
             backdropUrl={getGameplayRunPlan(currentLevel).backdropUrl}
             key={sessionId}
@@ -386,6 +395,7 @@ export function WormRanchApp() {
             mode={selectedMode}
             profile={runProfile ?? effectiveProfile}
             reducedMotion={settings.reducedMotion}
+            density={settings.displayDensity}
             onSummaryChange={() => undefined}
             onEvent={handleStageEvent}
             onRoundEnd={handleRoundEnd}

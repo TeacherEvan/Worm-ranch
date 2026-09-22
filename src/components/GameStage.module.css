@@ -81,7 +81,10 @@
 }
 
 .shell[data-feedback-cue="rush-start"]::after {
-  background: radial-gradient(circle at 50% 62%, rgba(240, 126, 67, 0.26), transparent 52%);
+  background:
+    radial-gradient(circle at 50% 62%, rgba(240, 126, 67, 0.26), transparent 52%),
+    /* chromatic fringe: red/cyan channel split at the frame edges */
+    linear-gradient(90deg, rgba(255, 51, 102, 0.12), transparent 12%, transparent 88%, rgba(0, 245, 255, 0.12));
   animation: stageBurst 620ms var(--ease-out-expo) both;
 }
 
@@ -95,12 +98,17 @@
       rgba(199, 243, 107, 0.14) 34px,
       transparent 34px,
       transparent 68px
-    );
+    ),
+    /* vignette: darken the corral edges while blink arms */
+    radial-gradient(ellipse at 50% 50%, transparent 58%, rgba(2, 5, 8, 0.42) 100%);
   animation: fenceSurge 620ms var(--ease-out-quart) both;
 }
 
 .shell[data-feedback-cue="final-outlaw"]::after {
-  background: radial-gradient(circle at 50% 50%, rgba(240, 126, 67, 0.28), transparent 58%);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(240, 126, 67, 0.28), transparent 58%),
+    linear-gradient(90deg, rgba(255, 51, 102, 0.14), transparent 14%, transparent 86%, rgba(0, 245, 255, 0.14)),
+    radial-gradient(ellipse at 50% 50%, transparent 62%, rgba(2, 5, 8, 0.36) 100%);
   animation: outlawFlare 760ms var(--ease-out-expo) both;
 }
 
@@ -338,6 +346,42 @@
   max-width: min(24rem, calc(100vw - 20px));
 }
 
+/* Focused corral: strip chrome to the essentials, keep the callout legible. */
+.shell[data-overlay-density="focused"] .statusStrip {
+  inset: 10px 10px auto;
+  gap: 6px;
+  max-width: calc(100% - 20px);
+}
+
+.shell[data-overlay-density="focused"] .statusLabel {
+  display: none;
+}
+
+.shell[data-overlay-density="focused"] .backdropLayer {
+  opacity: 0.35;
+}
+
+.shell[data-overlay-density="focused"] .overlay {
+  padding: 10px;
+  gap: 8px;
+}
+
+.shell[data-overlay-density="focused"] .hint {
+  display: none;
+}
+
+/* Cinematic bars are painted by the app shell (WormRanchApp.module.css) so they
+   sit above the canvas; here we just clear HUD clearances. */
+.shell[data-overlay-density="cinematic"] .statusStrip,
+.shell[data-overlay-density="cinematic"] .targetCallout,
+.shell[data-overlay-density="cinematic"] [data-phase-cue] {
+  display: none;
+}
+
+.shell[data-overlay-density="cinematic"] .hint {
+  display: none;
+}
+
 .shell[data-feedback-cue="rush-start"] .copyCluster,
 .shell[data-feedback-cue="final-outlaw"] .copyCluster {
   animation: cueLunge 420ms var(--ease-out-quart) both;
@@ -547,6 +591,36 @@
   }
 }
 
+/* Screen shake intensities (spec: collect 4px/60ms). Canvas-only; HUD stays put. */
+@keyframes stageShakeSm {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(-3px, 2px, 0); }
+  50% { transform: translate3d(3px, -2px, 0); }
+  75% { transform: translate3d(-2px, -1px, 0); }
+}
+
+@keyframes stageShakeMd {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  20% { transform: translate3d(-6px, 4px, 0); }
+  40% { transform: translate3d(5px, -4px, 0); }
+  60% { transform: translate3d(-4px, -3px, 0); }
+  80% { transform: translate3d(3px, 2px, 0); }
+}
+
+.shell[data-feedback-cue="round-live"] .canvas,
+.shell[data-feedback-cue="blink-armed"] .canvas {
+  animation: stageShakeSm 120ms var(--ease-out-quart) both;
+}
+
+.shell[data-feedback-cue="rush-start"] .canvas,
+.shell[data-feedback-cue="clock-critical"] .canvas {
+  animation: stageShakeMd 200ms var(--ease-out-quart) both;
+}
+
+.shell[data-feedback-cue="final-outlaw"] .canvas {
+  animation: stageShakeMd 300ms var(--ease-out-quart) both;
+}
+
 @container (max-width: 44rem) {
   .statusStrip {
     grid-template-columns: repeat(2, max-content);
@@ -621,7 +695,8 @@
 .shell[data-motion="reduced"]::before,
 .shell[data-motion="reduced"]::after,
 .shell[data-motion="reduced"] .statusPill,
-.shell[data-motion="reduced"] .copyCluster {
+.shell[data-motion="reduced"] .copyCluster,
+.shell[data-motion="reduced"] .canvas {
   animation: none;
   transition-duration: 0.01ms;
 }
@@ -640,7 +715,8 @@
   .shell::before,
   .shell::after,
   .statusPill,
-  .copyCluster {
+  .copyCluster,
+  .canvas {
     animation: none;
     transition-duration: 0.01ms;
   }

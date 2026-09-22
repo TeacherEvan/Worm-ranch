@@ -24,4 +24,27 @@ describe("SettingsScreen", () => {
     expect(html).toContain("Display mode");
     expect(html).toContain("Preferences");
   });
+
+  it("exposes the CRT overlay toggle and stage density choices when wired", () => {
+    const html = renderToStaticMarkup(
+      createElement(SettingsScreen, {
+        analyticsEnabled: true,
+        crtOverlay: true,
+        displayDensity: "cinematic",
+        displayMode: "auto",
+        onAnalyticsEnabledChange: vi.fn(),
+        onBack: vi.fn(),
+        onCrtOverlayChange: vi.fn(),
+        onDisplayDensityChange: vi.fn(),
+        onDisplayModeChange: vi.fn(),
+        onReducedMotionChange: vi.fn(),
+        onStart: vi.fn(),
+        reducedMotion: false,
+      }),
+    );
+
+    expect(html).toContain("CRT scanline overlay");
+    expect(html).toContain("Stage density");
+    expect(html).toContain("Cinematic bars");
+  });
 });

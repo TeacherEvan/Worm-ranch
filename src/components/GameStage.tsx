@@ -26,7 +26,9 @@ import { getCueEffect, getMotionFeedback, type StageMotionCue } from "@/componen
 import { createBurstFromTone, drawParticles, stepParticles, type Particle } from "@/components/gameStageParticles";
 import { createStageFeedbackItem, getActionParticleBurst } from "@/components/gameStageFeedback";
 import { isActionableResult } from "@/components/gameStageActionHelpers";
-import { getStagePresentation } from "@/components/gameStagePhasePresentation";
+import { getStagePresentation, type DensityPreference } from "@/components/gameStagePhasePresentation";
+import { getActionHaptic, triggerHaptic } from "@/lib/microInteractions";
+import { attachTouchControls, createTouchHandlers } from "@/components/gameStageGestures";
 import { getFairyLifecycleEvents, getRoundEndedDetails, getRoundTransitionEvents } from "@/lib/analytics";
 import {
   applyAccuratePress,
@@ -40,7 +42,6 @@ import {
   startRound,
   stepWorld,
   stopContinuousMode,
-  triggerTouchRush,
 } from "@/game/engine";
 import type { DisplayProfile } from "@/game/detection";
 import { getGameplayLevelRules } from "@/game/levels";
@@ -55,6 +56,7 @@ type GameStageProps = {
   mode: GameplayMode;
   profile: DisplayProfile;
   reducedMotion: boolean;
+  density?: DensityPreference;
   onSummaryChange: (summary: GameSummary) => void;
   onRoundEnd: (result: RoundResult) => void;
   onEvent: (name: EventName, details?: Record<string, unknown>) => void;
@@ -68,6 +70,7 @@ export function GameStage({
   mode,
   profile,
   reducedMotion,
+  density = "auto",
   onSummaryChange,
   onRoundEnd,
   onEvent,
@@ -119,7 +122,7 @@ export function GameStage({
     setKeyboardTargetId((currentTargetId) => getKeyboardTargetId(worldRef.current, currentTargetId, mode));
   };
 
-  const stagePresentation = getStagePresentation(stageSummary, profile, level);
+  const stagePresentation = getStagePresentation(stageSummary, profile, level, density);
   const { phaseChipLabel, statusItems, overlayCopy, overlayKey, showActionEchoRef: actionEchoRef } = useStageActionEcho(
     stagePresentation.phaseChipLabel,
     stagePresentation.statusItems,
@@ -257,17 +260,20 @@ export function GameStage({
         } else if (result.kind === "teleport") {
           onEventRef.current("worm_teleported", { wormId: result.wormId, immortal: result.immortal });
         }
+        triggerHaptic(getActionHaptic(result.kind), reducedMotionRef.current);
         const worm = worldRef.current.worms.find((w) => w.id === result.wormId);
         if (worm && !reducedMotionRef.current) {
           particlesRef.current = [...particlesRef.current, ...getActionParticleBurst(result, worm)];
         }
+      } else if (result.kind === "miss") {
+        triggerHaptic([6, 40, 6], reducedMotionRef.current);
       }
       setKeyboardTargetId((currentTargetId) => getKeyboardTargetId(worldRef.current, currentTargetId, "preserve"));
     };
 
-    const toCanvasPoint = (event: PointerEvent) => {
+    const toCanvasPoint = (point: Pick<PointerEvent, "clientX" | "clientY">) => {
       const rect = canvasBoundsRef.current ?? updateCanvasBounds(canvas, canvasBoundsRef);
-      return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+      return { x: point.clientX - rect.left, y: point.clientY - rect.top };
     };
 
     const handlePointerMove = (event: PointerEvent) => {
@@ -291,14 +297,13 @@ export function GameStage({
     };
 
     const handlePointerDown = (event: PointerEvent) => {
-      const point = toCanvasPoint(event);
-
+      // Touch input is gesture-disambiguated (tap/swipe/hold) via attachTouchControls.
       if (event.pointerType === "touch") {
-        canvas.setPointerCapture(event.pointerId);
-        triggerTouchRush(worldRef.current, point);
-      } else {
-        setPointer(worldRef.current, point);
+        return;
       }
+
+      const point = toCanvasPoint(event);
+      setPointer(worldRef.current, point);
 
       const wormId = findWormIdAtPoint(worldRef.current, point);
       if (!wormId) {
@@ -417,7 +422,14 @@ export function GameStage({
     canvas.addEventListener("pointercancel", clearTouchPointer);
     canvas.addEventListener("keydown", handleKeyDown);
 
+    const disposeTouchControls = attachTouchControls(
+      canvas,
+      (clientX, clientY) => toCanvasPoint({ clientX, clientY }),
+      createTouchHandlers({ worldRef, reducedMotionRef, setKeyboardTargetId, moveKeyboardTarget, handleAction }),
+    );
+
     return () => {
+      disposeTouchControls();
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", handleScroll, true);
       canvas.removeEventListener("pointermove", handlePointerMove);

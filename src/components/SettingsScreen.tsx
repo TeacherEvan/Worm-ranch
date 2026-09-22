@@ -1,13 +1,18 @@
 import type { DisplayMode } from "@/game/detection";
+import type { DisplayDensityPreference } from "@/lib/wormRanchSettings";
 import styles from "./SettingsScreen.module.css";
 
 type SettingsScreenProps = {
   displayMode: DisplayMode;
   reducedMotion: boolean;
   analyticsEnabled: boolean;
+  crtOverlay?: boolean;
+  displayDensity?: DisplayDensityPreference;
   onDisplayModeChange: (value: DisplayMode) => void;
   onReducedMotionChange: (value: boolean) => void;
   onAnalyticsEnabledChange: (value: boolean) => void;
+  onCrtOverlayChange?: (value: boolean) => void;
+  onDisplayDensityChange?: (value: DisplayDensityPreference) => void;
   onBack: () => void;
   onStart: () => void;
 };
@@ -16,9 +21,13 @@ export function SettingsScreen({
   displayMode,
   reducedMotion,
   analyticsEnabled,
+  crtOverlay = false,
+  displayDensity = "auto",
   onDisplayModeChange,
   onReducedMotionChange,
   onAnalyticsEnabledChange,
+  onCrtOverlayChange,
+  onDisplayDensityChange,
   onBack,
   onStart,
 }: SettingsScreenProps) {
@@ -90,6 +99,35 @@ export function SettingsScreen({
             />
             <span>Silent analytics</span>
           </label>
+          <label className={styles.optionRow}>
+            <input
+              type="checkbox"
+              checked={crtOverlay}
+              onChange={(event) => onCrtOverlayChange?.(event.target.checked)}
+            />
+            <span>CRT scanline overlay</span>
+          </label>
+        </fieldset>
+
+        <fieldset className={styles.optionCard}>
+          <legend className={styles.optionTitle}>Stage density</legend>
+          {(
+            [
+              ["auto", "Auto scout"],
+              ["focused", "Focused corral"],
+              ["cinematic", "Cinematic bars"],
+            ] as const
+          ).map(([value, label]) => (
+            <label key={value} className={styles.optionRow}>
+              <input
+                type="radio"
+                name="displayDensity"
+                checked={displayDensity === value}
+                onChange={() => onDisplayDensityChange?.(value)}
+              />
+              <span>{label}</span>
+            </label>
+          ))}
         </fieldset>
       </div>
     </section>

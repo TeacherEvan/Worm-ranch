@@ -73,6 +73,9 @@ export function renderStage(
   }
 
   if (stagePresentation.countdownOverlay) {
+    // Slam punch: fresh each second (tickMs ~1000) settling as the tick ages.
+    const tickProgress = Math.max(0, Math.min(1, stagePresentation.countdownOverlay.tickMs / 1000));
+    const slamScale = reducedMotion ? 1 : 1 + tickProgress * tickProgress * 0.22;
     context.save();
     context.fillStyle = `rgba(5, 10, 15, ${0.2 + stagePresentation.countdownOverlay.progress * 0.42})`;
     context.fillRect(0, 0, world.width, world.height);
@@ -80,7 +83,9 @@ export function renderStage(
     context.fillStyle = "#f5f4e9";
     context.font = "600 60px var(--font-sans)";
     context.textAlign = "center";
-    context.fillText(stagePresentation.countdownOverlay.value, world.width / 2, world.height / 2);
+    context.translate(world.width / 2, world.height / 2);
+    context.scale(slamScale, slamScale);
+    context.fillText(stagePresentation.countdownOverlay.value, 0, 0);
     context.restore();
   }
 

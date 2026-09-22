@@ -213,3 +213,39 @@
     transform: translate3d(0, 0, 0);
   }
 }
+
+/* Cinematic bars: letterbox the field above the canvas (shell isolates stacking). */
+.gameScreen[data-density="cinematic"]::before,
+.gameScreen[data-density="cinematic"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: clamp(36px, 7vh, 72px);
+  background: #020507;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.gameScreen[data-density="cinematic"]::before {
+  top: 0;
+}
+
+.gameScreen[data-density="cinematic"]::after {
+  bottom: 0;
+}
+.page[data-crt="on"] .gameScreen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.22) 3px,
+    rgba(0, 0, 0, 0.22) 4px
+  );
+  mix-blend-mode: multiply;
+}

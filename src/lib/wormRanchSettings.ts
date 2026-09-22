@@ -1,10 +1,14 @@
 import type { DisplayMode } from "@/game/detection";
 import type { AnalyticsEvent } from "@/lib/logger";
 
+export type DisplayDensityPreference = "auto" | "focused" | "cinematic";
+
 export type SettingsState = {
   analyticsEnabled: boolean;
   reducedMotion: boolean;
   displayMode: DisplayMode;
+  crtOverlay: boolean;
+  displayDensity: DisplayDensityPreference;
 };
 
 const SETTINGS_KEY = "worm-ranch-settings";
@@ -14,6 +18,8 @@ export const defaultSettings: SettingsState = {
   analyticsEnabled: true,
   reducedMotion: false,
   displayMode: "auto",
+  crtOverlay: false,
+  displayDensity: "auto",
 };
 
 let cachedRawSettings: string | null | undefined;
@@ -67,7 +73,9 @@ export function areSettingsEqual(left: SettingsState, right: SettingsState) {
   return (
     left.analyticsEnabled === right.analyticsEnabled &&
     left.reducedMotion === right.reducedMotion &&
-    left.displayMode === right.displayMode
+    left.displayMode === right.displayMode &&
+    left.crtOverlay === right.crtOverlay &&
+    left.displayDensity === right.displayDensity
   );
 }
 
@@ -76,6 +84,8 @@ export function getSettingsDetails(settings: SettingsState): AnalyticsEvent["det
     analyticsEnabled: settings.analyticsEnabled,
     reducedMotion: settings.reducedMotion,
     displayMode: settings.displayMode,
+    crtOverlay: settings.crtOverlay,
+    displayDensity: settings.displayDensity,
   };
 }
 
@@ -95,6 +105,13 @@ function readStoredSettings(rawSettings: string | null): SettingsState {
         parsed.displayMode === "auto" || parsed.displayMode === "desktop" || parsed.displayMode === "mobile"
           ? parsed.displayMode
           : defaultSettings.displayMode,
+      crtOverlay: typeof parsed.crtOverlay === "boolean" ? parsed.crtOverlay : defaultSettings.crtOverlay,
+      displayDensity:
+        parsed.displayDensity === "auto" ||
+        parsed.displayDensity === "focused" ||
+        parsed.displayDensity === "cinematic"
+          ? parsed.displayDensity
+          : defaultSettings.displayDensity,
     };
   } catch {
     return defaultSettings;
