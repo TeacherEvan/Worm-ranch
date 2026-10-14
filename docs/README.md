@@ -1,8 +1,7 @@
 # Worm Ranch Documentation
 
-## Current Plans
-- [worm-ranch-plan.md](plans/.archive/worm-ranch-plan.md) — implemented & verified (archived)
-- [2026-05-31-color-target-relaunch-plan.md](plans/.archive/2026-05-31-color-target-relaunch-plan.md) — legacy implementation plan (archived)
+- [2026-08-18-codebase-audit-and-refactor-recommendations.md](plans/2026-08-18-codebase-audit-and-refactor-recommendations.md) — active audit, 500-line refactor & recommendations plan
+- [worm-ranch-plan.md](plans/worm-ranch-plan.md) — implementation baseline tracker
 
 ## Active Specs
 - [2026-06-01-game-mode-flow-design.md](superpowers/specs/2026-06-01-game-mode-flow-design.md) — mode menu & Game Over
