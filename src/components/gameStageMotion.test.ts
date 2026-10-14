@@ -10,7 +10,6 @@ function createSummary(overrides: Partial<GameSummary> = {}): GameSummary {
     remaining: 100,
     fairies: 0,
     timerMs: 60_000,
-    continuousActive: false,
     speedBonus: 0,
     teleportsUnlocked: false,
     countdownMs: 0,

@@ -15,7 +15,6 @@ import {
 } from "@/components/gameStagePresentation";
 import { getMotionFeedback, type StageMotionCue } from "@/components/gameStageMotion";
 import { getStagePresentation } from "@/components/gameStagePhasePresentation";
-import GameHUD from "./GameHUD";
 import { getFairyLifecycleEvents, getRoundEndedDetails, getRoundTransitionEvents } from "@/lib/analytics";
 import {
   applyAccuratePress,
@@ -25,9 +24,7 @@ import {
   getSummary,
   resizeWorld,
   setPointer,
-  startContinuousMode,
   stepWorld,
-  stopContinuousMode,
   triggerTouchRush,
 } from "@/game/engine";
 import type { DisplayProfile } from "@/game/detection";
@@ -100,7 +97,6 @@ export function GameStage({
   const keyboardStatusId = useId();
   const [stageSummary, setStageSummary] = useState<GameSummary>(() => getVisibleSummary(getSummary(initialWorld)));
   const [keyboardTargetId, setKeyboardTargetId] = useState<string | null>(() => getKeyboardTargetId(initialWorld, null, "first"));
-  const [continuousActive, setContinuousActive] = useState<boolean>(() => initialWorld.continuousMode?.active ?? false);
   const [motionCue, setMotionCue] = useState<StageMotionCue>("none");
   const reducedMotionRef = useLatestValue(reducedMotion);
   const keyboardTargetRef = useLatestValue(keyboardTargetId);
@@ -141,13 +137,6 @@ export function GameStage({
       cueTimerRef.current = null;
     }, reducedMotion ? 140 : 760);
   }, [reducedMotion, stageSummary]);
-
-  function formatTimeMs(ms: number) {
-    const totalSeconds = Math.max(0, Math.round(ms / 1000));
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-  }
 
   useEffect(() => {
     const nextWorld = hasMountedRef.current
@@ -343,8 +332,6 @@ export function GameStage({
 
       const roundResult = worldRef.current.roundResult;
       if (roundResult && !finishedRef.current) {
-        stopContinuousMode(worldRef.current);
-        setContinuousActive(false);
         finishedRef.current = true;
         emitFairyLifecycleEvents(true);
         const finalRawSummary = getSummary(worldRef.current);
@@ -513,8 +500,6 @@ export function GameStage({
       if (frameRef.current !== null) {
         window.cancelAnimationFrame(frameRef.current);
       }
-      stopContinuousMode(worldRef.current);
-      setContinuousActive(false);
       audioController.dispose();
     };
   }, [keyboardTargetRef, level, levelRules, onEventRef, onRoundEndRef, onSummaryChangeRef, profile, reducedMotionRef, showActionEchoRef]);
@@ -528,27 +513,6 @@ export function GameStage({
       data-overlay-density={stagePresentation.overlayDensity}
     >
       <div className={styles.backdropLayer} style={{ backgroundImage: backdropUrl ? `url("${backdropUrl}")` : "none" }} />
-      <button
-        type="button"
-        className={styles.continuousToggle}
-        onClick={() => {
-          const active = worldRef.current.continuousMode?.active;
-          if (active) {
-            stopContinuousMode(worldRef.current);
-            setContinuousActive(false);
-          } else {
-            startContinuousMode(worldRef.current);
-            setContinuousActive(true);
-          }
-          // update summary/UI immediately
-          const nextSummary = getVisibleSummary(getSummary(worldRef.current));
-          displayedSummaryRef.current = nextSummary;
-          setStageSummary(nextSummary);
-          onSummaryChangeRef.current(nextSummary);
-        }}
-      >
-        {continuousActive ? "Stop" : "Continuous"}
-      </button>
       <p id={keyboardHelpId} className={styles.srOnly}>
         Use arrow keys to move the target between worms. Press Enter or Space to act on the selected worm.
       </p>
@@ -562,7 +526,6 @@ export function GameStage({
         aria-label="Worm Ranch game field"
         tabIndex={0}
       />
-      <GameHUD time={continuousActive ? null : formatTimeMs(stageSummary.timerMs)} kills={stageSummary.collected} />
       <div className={styles.statusStrip} aria-live="off">
         {statusItems.map((item, index) => (
           <div

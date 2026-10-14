@@ -135,24 +135,6 @@
   border: 0;
 }
 
-.continuousToggle {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 6;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: rgba(8, 15, 24, 0.72);
-  color: var(--text);
-  border: 1px solid rgba(199, 243, 107, 0.12);
-  cursor: pointer;
-  pointer-events: auto;
-}
-
-.continuousToggle:active {
-  transform: translateY(1px);
-}
-
 .statusStrip {
   position: absolute;
   inset: clamp(12px, 2vw, 18px) auto auto clamp(12px, 2vw, 18px);

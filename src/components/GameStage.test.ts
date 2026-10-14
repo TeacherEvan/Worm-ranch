@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { parseFragment } from "parse5";
 import { GameStage, getCappedCanvasDpr, getVisibleSummary } from "./GameStage";
 import { getStageActionEcho } from "./gameStageActionEcho";
 import styles from "./GameStage.module.css";
-import type { ActionResult } from "@/game/types";
+import type { ActionResult, GameSummary } from "@/game/types";
 
 afterEach(() => {
   vi.resetModules();
@@ -43,6 +44,45 @@ type StageInteractionEvent = {
   repeat?: boolean;
 };
 
+type ElementLike = {
+  type: unknown;
+  props: {
+    children?: unknown;
+    className?: string;
+    "aria-label"?: string;
+  };
+};
+
+type ParsedNode = {
+  attrs?: Array<{ name: string; value: string }>;
+  childNodes?: ParsedNode[];
+  nodeName: string;
+  tagName?: string;
+  value?: string;
+};
+
+type ParsedElement = ParsedNode & {
+  attrs: Array<{ name: string; value: string }>;
+  childNodes: ParsedNode[];
+  tagName: string;
+};
+
+type GameStageMarkupOptions = {
+  backdropUrl?: string | null;
+  level?: number;
+  profile?: "desktop" | "mobile";
+  reducedMotion?: boolean;
+  summary?: Partial<GameSummary>;
+};
+
+function isElementLike(node: unknown): node is ElementLike {
+  return Boolean(node && typeof node === "object" && "type" in node && "props" in node);
+}
+
+function isParsedElement(node: ParsedNode | null | undefined): node is ParsedElement {
+  return Boolean(node && typeof node.tagName === "string" && Array.isArray(node.attrs) && Array.isArray(node.childNodes));
+}
+
 function flattenElementText(node: unknown): string {
   if (Array.isArray(node)) {
     return node.map((child) => flattenElementText(child)).join("");
@@ -59,11 +99,11 @@ function flattenElementText(node: unknown): string {
   return flattenElementText((node as { props: { children?: unknown } }).props.children);
 }
 
-function findElementTextByClassName(node: unknown, className: string): string | null {
+function findElementByClassName(node: unknown, className: string): ElementLike | null {
   if (Array.isArray(node)) {
     for (const child of node) {
-      const match = findElementTextByClassName(child, className);
-      if (match !== null) {
+      const match = findElementByClassName(child, className);
+      if (match) {
         return match;
       }
     }
@@ -71,22 +111,20 @@ function findElementTextByClassName(node: unknown, className: string): string | 
     return null;
   }
 
-  if (!node || typeof node !== "object" || !("props" in node)) {
+  if (!isElementLike(node)) {
     return null;
   }
 
-  const element = node as {
-    props: {
-      children?: unknown;
-      className?: string;
-    };
-  };
-
-  if (element.props.className === className || element.props.className?.includes(className)) {
-    return flattenElementText(element.props.children).trim();
+  if (node.props.className === className || node.props.className?.includes(className)) {
+    return node;
   }
 
-  return findElementTextByClassName(element.props.children, className);
+  return findElementByClassName(node.props.children, className);
+}
+
+function findElementTextByClassName(node: unknown, className: string): string | null {
+  const element = findElementByClassName(node, className);
+  return element ? flattenElementText(element.props.children).trim() : null;
 }
 
 function findStatusPill(node: unknown, label: string) {
@@ -140,6 +178,228 @@ function findStatusPill(node: unknown, label: string) {
   }
 
   return findStatusPill(element.props.children, label);
+}
+
+function getParsedAttr(node: ParsedElement, name: string) {
+  return node.attrs.find((attribute) => attribute.name === name)?.value ?? null;
+}
+
+function hasParsedClass(node: ParsedElement, className: string) {
+  const classes = getParsedAttr(node, "class");
+  return classes?.split(/\s+/).includes(className) ?? false;
+}
+
+function flattenParsedText(node: ParsedNode | ParsedNode[] | null | undefined): string {
+  if (!node) {
+    return "";
+  }
+
+  if (Array.isArray(node)) {
+    return node.map((child) => flattenParsedText(child)).join("");
+  }
+
+  if (node.nodeName === "#text") {
+    return node.value ?? "";
+  }
+
+  return flattenParsedText(node.childNodes);
+}
+
+function findParsedElementByClassName(node: ParsedNode | ParsedNode[] | null | undefined, className: string): ParsedElement | null {
+  if (!node) {
+    return null;
+  }
+
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const match = findParsedElementByClassName(child, className);
+      if (match) {
+        return match;
+      }
+    }
+
+    return null;
+  }
+
+  if (!isParsedElement(node)) {
+    return null;
+  }
+
+  if (hasParsedClass(node, className)) {
+    return node;
+  }
+
+  return findParsedElementByClassName(node.childNodes, className);
+}
+
+function findParsedDescendantByTagName(node: ParsedNode | ParsedNode[] | null | undefined, tagName: string): ParsedElement | null {
+  if (!node) {
+    return null;
+  }
+
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const match = findParsedDescendantByTagName(child, tagName);
+      if (match) {
+        return match;
+      }
+    }
+
+    return null;
+  }
+
+  if (!isParsedElement(node)) {
+    return null;
+  }
+
+  if (node.tagName === tagName) {
+    return node;
+  }
+
+  return findParsedDescendantByTagName(node.childNodes, tagName);
+}
+
+function findParsedDirectShellChildByClassName(shellTree: ParsedElement, className: string): ParsedElement | null {
+  return shellTree.childNodes.find((child) => isParsedElement(child) && hasParsedClass(child, className)) ?? null;
+}
+
+function describeParsedDirectSurface(node: ParsedNode): string | null {
+  if (!isParsedElement(node)) {
+    return null;
+  }
+
+  if (hasParsedClass(node, styles.backdropLayer)) {
+    return "backdropLayer";
+  }
+
+  if (hasParsedClass(node, styles.srOnly)) {
+    return "srOnly";
+  }
+
+  if (hasParsedClass(node, styles.canvas)) {
+    return "canvas";
+  }
+
+  if (hasParsedClass(node, styles.statusStrip)) {
+    return "statusStrip";
+  }
+
+  if (hasParsedClass(node, styles.overlay)) {
+    return "overlay";
+  }
+
+  const className = getParsedAttr(node, "class");
+  const ariaLabel = getParsedAttr(node, "aria-label");
+  const details = [className ? `[class="${className}"]` : null, ariaLabel ? `[aria-label="${ariaLabel}"]` : null].filter(
+    (detail): detail is string => detail !== null,
+  );
+
+  return `${node.tagName}${details.join("")}`;
+}
+
+function collectParsedShellDirectChildSurfaces(shellTree: ParsedElement): string[] {
+  return shellTree.childNodes
+    .map((child) => describeParsedDirectSurface(child))
+    .filter((surface): surface is string => surface !== null);
+}
+
+async function renderGameStageShellMarkup(options: GameStageMarkupOptions = {}) {
+  vi.resetModules();
+
+  const summary: GameSummary = {
+    profile: options.profile ?? "desktop",
+    phase: "activeChase",
+    collected: 2,
+    remaining: 4,
+    fairies: 0,
+    timerMs: 12_000,
+    speedBonus: 0,
+    teleportsUnlocked: false,
+    countdownMs: 0,
+    finalWormActive: false,
+    rushTriggered: false,
+    ...options.summary,
+  };
+
+  vi.doMock("@/components/gameStageAudio", () => ({
+    createGameStageAudioController: vi.fn(() => ({
+      dispose: vi.fn(),
+      play: vi.fn(),
+    })),
+  }));
+  vi.doMock("@/components/gameStageKeyboard", () => ({
+    getKeyboardStatus: () => "Round starts on zero.",
+    getKeyboardTargetId: () => null,
+  }));
+  vi.doMock("@/components/gameStagePresentation", () => ({
+    areSummariesEqual: () => true,
+    drawStaticStageBackdrop: vi.fn(),
+    renderStage: vi.fn(),
+    stepFeedback: vi.fn(),
+  }));
+  vi.doMock("@/components/gameStageMotion", () => ({
+    getMotionFeedback: () => ({ stageCue: "none" }),
+  }));
+  vi.doMock("@/components/gameStagePhasePresentation", () => ({
+    getStagePresentation: () => ({
+      overlayKey: "overlay",
+      overlayDensity: "balanced",
+      phaseChipLabel: "Level 1",
+      copy: {
+        title: "Round starts on zero.",
+        body: "Body",
+        hint: "Hint",
+      },
+      statusItems: [
+        { id: "bagged", label: "Bagged", value: "2", active: false },
+        { id: "clock", label: "Clock", value: "00:12", active: false },
+      ],
+    }),
+  }));
+  vi.doMock("@/lib/analytics", () => ({
+    getFairyLifecycleEvents: () => ({ events: [], nextStates: new Map() }),
+    getRoundEndedDetails: vi.fn(),
+    getRoundTransitionEvents: () => [],
+  }));
+  vi.doMock("@/game/engine", () => ({
+    applyAccuratePress: vi.fn(),
+    applyMiss: vi.fn(),
+    createWorld: vi.fn(() => ({
+      worms: [],
+      fairies: [],
+      roundResult: null,
+    })),
+    findWormIdAtPoint: vi.fn(),
+    getSummary: vi.fn(() => summary),
+    resizeWorld: vi.fn(),
+    setPointer: vi.fn(),
+    stepWorld: vi.fn(),
+    triggerTouchRush: vi.fn(),
+  }));
+  vi.doMock("@/game/levels", () => ({
+    getGameplayLevelRules: vi.fn(() => ({})),
+  }));
+
+  const { GameStage: ParsedGameStage } = await import("./GameStage");
+  const html = renderToStaticMarkup(
+    createElement(ParsedGameStage, {
+      backdropUrl: options.backdropUrl ?? null,
+      level: options.level ?? 1,
+      profile: options.profile ?? "desktop",
+      reducedMotion: options.reducedMotion ?? false,
+      onSummaryChange: vi.fn(),
+      onRoundEnd: vi.fn(),
+      onEvent: vi.fn(),
+    }),
+  );
+  const parsedMarkup = parseFragment(html);
+  const shell = findParsedElementByClassName(parsedMarkup.childNodes, styles.shell);
+
+  if (!shell) {
+    throw new Error("expected stage shell markup");
+  }
+
+  return shell;
 }
 
 async function createInteractionHarness(options: InteractionHarnessOptions = {}) {
@@ -263,7 +523,6 @@ async function createInteractionHarness(options: InteractionHarnessOptions = {})
       remaining: 1,
       fairies: 0,
       timerMs: 1000,
-      continuousActive: false,
       speedBonus: 0,
       teleportsUnlocked: false,
       countdownMs: 0,
@@ -272,9 +531,7 @@ async function createInteractionHarness(options: InteractionHarnessOptions = {})
     })),
     resizeWorld: vi.fn(),
     setPointer: vi.fn(),
-    startContinuousMode: vi.fn(),
     stepWorld: vi.fn(),
-    stopContinuousMode: vi.fn(),
     triggerTouchRush: vi.fn(),
   }));
 
@@ -350,7 +607,6 @@ describe("GameStage", () => {
         remaining: 4,
         fairies: 0,
         timerMs: 12_345,
-        continuousActive: false,
         speedBonus: 0,
         teleportsUnlocked: false,
         countdownMs: 1_120,
@@ -441,6 +697,50 @@ describe("GameStage", () => {
     );
 
     expect(html).toContain('background-image:url(&quot;/art/Gameplay%20backdrops/desert-landscape-with-sparse-vegetation_1308-178017.avif&quot;)');
+  });
+
+  it("keeps the in-round summary on the approved shell surfaces without extra summary chrome", () => {
+    return renderGameStageShellMarkup().then((shellTree) => {
+      const statusStrip = findParsedDirectShellChildByClassName(shellTree, styles.statusStrip);
+      const overlay = findParsedDirectShellChildByClassName(shellTree, styles.overlay);
+      const directSurfaces = collectParsedShellDirectChildSurfaces(shellTree);
+      const approvedDirectShellSurfaces = [
+        "backdropLayer",
+        "srOnly",
+        "srOnly",
+        "canvas",
+        "statusStrip",
+        "overlay",
+      ];
+
+      expect(statusStrip).not.toBeNull();
+      expect(overlay).not.toBeNull();
+      expect(flattenParsedText(statusStrip)).toContain("Bagged");
+      expect(flattenParsedText(statusStrip)).toContain("Clock");
+      expect(findParsedElementByClassName(overlay, styles.phaseBadge)).not.toBeNull();
+      expect(findParsedElementByClassName(overlay, styles.message)).not.toBeNull();
+      expect(findParsedElementByClassName(overlay, styles.hint)).not.toBeNull();
+      expect([...directSurfaces].sort()).toEqual([...approvedDirectShellSurfaces].sort());
+    });
+  });
+
+  it("detects button descendants nested inside parsed shell wrappers", () => {
+    const parsedMarkup = parseFragment(
+      `<section class="${styles.shell}"><div class="${styles.overlay}"><div><button type="button">Continuous</button></div></div></section>`,
+    );
+    const shellTree = findParsedElementByClassName(parsedMarkup.childNodes, styles.shell);
+
+    if (!shellTree) {
+      throw new Error("expected parsed shell fixture");
+    }
+
+    expect(findParsedDescendantByTagName(shellTree, "button")).not.toBeNull();
+  });
+
+  it("does not expose a dedicated continuous-mode stage control on the round shell", () => {
+    return renderGameStageShellMarkup().then((shellTree) => {
+      expect(findParsedDescendantByTagName(shellTree, "button")).toBeNull();
+    });
   });
 
   it("routes pointer misses through applyMiss without triggering stage audio", async () => {
@@ -614,7 +914,6 @@ describe("GameStage", () => {
         remaining: 1,
         fairies: 0,
         timerMs: 1000,
-        continuousActive: false,
         speedBonus: 0,
         teleportsUnlocked: false,
         countdownMs: 0,
@@ -623,9 +922,7 @@ describe("GameStage", () => {
       })),
       resizeWorld: vi.fn(),
       setPointer: vi.fn(),
-      startContinuousMode: vi.fn(),
       stepWorld: vi.fn(),
-      stopContinuousMode: vi.fn(),
       triggerTouchRush: vi.fn(),
     }));
     vi.doMock("@/components/gameStageAudio", () => ({
@@ -858,7 +1155,6 @@ describe("GameStage", () => {
         remaining: 0,
         fairies: 0,
         timerMs: 1000,
-        continuousActive: false,
         speedBonus: 0,
         teleportsUnlocked: false,
         countdownMs: 0,
@@ -867,9 +1163,7 @@ describe("GameStage", () => {
       })),
       resizeWorld: vi.fn(),
       setPointer: vi.fn(),
-      startContinuousMode: vi.fn(),
       stepWorld: vi.fn(),
-      stopContinuousMode: vi.fn(),
       triggerTouchRush: vi.fn(),
     }));
     vi.doMock("@/game/levels", () => ({
