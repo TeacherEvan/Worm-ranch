@@ -46,14 +46,19 @@ const SETTINGS_SNAPSHOT = {
   reducedMotion: false,
   displayMode: "auto" as const,
 };
+const SELECTED_GAME_MODE_SLOT = 8;
 
 function createReactStateMock(initialScreen: AppScreen) {
   const stateSlots: unknown[] = [];
+  const setterCallCounts: number[] = [];
   let cursor = 0;
 
   return {
     beginRender() {
       cursor = 0;
+    },
+    getSetterCallCount(slot: number) {
+      return setterCallCounts[slot] ?? 0;
     },
     async moduleFactory() {
       const actual = await vi.importActual<typeof import("react")>("react");
@@ -71,9 +76,10 @@ function createReactStateMock(initialScreen: AppScreen) {
             stateSlots[slot] = slot === 0 ? initialScreen : resolvedInitial;
           }
 
-          const setState = (value: unknown) => {
-            stateSlots[slot] = typeof value === "function" ? (value as (current: unknown) => unknown)(stateSlots[slot]) : value;
-          };
+           const setState = (value: unknown) => {
+             setterCallCounts[slot] = (setterCallCounts[slot] ?? 0) + 1;
+             stateSlots[slot] = typeof value === "function" ? (value as (current: unknown) => unknown)(stateSlots[slot]) : value;
+           };
 
           return [stateSlots[slot], setState];
         },
@@ -116,13 +122,13 @@ async function setupApp(initialScreen: AppScreen) {
   vi.doMock("@/components/GameModeScreen", () => ({
     GameModeScreen: (props: MockGameModeScreenProps) => {
       gameModeScreenProps = props;
-      return createElement("div", null, `Game mode screen: ${props.selectedMode}`);
+      return createElement("section", { "data-layout": "compact-mode-menu" }, `Game mode screen: ${props.selectedMode}`);
     },
   }));
   vi.doMock("@/components/ScreenTransition", () => ({
     ScreenTransition: (props: MockScreenTransitionProps) => {
       screenTransitionProps = props;
-      return createElement("div", null, `Transitioning to ${props.destinationLabel}`);
+      return createElement("section", { "data-layout": "screen-transition" }, `Transitioning to ${props.destinationLabel}`);
     },
   }));
   vi.doMock("@/components/WelcomeScreen", () => ({ WelcomeScreen: () => createElement("div", null, "Welcome screen") }));
@@ -151,6 +157,7 @@ async function setupApp(initialScreen: AppScreen) {
     getHomeScreenProps: () => homeScreenProps,
     getScreenTransitionProps: () => screenTransitionProps,
     getSettingsScreenProps: () => settingsScreenProps,
+    getSetterCallCount: (slot: number) => reactStateMock.getSetterCallCount(slot),
   };
 }
 
@@ -230,6 +237,25 @@ describe("WormRanchApp", () => {
     expect(app.getGameStageProps()?.backdropUrl).toBe(getGameplayRunPlan(1).backdropUrl);
   });
 
+  it("uses the screen component shells directly for mode menu and transition surfaces", async () => {
+    const app = await setupApp("modeMenu");
+
+    const modeMenuHtml = app.renderApp();
+    expect(modeMenuHtml.match(/<section/g)?.length ?? 0).toBe(1);
+    expect(modeMenuHtml).toContain('data-layout="compact-mode-menu"');
+
+    const modeMenuProps = app.getGameModeScreenProps();
+    if (!modeMenuProps) {
+      throw new Error("expected GameModeScreen props");
+    }
+
+    void modeMenuProps.onStart();
+    const transitionHtml = app.renderApp();
+
+    expect(transitionHtml.match(/<section/g)?.length ?? 0).toBe(1);
+    expect(transitionHtml).toContain('data-layout="screen-transition"');
+  });
+
   it("preserves the endless selection when returning to the mode menu after a run", async () => {
     const app = await setupApp("modeMenu");
     app.renderApp();
@@ -275,5 +301,32 @@ describe("WormRanchApp", () => {
     app.renderApp();
 
     expect(app.getGameModeScreenProps()?.selectedMode).toBe("targetEndless");
+  });
+
+  it("does not rewrite the selected mode again while launching a chosen run", async () => {
+    const app = await setupApp("modeMenu");
+    app.renderApp();
+
+    const initialModeMenuProps = app.getGameModeScreenProps();
+    if (!initialModeMenuProps) {
+      throw new Error("expected initial GameModeScreen props");
+    }
+
+    initialModeMenuProps.onSelectMode("targetEndless");
+    app.renderApp();
+
+    expect(app.getSetterCallCount(SELECTED_GAME_MODE_SLOT)).toBe(1);
+
+    const updatedModeMenuProps = app.getGameModeScreenProps();
+    if (!updatedModeMenuProps) {
+      throw new Error("expected updated GameModeScreen props");
+    }
+
+    void updatedModeMenuProps.onStart();
+    app.renderApp();
+    app.getScreenTransitionProps()?.onReady();
+    app.renderApp();
+
+    expect(app.getSetterCallCount(SELECTED_GAME_MODE_SLOT)).toBe(1);
   });
 });

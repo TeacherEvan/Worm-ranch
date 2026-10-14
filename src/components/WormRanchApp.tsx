@@ -29,15 +29,13 @@ import {
 import { createSilentLogger, type EventName } from "@/lib/logger";
 
 type AppScreen = "welcome" | "home" | "settings" | "modeMenu" | "transition" | "game";
+type NonTransitionScreen = Exclude<AppScreen, "transition">;
+type NonGameScreen = Exclude<NonTransitionScreen, "game">;
 type DeferredInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 };
-type TransitionTarget = {
-  screen: Exclude<AppScreen, "transition">;
-  resetRun?: boolean;
-  gameMode?: GameMode;
-};
+type TransitionTarget = { screen: "game"; mode: GameMode } | { screen: NonGameScreen; resetRun?: boolean };
 
 export function WormRanchApp() {
   const [screen, setScreen] = useState<AppScreen>("welcome");
@@ -133,10 +131,6 @@ export function WormRanchApp() {
       sessionIdRef.current = nextSessionId;
       runProfileRef.current = nextRunProfile;
       currentLevelRef.current = nextRunLevel;
-      if (nextTarget.gameMode) {
-        setSelectedGameMode(nextTarget.gameMode);
-      }
-
       setCurrentLevel(nextRunLevel);
       setSessionId(nextSessionId);
       setRunProfile(nextRunProfile);
@@ -313,8 +307,7 @@ export function WormRanchApp() {
 
   const beginRun = useCallback(
     (gameMode: GameMode) => {
-      setSelectedGameMode(gameMode);
-      queueScreenTransition({ screen: "game", gameMode });
+      queueScreenTransition({ screen: "game", mode: gameMode });
     },
     [queueScreenTransition],
   );
@@ -389,24 +382,20 @@ export function WormRanchApp() {
       )}
 
       {screen === "modeMenu" && (
-        <section className={styles.screen}>
-          <GameModeScreen
-            selectedMode={selectedGameMode}
-            onBack={() => queueScreenTransition({ screen: modeMenuReturnScreen })}
-            onSelectMode={setSelectedGameMode}
-            onStart={() => beginRun(selectedGameMode)}
-          />
-        </section>
+        <GameModeScreen
+          selectedMode={selectedGameMode}
+          onBack={() => queueScreenTransition({ screen: modeMenuReturnScreen })}
+          onSelectMode={setSelectedGameMode}
+          onStart={() => beginRun(selectedGameMode)}
+        />
       )}
 
       {screen === "transition" && transitionTarget && (
-        <section className={styles.screen}>
-          <ScreenTransition
-            destinationLabel={getTransitionLabel(transitionTarget.screen)}
-            onReady={completeTransition}
-            reducedMotion={settings.reducedMotion}
-          />
-        </section>
+        <ScreenTransition
+          destinationLabel={getTransitionLabel(transitionTarget.screen)}
+          onReady={completeTransition}
+          reducedMotion={settings.reducedMotion}
+        />
       )}
 
       {screen === "game" && (
@@ -464,7 +453,7 @@ function isDeferredInstallPromptEvent(event: Event): event is DeferredInstallPro
   return "prompt" in event && "userChoice" in event;
 }
 
-function getTransitionLabel(screen: Exclude<AppScreen, "transition">) {
+function getTransitionLabel(screen: NonTransitionScreen) {
   switch (screen) {
     case "welcome":
       return "launch";

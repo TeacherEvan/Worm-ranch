@@ -1,0 +1,30 @@
+.shell {
+  display: grid;
+  gap: 10px;
+  padding: clamp(18px, 2.5vw, 24px);
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--panel-strong) 90%, transparent);
+  border: 1px solid rgba(199, 243, 107, 0.14);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
+}
+
+.eyebrow {
+  color: color-mix(in srgb, var(--text) 74%, var(--accent) 26%);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.title {
+  color: var(--text);
+  font-size: clamp(1.45rem, 1.22rem + 0.7vw, 2rem);
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.note {
+  color: var(--muted);
+  line-height: 1.45;
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import styles from "./ScreenTransition.module.css";
 
 type ScreenTransitionProps = {
   destinationLabel: string;
@@ -20,10 +21,16 @@ export function ScreenTransition({ destinationLabel, onReady, reducedMotion }: S
   }, [onReady, reducedMotion]);
 
   return (
-    <section aria-busy="true" aria-live="polite" data-layout="screen-transition" data-motion={reducedMotion ? "reduced" : "full"}>
-      <span>Loading screen</span>
-      <h2>Heading to {destinationLabel}</h2>
-      <p>Settling the dust between screens.</p>
+    <section
+      aria-busy="true"
+      aria-live="polite"
+      className={styles.shell}
+      data-layout="screen-transition"
+      data-motion={reducedMotion ? "reduced" : "full"}
+    >
+      <span className={styles.eyebrow}>Loading screen</span>
+      <h2 className={styles.title}>Heading to {destinationLabel}</h2>
+      <p className={styles.note}>Settling the dust between screens.</p>
     </section>
   );
 }
