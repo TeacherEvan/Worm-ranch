@@ -1,6 +1,6 @@
 # Worm Ranch Implementation Plan
 
-**Status:** ✅ All committed + verified. Game mode flow + transition screen (92332d1) | ✅ Motion/particle layer hardened (1452020) | ✅ Codebase audit+refactor landed on `feat/codebase-audit-refactor` (pushed, gate GREEN: 32 suites / 159 tests, eslint 0, `next build` clean). Open assigned plan work: NONE. See `docs/plans/.archive/2026-08-18-*` for the audit + READY debrief.
+**Status:** ✅ All committed + verified. Game mode flow + transition screen (92332d1) | ✅ Motion/particle layer hardened (1452020) | ✅ Codebase audit+refactor landed on `feat/codebase-audit-refactor` (pushed, gate GREEN: 35 suites / 177 tests, eslint 0 errors 0 warnings, `next build` clean). Open assigned plan work: NONE. See `docs/plans/.archive/2026-08-18-*` for the audit + READY debrief.
 
 ---
 
@@ -58,10 +58,13 @@ archived under `docs/plans/.archive/2026-08-18-*`.
 
 ```bash
 npm run verify
-# → test:engine (139 tests) + lint (0 errors) + next build (type-check clean)
+# → test:engine (177 tests / 35 suites) + lint (0 errors, 0 warnings) + next build (type-check clean)
 ```
 
-Must stay green on every commit. CI runs this on push.
+Must stay green on every commit. CI runs this on push; note that Actions has
+been billing-locked since between `35b608e` and `9ff82f7`, which is why that
+commit shipped a broken canvas mock ungated. Until the lock clears, a pristine
+clean clone plus `npm ci` is the closest available reproduction of what CI runs.
 
 ---
 
