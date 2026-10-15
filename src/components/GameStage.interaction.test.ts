@@ -1,9 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import { GameStage, getCappedCanvasDpr, getVisibleSummary } from "./GameStage";
 import styles from "./GameStage.module.css";
-import type { ActionResult } from "@/game/types";
 import { createCanvasListenerRegistry, createInteractionHarness, findElementTextByClassName, findStatusPill } from "./gameStageTestHelpers";
 import type { StageInteractionEvent } from "./gameStageTestHelpers";
 

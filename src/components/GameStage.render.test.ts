@@ -3,8 +3,6 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { GameStage, getCappedCanvasDpr, getVisibleSummary } from "./GameStage";
 import styles from "./GameStage.module.css";
-import type { ActionResult } from "@/game/types";
-import { createInteractionHarness } from "./gameStageTestHelpers";
 
 afterEach(() => {
   vi.resetModules();

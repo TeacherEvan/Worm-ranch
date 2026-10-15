@@ -1,27 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { DESKTOP_RULES, MOBILE_RULES } from "./rules";
 import { STANDARD_WORM_COLORS } from "./wormColors";
 import {
   applyAccuratePress,
   createWorld,
-  findWormIdAtPoint,
   getSummary,
-  setPointer,
   startContinuousMode,
   startRound,
   stopContinuousMode,
   stepWorld,
-  triggerTouchRush,
 } from "./engine";
 import {
   createDeterministicOptions,
   createFixedRuntime,
-  getSnapshot,
-  createActiveDesktopWorld,
   createContinuousActiveWorld,
   getActiveWormCount,
   getActiveStandardWormIdByColor,
-  captureDesktopWorms,
 } from "./engineTestHelpers";
 
 describe("engine.continuous", () => {

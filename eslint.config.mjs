@@ -19,6 +19,13 @@ const eslintConfig = defineConfig([
     // must exclude them separately or local lint double-counts the tree.
     ".kilo/**",
   ]),
+  {
+    rules: {
+      // Mocks keep the real call signature, so unused params are marked with a
+      // leading underscore rather than dropped.
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+    },
+  },
 ]);
 
 export default eslintConfig;
