@@ -3,6 +3,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { GameStage, getCappedCanvasDpr, getVisibleSummary } from "./GameStage";
 import { getStageActionEcho } from "./gameStageActionEcho";
+import { createCanvasListenerRegistry } from "./gameStageTestHelpers";
 import styles from "./GameStage.module.css";
 import type { ActionResult } from "@/game/types";
 
@@ -167,7 +168,7 @@ function resolveFunctionComponent(node: unknown) {
 
 async function createInteractionHarness(options: InteractionHarnessOptions = {}) {
   const cleanupFns: Array<(() => void) | undefined> = [];
-  const canvasListeners = new Map<string, (event: StageInteractionEvent) => void>();
+  const canvasListeners = createCanvasListenerRegistry();
   const windowListeners = new Map<string, EventListener[]>();
   const world = {
     worms: [{ id: "worm-1", x: 120, y: 90, radius: 18 }],
@@ -229,10 +230,10 @@ async function createInteractionHarness(options: InteractionHarnessOptions = {})
   const createGameStageAudioController = vi.fn(() => audioController);
   const canvas = {
     addEventListener: vi.fn((name: string, listener: (event: StageInteractionEvent) => void) => {
-      canvasListeners.set(name, listener);
+      canvasListeners.addEventListener(name, listener);
     }),
-    removeEventListener: vi.fn((name: string) => {
-      canvasListeners.delete(name);
+    removeEventListener: vi.fn((name: string, listener: (event: StageInteractionEvent) => void) => {
+      canvasListeners.removeEventListener(name, listener);
     }),
     focus: vi.fn(),
     getBoundingClientRect: vi.fn(() => ({ left: 0, top: 0, width: 800, height: 540 })),

@@ -4,8 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { GameStage, getCappedCanvasDpr, getVisibleSummary } from "./GameStage";
 import styles from "./GameStage.module.css";
 import type { ActionResult } from "@/game/types";
-import { createInteractionHarness } from "./gameStageTestHelpers";
-import { findElementTextByClassName, findStatusPill } from "./gameStageTestHelpers";
+import { createCanvasListenerRegistry, createInteractionHarness, findElementTextByClassName, findStatusPill } from "./gameStageTestHelpers";
 import type { StageInteractionEvent } from "./gameStageTestHelpers";
 
 afterEach(() => {
@@ -18,12 +17,11 @@ describe("GameStage.interaction", () => {
   it("routes pointer misses through applyMiss without triggering stage audio", async () => {
     const harness = await createInteractionHarness({ pointerWormId: null });
 
-    const pointerDown = harness.canvasListeners.get("pointerdown");
-    if (!pointerDown) {
+    if (!harness.canvasListeners.hasListener("pointerdown")) {
       throw new Error("expected pointerdown listener");
     }
 
-    pointerDown({
+    harness.canvasListeners.dispatch("pointerdown", {
       clientX: 32,
       clientY: 48,
       pointerId: 1,
@@ -37,10 +35,47 @@ describe("GameStage.interaction", () => {
     harness.cleanup();
   });
 
+  it("keeps the mouse path and the touch gesture path bound at the same time", async () => {
+    const harness = await createInteractionHarness({ pointerWormId: "worm-1" });
+
+    for (const name of ["pointerdown", "pointerup"]) {
+      if (!harness.canvasListeners.hasListener(name)) {
+        throw new Error(`expected ${name} listener`);
+      }
+    }
+
+    harness.canvasListeners.dispatch("pointerdown", {
+      clientX: 32,
+      clientY: 48,
+      pointerId: 1,
+      pointerType: "touch",
+      timeStamp: 1000,
+    });
+    harness.canvasListeners.dispatch("pointerup", {
+      clientX: 32,
+      clientY: 48,
+      pointerId: 1,
+      pointerType: "touch",
+      timeStamp: 1200,
+    });
+
+    harness.canvasListeners.dispatch("pointerdown", {
+      clientX: 32,
+      clientY: 48,
+      pointerId: 2,
+      pointerType: "mouse",
+    });
+
+    expect(harness.applyAccuratePress).toHaveBeenCalledTimes(2);
+    expect(harness.applyMiss).not.toHaveBeenCalled();
+
+    harness.cleanup();
+  });
+
   it("replaces the visible hint with a follow-up cue after a successful action", async () => {
     vi.resetModules();
 
-    const canvasListeners = new Map<string, (event: StageInteractionEvent) => void>();
+    const canvasListeners = createCanvasListenerRegistry();
     const hookSlots: unknown[] = [];
     const effectSlots: Array<{ deps?: unknown[]; cleanup?: (() => void) | undefined }> = [];
     let hookIndex = 0;
@@ -61,10 +96,10 @@ describe("GameStage.interaction", () => {
 
     const canvas = {
       addEventListener: vi.fn((name: string, listener: (event: StageInteractionEvent) => void) => {
-        canvasListeners.set(name, listener);
+        canvasListeners.addEventListener(name, listener);
       }),
-      removeEventListener: vi.fn((name: string) => {
-        canvasListeners.delete(name);
+      removeEventListener: vi.fn((name: string, listener: (event: StageInteractionEvent) => void) => {
+        canvasListeners.removeEventListener(name, listener);
       }),
       focus: vi.fn(),
       getBoundingClientRect: vi.fn(() => ({ left: 0, top: 0, width: 800, height: 540 })),
@@ -237,12 +272,11 @@ describe("GameStage.interaction", () => {
     resetHookIndex();
     InteractiveGameStage(props);
 
-    const pointerDown = canvasListeners.get("pointerdown");
-    if (!pointerDown) {
+    if (!canvasListeners.hasListener("pointerdown")) {
       throw new Error("expected pointerdown listener");
     }
 
-    pointerDown({
+    canvasListeners.dispatch("pointerdown", {
       clientX: 32,
       clientY: 48,
       pointerId: 1,
@@ -270,19 +304,20 @@ describe("GameStage.interaction", () => {
       ],
     });
 
-    const pointerDown = harness.canvasListeners.get("pointerdown");
-    const keyDown = harness.canvasListeners.get("keydown");
-    if (!pointerDown || !keyDown) {
+    if (
+      !harness.canvasListeners.hasListener("pointerdown") ||
+      !harness.canvasListeners.hasListener("keydown")
+    ) {
       throw new Error("expected stage interaction listeners");
     }
 
-    pointerDown({
+    harness.canvasListeners.dispatch("pointerdown", {
       clientX: 32,
       clientY: 48,
       pointerId: 1,
       pointerType: "mouse",
     });
-    keyDown({
+    harness.canvasListeners.dispatch("keydown", {
       key: "Enter",
       preventDefault: vi.fn(),
       repeat: false,

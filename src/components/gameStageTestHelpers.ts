@@ -18,7 +18,50 @@ export type StageInteractionEvent = {
   pointerType?: string;
   preventDefault?: () => void;
   repeat?: boolean;
+  timeStamp?: number;
 };
+
+export type CanvasListener = (event: StageInteractionEvent) => void;
+
+export type CanvasListenerRegistry = {
+  addEventListener: (name: string, listener: CanvasListener) => void;
+  removeEventListener: (name: string, listener: CanvasListener) => void;
+  dispatch: (name: string, event: StageInteractionEvent) => void;
+  hasListener: (name: string) => boolean;
+};
+
+/* Several listeners may share one event name and all fire, in registration
+   order; a single slot per name shadows GameStage's own pointerdown handler. */
+export function createCanvasListenerRegistry(): CanvasListenerRegistry {
+  const listeners = new Map<string, CanvasListener[]>();
+
+  return {
+    addEventListener: (name, listener) => {
+      const existing = listeners.get(name) ?? [];
+      existing.push(listener);
+      listeners.set(name, existing);
+    },
+    removeEventListener: (name, listener) => {
+      const existing = listeners.get(name);
+      if (!existing) {
+        return;
+      }
+
+      const remaining = existing.filter((candidate) => candidate !== listener);
+      if (remaining.length > 0) {
+        listeners.set(name, remaining);
+      } else {
+        listeners.delete(name);
+      }
+    },
+    dispatch: (name, event) => {
+      for (const listener of [...(listeners.get(name) ?? [])]) {
+        listener(event);
+      }
+    },
+    hasListener: (name) => (listeners.get(name) ?? []).length > 0,
+  };
+}
 
 export function flattenElementText(node: unknown): string {
   if (Array.isArray(node)) {
@@ -144,7 +187,7 @@ export function resolveFunctionComponent(node: unknown) {
 
 export async function createInteractionHarness(options: InteractionHarnessOptions = {}) {
   const cleanupFns: Array<(() => void) | undefined> = [];
-  const canvasListeners = new Map<string, (event: StageInteractionEvent) => void>();
+  const canvasListeners = createCanvasListenerRegistry();
   const windowListeners = new Map<string, EventListener[]>();
   const world = {
     worms: [{ id: "worm-1", x: 120, y: 90, radius: 18 }],
@@ -205,11 +248,11 @@ export async function createInteractionHarness(options: InteractionHarnessOption
   };
   const createGameStageAudioController = vi.fn(() => audioController);
   const canvas = {
-    addEventListener: vi.fn((name: string, listener: (event: StageInteractionEvent) => void) => {
-      canvasListeners.set(name, listener);
+    addEventListener: vi.fn((name: string, listener: CanvasListener) => {
+      canvasListeners.addEventListener(name, listener);
     }),
-    removeEventListener: vi.fn((name: string) => {
-      canvasListeners.delete(name);
+    removeEventListener: vi.fn((name: string, listener: CanvasListener) => {
+      canvasListeners.removeEventListener(name, listener);
     }),
     focus: vi.fn(),
     getBoundingClientRect: vi.fn(() => ({ left: 0, top: 0, width: 800, height: 540 })),
