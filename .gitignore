@@ -45,3 +45,9 @@ next-env.d.ts
 
 # V2 audit scratch dir (surgical-implementation writes here; never commit)
 docs/.scratch-audit/
+
+# Agent worktrees. These were previously excluded only via each clone's
+# .git/info/exclude, which meant CI and teammates saw a different tree than a
+# local session did, and eslint silently linted the local copy.
+.kilo/
+.kilocode/
