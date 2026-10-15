@@ -14,6 +14,10 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Worktree builds
     ".worktrees/**",
+    // Agent worktrees live under .kilo/worktrees, not .worktrees, and are
+    // excluded from git only via each clone's .git/info/exclude, so eslint
+    // must exclude them separately or local lint double-counts the tree.
+    ".kilo/**",
   ]),
 ]);
 
