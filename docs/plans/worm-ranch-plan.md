@@ -1,6 +1,6 @@
 # Worm Ranch Implementation Plan
 
-**Status:** ✅ All committed + verified. Game mode flow + transition screen (92332d1) | ✅ Motion/particle layer hardened (1452020) | ✅ Codebase audit+refactor landed on `feat/codebase-audit-refactor` (pushed, gate GREEN: 35 suites / 177 tests, eslint 0 errors 0 warnings, `next build` clean). Open assigned plan work: NONE. See `docs/plans/.archive/2026-08-18-*` for the audit + READY debrief.
+**Status:** ✅ All committed + verified. Game mode flow + transition screen (92332d1) | ✅ Motion/particle layer hardened (1452020) | ✅ Canvas pointer listeners consolidated (2026-10-16) | ✅ Playwright E2E + launch-plate stall fixed (2026-10-16) | ✅ Codebase audit+refactor landed on `feat/codebase-audit-refactor` (pushed, gate GREEN). Open assigned plan work: NONE. See `docs/plans/.archive/2026-08-18-*` for the audit + READY debrief.
 
 ---
 
@@ -25,15 +25,58 @@
 - Ignored 25MB unreferenced `output.mp4`
 - `npm run verify`: 139 tests pass, 0 lint errors, `next build` type-check clean
 
+### 3. Canvas Pointer Listener Consolidation (2026-10-16)
+- Replaced the split `GameStage` + `attachTouchControls` wiring with a single
+  `bindPointerControls` binder in `gameStageGestures.ts`
+- Each canvas pointer event (`pointerdown`, `pointermove`, `pointerup`,
+  `pointercancel`, `pointerleave`) now has **exactly one** listener that routes
+  by `pointerType`; previously all four touch-relevant events carried two
+  listeners that fired in registration order on the same interaction
+- Touch state cleanup (`releasePointerCapture` + pointer reset) is unified into
+  the binder, and a `pointerup` trailing a cancelled gesture no longer re-runs
+  the cleanup
+- Added `src/components/gameStageGestures.test.ts` binder suite (6 tests) and a
+  `GameStage.interaction.test.ts` guard asserting one listener per pointer event
+- `npm run verify`: 35 suites / 183 tests, 0 lint errors, `next build` type-check clean
+
+### 4. Browser E2E Coverage + Launch Plate Stall Fix (2026-10-16)
+- Added Playwright E2E: `playwright.config.ts` + `e2e/launch-flow.spec.ts`
+  (desktop + mobile chromium projects) covering welcome hero → gate →
+  mode menu → standard game → endless target-color mode, plus a reduced-motion
+  pass. Run with `npm run test:e2e`.
+- **Bug found by the new E2E, not by any unit test:** the welcome launch loader
+  deadlocked at **78%** on desktop while the intro reel was already playable.
+  `introVideoCanPlay` was set by `onCanPlay`, but `introVideoMetadataLoaded`
+  depended on an `onLoadedMetadata` event that fired before React attached its
+  listener, so the plate never reached 100% and **kept gating first paint**.
+  Device-dependent (mobile happened to escape the race), so no desktop-only
+  unit test existed for it.
+- Fix: `canplay` implies `readyState >= HAVE_METADATA`, so it now also records
+  metadata readiness, and `getWelcomeLaunchLoaderProgress` /
+  `getWelcomeLaunchLoaderPhase` treat can-play as proof of metadata. Guards:
+  `welcomeLaunchLoader.test.ts` covers the missed-event snapshot.
+- **Claim correction:** the jobcard previously recorded the completed slice as
+  "intro video is enhancement-only instead of gating first paint". That was
+  **not true** — the intro reel gate was still reachable. This session closed
+  the gap.
+- E2E needs a production build, not the dev server: `layout.tsx` loads Space
+  Grotesk via `next/font/google`, and the dev server blocks on that fetch
+  without gstatic access. `npm run build` is unaffected.
+- Added `data-target-callout` / `data-target-color` / `data-target-progress`
+  attributes to `GameStageOverlay` so browser tests can read the live
+  objective without parsing copy.
+- `npm run verify`: 35 suites / 185 tests, eslint 0/0, tsc clean, build clean.
+
 ---
 
 ## Open Debt (recorded in docs/jobcard.md)
 
 | Item | Impact | Recommended Action |
 |------|--------|-------------------|
-| `docs/plans/worm-ranch-plan.md` missing | AGENTS.md points here, misleads next agent | **This file** — done by creating it |
-| Neon-token CSS aliases (`--bg`, `--accent`, `--danger`, etc.) kept "for backward compat" | Dual token system rots | Set deletion deadline (e.g., next slice) |
-| Untracked `public/art` backdrops (webp/avif/jpg) | 11 files, some likely unused | Audit references; gitignore or commit |
+| ~~`public/art` backdrops untracked~~ | **RESOLVED (2026-10-16)** | Tracked + audited: 6 of 7 backdrop files referenced by `gameStageBackdropRotation.ts`; launch poster/intro referenced by `welcomeHeroPresentation.ts`. Only `Gameplay backdrops/243-2436830_evil-clipart-baby-devil-sexy-devil-cartoon.jpeg` is unreferenced (quarantine, do not silently delete) |
+| ~~Duplicate canvas pointer listeners~~ | **RESOLVED (2026-10-16)** | Consolidated via `bindPointerControls`; one listener per pointer event |
+| Neon-token CSS aliases (`--bg-soft`, `--panel`, `--panel-strong`, `--line`, `--muted`, `--accent-strong`) kept "for backward compat" | Dual token system rots | Set deletion deadline (e.g., next slice) |
+| `HANDOVER.md` at repo root | Stale as of 2026-08-19 (says 32 suites/159 tests, HEAD `28d5b46`, wrong absolute path, claims untracked art) | Reconcile or remove; supersedes-message now wrong in several places |
 
 ---
 
@@ -43,10 +86,12 @@ The slice work described here is COMPLETE and verified. Remaining items are
 OPTIONAL product debt, not assigned plan work — user decision required before
 any are picked up:
 
-1. **Visual gameplay smoke checks** — manual/automated legibility pass for the active target color
-2. **Automated E2E integration tests** — Playwright coverage for launch→game flow
-3. **Low-end mobile perf profiling** — frame budget on constrained viewports
-4. **Asset hygiene (open debt)** — `public/art` (welcome posters, 3MB launch intro mp4, 8.8MB poster png) and `public/fonts` are still untracked; `.gitignore` only excludes `output.mp4`. Either commit deliberately or widen `.gitignore` before a Vercel deploy.
+1. **~~Automated E2E integration tests~~ — DONE (2026-10-16)**
+2. **Low-end mobile perf profiling** — frame budget on constrained viewports
+   (the new `mobile-chromium` E2E project can host a trace-based pass)
+3. **Manual legibility pass** for the active target color on real devices
+4. **Stray asset** — `public/art/Gameplay backdrops/243-2436830_evil-clipart-baby-devil-sexy-devil-cartoon.jpeg` is tracked but referenced nowhere. Quarantine it (delete needs user sign-off given the content).
+5. **Token migration** — collapse the legacy CSS aliases (`--bg-soft`, `--panel`, `--panel-strong`, `--line`, `--muted`, `--accent-strong`) onto the neon token set.
 
 Archive condition: met. This plan stays ACTIVE only because `AGENTS.md` and
 other docs reference it as the live-context pointer; the completed slices are
@@ -58,7 +103,8 @@ archived under `docs/plans/.archive/2026-08-18-*`.
 
 ```bash
 npm run verify
-# → test:engine (177 tests / 35 suites) + lint (0 errors, 0 warnings) + next build (type-check clean)
+# → test:engine (185 tests / 35 suites) + lint (0 errors, 0 warnings) + next build (type-check clean)
+# → test:e2e (playwright: 12 tests, desktop + mobile chromium — needs `npm run build` first)
 ```
 
 Must stay green on every commit. CI runs this on push; note that Actions has
@@ -73,6 +119,11 @@ clean clone plus `npm ci` is the closest available reproduction of what CI runs.
 - **App shell:** `WormRanchApp` owns `welcome → home → modeMenu → transition → game → home` flow
 - **Game modes:** `standard` (level-based) | `targetEndless` (continuous, wrong-color = game over)
 - **Motion layer:** `getMotionFeedback` (event→cue) + `getCueEffect` (cue→visual params) + particle burst system
+- **Pointer input:** `gameStageGestures.ts::bindPointerControls` owns every canvas pointer
+  listener — one listener per event, routed by `pointerType`. Touch is
+  gesture-disambiguated (tap/swipe/hold, `HOLD_MS`); mouse/pen takes the direct
+  press path. Do not add a second `addEventListener` for a pointer event on the
+  stage canvas; extend `bindPointerControls` instead.
 - **Reduced motion:** suppresses shake/dilation/overlay/particles but keeps per-cue flash color
 - **Fonts:** Space Grotesk Variable (OFL) from `floriankarsten/space-grotesk` — committed to repo
 
@@ -82,5 +133,5 @@ clean clone plus `npm ci` is the closest available reproduction of what CI runs.
 
 - `docs/jobcard.md` — live focus + open debt + archive condition
 - `docs/visual-redesign-spec.md` — neon token system, layout tokens
-- `docs/superpowers/plans/2026-06-01-separate-game-mode-flow.md` — detailed task breakdown (completed)
+- `docs/plans/.archive/2026-06-01-separate-game-mode-flow.md` — detailed task breakdown (completed)
 - `docs/superpowers/specs/2026-06-01-game-mode-flow-design.md` — design rationale (completed)

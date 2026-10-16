@@ -2,71 +2,115 @@
 
 _**CRITICAL — WORKSPACE PATH**_
 The working directory for this repo is:
-    ~/Documents/VS/GAMES/Worm ranch/
-    (absolute: /home/ewaldt/Documents/VS/GAMES/Worm ranch)
-It contains a literal SPACE (and a lowercase "ranch"). **Every** shell call must quote it, e.g.
-    cd "/home/ewaldt/Documents/VS/GAMES/Worm ranch"
-or pass `workdir="/home/ewaldt/Documents/VS/GAMES/Worm ranch"`. A bare `cd ~/Documents/VS/GAMES/Worm ranch`
-splits into two args and silently lands you in the wrong place. This is the single most common failure mode here.
+    /home/leandi-duplessis/github/workspaces/Worm-ranch
+There is **no space** in this path. (An earlier revision of this file named
+`~/Documents/VS/GAMES/Worm ranch/` under user `ewaldt`; that is wrong for this
+checkout. Resolve the path with `pwd` / `git remote -v` before acting — a
+literal path copied from an old handover will silently land you somewhere else.)
 
-_Last state verified: 2026-08-19. All facts below re-checked against the live tree this session — not copied from prior docs._
-_This file supersedes the earlier HANDOVER.md draft, which incorrectly named branch `feat/codebase-audit-refactor` and HEAD `eb74851`; the work has since merged to **main**._
+_Last state verified: 2026-10-16. All facts below re-checked against the live tree this session — not copied from prior docs._
 
 ## 1. WHAT THIS REPO IS
 - Next.js 16 (App Router, Turbopack) browser game, plain TypeScript. NO Convex, NO backend, NO DB.
 - Remote: `https://github.com/TeacherEvan/Worm-ranch.git`
-- Branch: **`main`** (upstream `origin/main`, 1 commit ahead)
+- Branch: **`main`**, in sync with `origin/main` (0 ahead / 0 behind).
 - AGENTS.md rule: this is NOT the Next.js you know — read `node_modules/next/dist/docs/` before writing code. Live-context pointer: `docs/plans/worm-ranch-plan.md` + `docs/jobcard.md`.
 - Hard user rule: "Don't fuck around in other repos" — scope work to THIS repo only.
 
 ## 2. CURRENT STATE (VERIFIED THIS SESSION)
 Ran the full gate (`npm run verify`) on the live tree → **GREEN**:
-- `vitest run`: **32 suites / 159 tests PASS**
-- `eslint`: **0 errors** (51 harmless warnings: unused test-import exports in `engineContinuous.ts`/`engineFairies.ts`; do not chase)
+- `vitest run`: **35 suites / 185 tests PASS**
+- `eslint`: **0 errors, 0 warnings**
 - `tsc --noEmit`: clean
 - `next build`: compiled successfully, static + dynamic routes generated
-HEAD: `28d5b46 refactor: remove 3 unused exported helpers (surgical prune)`
+HEAD at handover: `b949fe3` (work since then is uncommitted)
 
-**No source files were changed while drafting this note.** Only docs/prune artifacts are new.
+Latest slice (uncommitted at time of writing): canvas pointer-listener
+consolidation — see §3.
 
-## 3. PLAN INVENTORY (scanned: root + docs/ + docs/plans/ + .archive/)
-- `docs/plans/worm-ranch-plan.md` — **ACTIVE context pointer** (referenced by AGENTS.md). Banner states audit landed/verified; remaining items = OPTIONAL debt. Leave in place.
+## 3. WHAT THE LATEST SLICES CHANGED
+### 3a. Canvas pointer listeners
+`GameStage.tsx` and `gameStageGestures.ts` used to **both** register
+`pointerdown` / `pointermove` / `pointerup` / `pointercancel` on the stage
+canvas, so every touch ran through two listeners in registration order.
+Now `gameStageGestures.ts::bindPointerControls` owns **exactly one** listener
+per canvas pointer event and routes by `pointerType` (touch → gesture tracker,
+mouse/pen → direct press).
+
+### 3b. Playwright E2E + the launch-plate stall it exposed
+Added `playwright.config.ts` and `e2e/launch-flow.spec.ts` — `npm run test:e2e`.
+12 tests across `desktop-chromium` and `mobile-chromium` covering welcome hero →
+gate → mode menu → standard game → endless target color, plus a reduced-motion
+pass. `GameStageOverlay` gained `data-target-callout` / `data-target-color` /
+`data-target-progress` as the automation contract; read those instead of
+parsing copy.
+
+**The E2E immediately caught a real bug no unit test could:** the welcome launch
+loader deadlocked at **78%** on desktop while the reel was already playable.
+`onLoadedMetadata` fired before React attached its listener, so
+`introVideoMetadataLoaded` stayed false while `introVideoCanPlay` went true, and
+the plate never hit 100% — it kept gating first paint. Mobile escaped the race,
+which is why it went unnoticed. `canplay` implies `readyState >=
+HAVE_METADATA`, so it now also records metadata readiness. Fixed in
+`welcomeLaunchLoader.ts` and `WelcomeScreen.tsx`; guarded by
+`welcomeLaunchLoader.test.ts`.
+
+## 4. E2E GOTCHAS
+- **E2E must run against a production build, not the dev server.**
+  `layout.tsx` pulls Space Grotesk through `next/font/google`; the dev server
+  blocks for ~120s on that fetch without gstatic access and then times out.
+  `npm run build` is fine, so the config builds first and runs `npm start`.
+- Run `npx playwright install chromium` after a fresh clone — the cached browser
+  revisions are version-pinned, so a `@playwright/test` bump breaks the launch.
+- `data-launch-loader-state` exists on **two** elements: the hero media surface
+  and the loader plate itself (the plate hard-codes `"loading"` while mounted).
+  Scope assertions to `[data-hero-media-surface="full-bleed"]` or you will read
+  the wrong one.
+- Shell hand-offs go through a timed transition screen (220ms, 0ms under reduced
+  motion); assert on the destination screen rather than sleeping.
+
+## 5. PLAN INVENTORY (scanned: root + docs/ + docs/plans/ + .archive/)
+- `docs/plans/worm-ranch-plan.md` — **ACTIVE context pointer** (referenced by AGENTS.md). Banner states all slices done; remaining items = OPTIONAL debt. Leave in place.
 - `docs/plans/.archive/2026-08-18-*` — audit + debrief + SECURITY + TRACEABILITY. **DONE**, committed, pushed.
 - `docs/plans/.archive/HERMES_PLAN.ai.json` + `.html` — post-hoc snapshot (status "proposed", NO approval ticks). Its items already shipped in committed code. NOT an implement authorization; do not re-implement.
-- All audited refactor slices (mode menu, transition, particle/motion layer, engine decomposition) are merged to `main` and covered by the gate.
+- All audited refactor slices (mode menu, transition, particle/motion layer, engine decomposition, pointer consolidation) are covered by the gate.
 
 **CONCLUSION: No open ASSIGNED / unfinished plan work.** Only OPTIONAL product debt remains (below).
 
-## 4. OPEN DEBT (real, uncommitted — not silently closed)
-1. **Untracked assets:** `public/art/` (welcome posters, ~3MB launch intro mp4, ~8.8MB poster png, Gameplay backdrops/) and `public/fonts/SpaceGrotesk-VariableFont_wght.woff2` are UNTRACKED. `.gitignore` only excludes `public/art/Gameplay backdrops/output.mp4`. Decide: commit deliberately OR widen `.gitignore` before a Vercel deploy.
-2. **Optional product work (user call, not in any active plan):** visual gameplay smoke checks, Playwright E2E for launch→game flow, low-end mobile perf profiling.
+## 6. OPEN DEBT
+1. **Legacy CSS aliases** — `--bg-soft`, `--panel`, `--panel-strong`, `--line`,
+   `--muted`, `--accent-strong` in `src/app/globals.css` are referenced across
+   ~10 component stylesheets. Needs a dedicated token-migration slice.
+2. **Stray tracked asset** — `public/art/Gameplay backdrops/243-2436830_evil-clipart-baby-devil-sexy-devil-cartoon.jpeg`
+   is tracked but referenced by nothing. The other 6 backdrops are referenced by
+   `gameStageBackdropRotation.ts` and resolve correctly (the directory's space is
+   URL-encoded as `%20`, which is fine). Quarantine the stray; deleting it needs
+   user sign-off given the content.
+3. **Optional product work (user call, not in any active plan):** visual gameplay smoke checks, Playwright E2E for launch→game flow, low-end mobile perf profiling.
 
-## 5. WORKING TREE AT HANDOVER (intentionally uncommitted)
-```
- M  docs/jobcard.md                              (pre-existing tracked edit; accurate, left as-is)
-?? HANDOVER.md                                   (this file)
-?? .prune/                                       (surgical-pruning scratch output)
-?? docs/plans/.archive/HERMES_PLAN.ai.json
-?? docs/plans/.archive/HERMES_PLAN.html
-?? "docs/surgical-pruning-0819-Worm ranch.html"
-?? "surgical-pruning-0819-Worm ranch.html"
-```
-Nothing here is a code change. The `.prune/` dir and surgical-pruning HTML are disposable artifacts from a pruning tool run — safe to delete if unwanted.
+## 7. STALE / CORRECTED HANDOVER FACTS
+Facts that were true in a previous revision and are **no longer true** — do not
+act on them:
+- "public/art and public/fonts are UNTRACKED" → they are **tracked and committed**.
+- `stash@{0}` (`wip-audit-unrelated-allowScripts-docs`) → **no stash exists**.
+- `.prune/` directory → **does not exist**.
+- "branch is 1 commit ahead of origin/main" → **0/0, in sync**.
 
-## 6. OPEN DECISIONS FOR NEXT AGENT (user authorization required)
-- **PUSH + PR?** Branch is green and safe; 1 commit ahead of `origin/main` (`28d5b46`). `git push` then open PR when authorized.
-- **Reconcile `stash@{0}` (`wip-audit-unrelated-allowScripts-docs`) separately** — do NOT pop into this branch; it carries unrelated docs/WIP isolated on purpose.
-- **Asset hygiene** — commit or `.gitignore` the untracked `public/art` + `public/fonts` before any Vercel deploy.
+## 8. OPEN DECISIONS FOR NEXT AGENT (user authorization required)
+- **PUSH + PR?** Push the local slice and open a PR when authorized.
+- **Stray asset deletion** — see §6.2. Needs explicit approval.
 
-## 7. PITFALLS / GOTCHAS (still valid)
+## 9. PITFALLS / GOTCHAS (still valid)
 - No `npm run verify` = no proof. Always re-run the full gate; never trust a plan-doc banner or a prior agent's self-report count.
-- The 51 lint warnings are test-file unused exports — harmless, don't chase unless asked.
+- `rg -r` is the **replace** flag, not a recursive-search flag. Passing `rg -r "backdrops|..."` rewrites matches inline and produces garbled paths that look like URL bugs. Use plain `rg` for searching. (Cost me a false "broken backdrop path" diagnosis this session.)
+- Don't trust a visual/path match: confirm the real on-disk directory before declaring a 404.
 - Don't touch other repos (Devil-sDelight, BudgetBITCH, etc.) — user was explicit.
 - Hermes-generated `HERMES_PLAN*.json` with `meta.status: "proposed"` + timestamp AFTER code = post-hoc snapshot, never an implement authorization.
 - `git checkout -b <name> .` (trailing dot) corrupts `.git`. Use `git switch -c <name>`.
-- **Repo path has a SPACE** — always quote it (see top of this file).
+- Pointer events: one listener per canvas event, all in `bindPointerControls`. Two listeners on one event will double-fire in registration order.
+- A `pointerup` that trails a `pointercancel` must not re-run gesture cleanup — guarded by `tracker.active`.
 
-## 8. DEPLOY (inherited, NOT re-verified this session)
+## 10. DEPLOY (inherited, NOT re-verified this session)
 - Production reportedly live at `https://worm-ranch.vercel.app` (HTTP 200 per prior agent).
 - Deploy: `vercel deploy --prod --yes` from repo root after commit/push.
 - Treat the above as inherited, not independently confirmed this session.
