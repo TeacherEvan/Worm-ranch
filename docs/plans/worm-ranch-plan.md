@@ -35,9 +35,9 @@
 - Touch state cleanup (`releasePointerCapture` + pointer reset) is unified into
   the binder, and a `pointerup` trailing a cancelled gesture no longer re-runs
   the cleanup
-- Added `src/components/gameStageGestures.test.ts` binder suite (6 tests) and a
+- Added a 5-test binder suite to `src/components/gameStageGestures.test.ts` and a
   `GameStage.interaction.test.ts` guard asserting one listener per pointer event
-- `npm run verify`: 35 suites / 183 tests, 0 lint errors, `next build` type-check clean
+- `npm run verify`: 35 suites / 185 tests, 0 lint errors, `next build` type-check clean
 
 ### 4. Browser E2E Coverage + Launch Plate Stall Fix (2026-10-16)
 - Added Playwright E2E: `playwright.config.ts` + `e2e/launch-flow.spec.ts`
@@ -49,8 +49,8 @@
   `introVideoCanPlay` was set by `onCanPlay`, but `introVideoMetadataLoaded`
   depended on an `onLoadedMetadata` event that fired before React attached its
   listener, so the plate never reached 100% and **kept gating first paint**.
-  Device-dependent (mobile happened to escape the race), so no desktop-only
-  unit test existed for it.
+  Device-dependent (only reproduced on desktop; mobile escaping the race is
+  plausible but unverified), so no desktop-only unit test existed for it.
 - Fix: `canplay` implies `readyState >= HAVE_METADATA`, so it now also records
   metadata readiness, and `getWelcomeLaunchLoaderProgress` /
   `getWelcomeLaunchLoaderPhase` treat can-play as proof of metadata. Guards:

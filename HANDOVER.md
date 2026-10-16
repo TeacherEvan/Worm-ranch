@@ -23,10 +23,10 @@ Ran the full gate (`npm run verify`) on the live tree → **GREEN**:
 - `eslint`: **0 errors, 0 warnings**
 - `tsc --noEmit`: clean
 - `next build`: compiled successfully, static + dynamic routes generated
-HEAD at handover: `b949fe3` (work since then is uncommitted)
+HEAD at handover: `416a4f3`, committed and in sync with `origin/main`.
 
-Latest slice (uncommitted at time of writing): canvas pointer-listener
-consolidation — see §3.
+Latest slice (committed): canvas pointer-listener consolidation, the Playwright
+E2E that exposed the launch-plate stall, and the stall fix — see §3.
 
 ## 3. WHAT THE LATEST SLICES CHANGED
 ### 3a. Canvas pointer listeners
@@ -49,8 +49,8 @@ parsing copy.
 loader deadlocked at **78%** on desktop while the reel was already playable.
 `onLoadedMetadata` fired before React attached its listener, so
 `introVideoMetadataLoaded` stayed false while `introVideoCanPlay` went true, and
-the plate never hit 100% — it kept gating first paint. Mobile escaped the race,
-which is why it went unnoticed. `canplay` implies `readyState >=
+the plate never hit 100% — it kept gating first paint. Reproduced on desktop only;
+the theory that mobile escapes the race is plausible but unverified. `canplay` implies `readyState >=
 HAVE_METADATA`, so it now also records metadata readiness. Fixed in
 `welcomeLaunchLoader.ts` and `WelcomeScreen.tsx`; guarded by
 `welcomeLaunchLoader.test.ts`.
