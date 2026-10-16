@@ -45,6 +45,13 @@ next-env.d.ts
 
 # V2 audit scratch dir (surgical-implementation writes here; never commit)
 docs/.scratch-audit/
+.scratch/
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
 
 # Agent worktrees. These were previously excluded only via each clone's
 # .git/info/exclude, which meant CI and teammates saw a different tree than a

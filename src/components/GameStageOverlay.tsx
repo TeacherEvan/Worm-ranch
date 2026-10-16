@@ -39,6 +39,13 @@ export function GameStageOverlay({
         <div
           className={`${styles.targetCallout} ${targetCallout.gameOver ? styles.targetCalloutGameOver : ""}`.trim()}
           style={{ color: targetCallout.textColor } as CSSProperties}
+          /* Automation contract: the HUD must expose the live objective, so
+             browser-level tests can read the target without parsing copy. */
+          data-target-callout="visible"
+          data-target-color={targetCallout.colorId ?? undefined}
+          data-target-goal={targetCallout.goal}
+          data-target-progress={targetCallout.progress}
+          data-target-game-over={targetCallout.gameOver ? "true" : "false"}
         >
           <strong>{targetTitle}</strong>
           <span>{targetProgress}</span>

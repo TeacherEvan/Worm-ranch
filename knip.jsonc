@@ -6,9 +6,10 @@
     "src/app/**/route.ts",
     "src/app/**/manifest.ts",
     "scripts/**/*.mjs",
-    "next.config.ts"
+    "next.config.ts",
+    "e2e/**/*.spec.ts"
   ],
-  "project": ["src/**/*.{ts,tsx}", "scripts/**/*.mjs", "next.config.ts"],
+  "project": ["src/**/*.{ts,tsx}", "scripts/**/*.mjs", "next.config.ts", "e2e/**/*.ts"],
   "ignore": ["src/**/*.test.ts", "src/**/*.test.tsx"],
   "ignoreDependencies": [],
   "vitest": {
