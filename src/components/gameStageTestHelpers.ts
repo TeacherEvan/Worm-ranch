@@ -10,6 +10,52 @@ export type InteractionHarnessOptions = {
   pressResults?: ActionResult[];
 };
 
+/* Mock for "@/components/gameStageKeyboard" that preserves the pre-extraction
+   GameStage routing: the router resolves the preserved target through the
+   stubbed getKeyboardTargetId so interaction tests keep deterministic ids. */
+export function createKeyboardModuleMock(resolveTargetId: () => string | null) {
+  const getKeyboardTargetId = vi.fn((_world: unknown, _currentTargetId: string | null, _mode: string) => resolveTargetId());
+  return {
+    getKeyboardStatus: () => "status",
+    getKeyboardTargetId,
+    handleStageKeyDown: (
+      event: { key: string; repeat: boolean; preventDefault: () => void },
+      deps: {
+        worldRef: { current: unknown };
+        keyboardTargetRef: { current: string | null };
+        moveKeyboardTarget: (mode: "next" | "previous" | "first" | "last") => void;
+        selectKeyboardTarget: (id: string | null) => void;
+        applyToTarget: (id: string) => void;
+      },
+    ) => {
+      if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+        event.preventDefault();
+        deps.moveKeyboardTarget("next");
+        return true;
+      }
+      if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+        event.preventDefault();
+        deps.moveKeyboardTarget("previous");
+        return true;
+      }
+      if (event.key === "Home" || event.key === "End") {
+        event.preventDefault();
+        deps.moveKeyboardTarget(event.key === "Home" ? "first" : "last");
+        return true;
+      }
+      if ((event.key === "Enter" || event.key === " ") && !event.repeat) {
+        event.preventDefault();
+        const targetId = getKeyboardTargetId(deps.worldRef.current, deps.keyboardTargetRef.current, "preserve");
+        if (!targetId) return true;
+        deps.selectKeyboardTarget(targetId);
+        deps.applyToTarget(targetId);
+        return true;
+      }
+      return false;
+    },
+  };
+}
+
 export type StageInteractionEvent = {
   clientX?: number;
   clientY?: number;
@@ -301,10 +347,7 @@ export async function createInteractionHarness(options: InteractionHarnessOption
     };
   });
 
-  vi.doMock("@/components/gameStageKeyboard", () => ({
-    getKeyboardStatus: () => "status",
-    getKeyboardTargetId: vi.fn(() => options.keyboardTargetId ?? "worm-1"),
-  }));
+  vi.doMock("@/components/gameStageKeyboard", () => createKeyboardModuleMock(() => options.keyboardTargetId ?? "worm-1"));
 
   vi.doMock("@/components/gameStagePresentation", () => ({
     areSummariesEqual: () => true,

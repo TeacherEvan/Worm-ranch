@@ -37,3 +37,46 @@ export function getKeyboardStatus(phaseTitle: string, summary: GameSummary, keyb
   const targetLabel = keyboardTargetId ? `Target ${keyboardTargetId.replace("worm-", "worm ")}.` : "No worm targeted.";
   return `${phaseTitle}. ${summary.collected} bagged. ${summary.remaining} loose. ${targetLabel}`;
 }
+
+export type StageKeyDeps = {
+  worldRef: { current: GameWorld };
+  keyboardTargetRef: { current: string | null };
+  moveKeyboardTarget: (mode: Exclude<KeyboardTargetMode, "preserve">) => void;
+  selectKeyboardTarget: (id: string | null) => void;
+  applyToTarget: (targetId: string) => void;
+};
+
+const ARROW_DIRECTIONS: Record<string, "next" | "previous"> = {
+  ArrowRight: "next",
+  ArrowDown: "next",
+  ArrowLeft: "previous",
+  ArrowUp: "previous",
+};
+
+/* Canvas keyboard controls, kept out of GameStage.tsx (500-line rule). Returns
+   true when the key was consumed; unhandled keys fall through untouched. */
+export function handleStageKeyDown(event: KeyboardEvent, deps: StageKeyDeps): boolean {
+  const direction = ARROW_DIRECTIONS[event.key];
+  if (direction) {
+    event.preventDefault();
+    deps.moveKeyboardTarget(direction);
+    return true;
+  }
+
+  if (event.key === "Home" || event.key === "End") {
+    event.preventDefault();
+    deps.moveKeyboardTarget(event.key === "Home" ? "first" : "last");
+    return true;
+  }
+
+  if ((event.key === "Enter" || event.key === " ") && !event.repeat) {
+    event.preventDefault();
+    const targetId = getKeyboardTargetId(deps.worldRef.current, deps.keyboardTargetRef.current, "preserve");
+    if (!targetId) return true;
+    deps.selectKeyboardTarget(targetId);
+    deps.applyToTarget(targetId);
+    return true;
+  }
+
+  return false;
+}

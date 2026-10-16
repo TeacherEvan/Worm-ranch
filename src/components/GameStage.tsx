@@ -15,7 +15,7 @@ import {
 } from "./gameStageCanvas";
 import { getTargetCallout } from "./gameStageTargetCallout";
 import { useLatestValue, useStageActionEcho } from "./gameStageActionEcho";
-import { getKeyboardStatus, getKeyboardTargetId, type KeyboardTargetMode } from "@/components/gameStageKeyboard";
+import { getKeyboardStatus, getKeyboardTargetId, handleStageKeyDown, type KeyboardTargetMode } from "@/components/gameStageKeyboard";
 import {
   areSummariesEqual,
   renderStage,
@@ -303,33 +303,13 @@ export function GameStage({
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-        event.preventDefault();
-        moveKeyboardTarget("next");
-        return;
-      }
-      if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-        event.preventDefault();
-        moveKeyboardTarget("previous");
-        return;
-      }
-      if (event.key === "Home") {
-        event.preventDefault();
-        moveKeyboardTarget("first");
-        return;
-      }
-      if (event.key === "End") {
-        event.preventDefault();
-        moveKeyboardTarget("last");
-        return;
-      }
-      if ((event.key === "Enter" || event.key === " ") && !event.repeat) {
-        event.preventDefault();
-        const targetId = getKeyboardTargetId(worldRef.current, keyboardTargetRef.current, "preserve");
-        if (!targetId) return;
-        setKeyboardTargetId(targetId);
-        handleAction(applyAccuratePress(worldRef.current, targetId));
-      }
+      handleStageKeyDown(event, {
+        worldRef,
+        keyboardTargetRef,
+        moveKeyboardTarget,
+        selectKeyboardTarget: setKeyboardTargetId,
+        applyToTarget: (targetId) => handleAction(applyAccuratePress(worldRef.current, targetId)),
+      });
     };
 
     const loop = (timestamp: number) => {

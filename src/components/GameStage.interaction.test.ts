@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import styles from "./GameStage.module.css";
-import { createCanvasListenerRegistry, createInteractionHarness, findElementTextByClassName, findStatusPill } from "./gameStageTestHelpers";
+import { createCanvasListenerRegistry, createInteractionHarness, createKeyboardModuleMock, findElementTextByClassName, findStatusPill } from "./gameStageTestHelpers";
 import type { StageInteractionEvent } from "./gameStageTestHelpers";
 
 afterEach(() => {
@@ -185,10 +185,7 @@ describe("GameStage.interaction", () => {
       };
     });
 
-    vi.doMock("@/components/gameStageKeyboard", () => ({
-      getKeyboardStatus: () => "status",
-      getKeyboardTargetId: vi.fn(() => "worm-1"),
-    }));
+    vi.doMock("@/components/gameStageKeyboard", () => createKeyboardModuleMock(() => "worm-1"));
     vi.doMock("@/components/gameStagePresentation", () => ({
       areSummariesEqual: () => true,
       renderStage: vi.fn(),
@@ -440,10 +437,7 @@ describe("GameStage.interaction", () => {
         play: vi.fn(),
       })),
     }));
-    vi.doMock("@/components/gameStageKeyboard", () => ({
-      getKeyboardStatus: () => "status",
-      getKeyboardTargetId: () => null,
-    }));
+    vi.doMock("@/components/gameStageKeyboard", () => createKeyboardModuleMock(() => null));
     vi.doMock("@/components/gameStagePresentation", () => ({
       areSummariesEqual: () => true,
       renderStage: vi.fn(),

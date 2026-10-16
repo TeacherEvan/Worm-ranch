@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { GameStage, getCappedCanvasDpr, getVisibleSummary } from "./GameStage";
+import { createKeyboardModuleMock } from "./gameStageTestHelpers";
 import styles from "./GameStage.module.css";
 
 afterEach(() => {
@@ -134,10 +135,7 @@ describe("GameStage.render", () => {
         play: vi.fn(),
       })),
     }));
-    vi.doMock("@/components/gameStageKeyboard", () => ({
-      getKeyboardStatus: () => "status",
-      getKeyboardTargetId: () => null,
-    }));
+    vi.doMock("@/components/gameStageKeyboard", () => createKeyboardModuleMock(() => null));
     vi.doMock("@/components/gameStagePresentation", () => ({
       areSummariesEqual: () => true,
       drawStaticStageBackdrop: vi.fn(),
