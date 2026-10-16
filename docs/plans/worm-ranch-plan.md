@@ -37,7 +37,7 @@
   the cleanup
 - Added a 5-test binder suite to `src/components/gameStageGestures.test.ts` and a
   `GameStage.interaction.test.ts` guard asserting one listener per pointer event
-- `npm run verify`: 35 suites / 185 tests, 0 lint errors, `next build` type-check clean
+- `npm run verify`: 36 suites / 192 tests, 0 lint errors, `next build` type-check clean
 
 ### 4. Browser E2E Coverage + Launch Plate Stall Fix (2026-10-16)
 - Added Playwright E2E: `playwright.config.ts` + `e2e/launch-flow.spec.ts`
@@ -62,10 +62,35 @@
 - E2E needs a production build, not the dev server: `layout.tsx` loads Space
   Grotesk via `next/font/google`, and the dev server blocks on that fetch
   without gstatic access. `npm run build` is unaffected.
-- Added `data-target-callout` / `data-target-color` / `data-target-progress`
+- Added `data-target-callout` / `data-target-color` / `data-target-progress` /
+  `data-target-goal` / `data-target-game-over`
   attributes to `GameStageOverlay` so browser tests can read the live
   objective without parsing copy.
-- `npm run verify`: 35 suites / 185 tests, eslint 0/0, tsc clean, build clean.
+- `npm run verify`: 37 suites / 192 tests, eslint 0/0, tsc clean, build clean.
+
+---
+
+### 5. Review Follow-Up Hardening (2026-10-16)
+- E2E nav waits use `NAV_TIMEOUT_MS = 5_000` (documented against the shell's
+  real 220ms transition timer); the endless callout test asserts the full
+  `data-target-*` contract (`callout`, `color`, `progress`, `goal`,
+  `game-over`) instead of parsing copy.
+- New `canvas pointer input` E2E describe (`hasTouch: true`): a CDP-dispatched
+  real touch swipe must ADVANCE the keyboard target (poll the
+  `Target worm N` number in the sr-only status), and a real mouse press must
+  deliver exactly one `pointerdown` to the canvas with zero page errors.
+  Mutation-checked: the swipe test fails if the touch path stops feeding the
+  gesture tracker.
+- Pen routing covered in `gameStageGestures.test.ts` (pen → direct press, no
+  gesture tracking). Mutation-checked against a mouse-only routing change.
+- `handleStageKeyDown` extracted from `GameStage.tsx` (477 → 456 lines) into
+  `gameStageKeyboard.ts` with its own unit suite; interaction-test keyboard
+  mocks consolidated onto `createKeyboardModuleMock` in
+  `gameStageTestHelpers.ts` (keeps the stub `worm-1` determinism).
+- `GameStage.interaction.test.ts` split: world-lifecycle tests moved to
+  `GameStage.worldLifecycle.test.ts` (519 → 372 lines, under the 500-line
+  budget).
+- `npm run verify`: 37 suites / 192 tests, eslint 0/0, tsc clean, build clean.
 
 ---
 
@@ -103,8 +128,8 @@ archived under `docs/plans/.archive/2026-08-18-*`.
 
 ```bash
 npm run verify
-# → test:engine (185 tests / 35 suites) + lint (0 errors, 0 warnings) + next build (type-check clean)
-# → test:e2e (playwright: 12 tests, desktop + mobile chromium — needs `npm run build` first)
+# → test:engine (192 tests / 37 suites) + lint (0 errors, 0 warnings) + next build (type-check clean)
+# → test:e2e (playwright: 16 tests, desktop + mobile chromium — needs `npm run build` first)
 ```
 
 Must stay green on every commit. CI runs this on push; note that Actions has

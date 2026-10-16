@@ -13,7 +13,7 @@ _Last state verified: 2026-10-16. All facts below re-checked against the live tr
 ## 1. WHAT THIS REPO IS
 - Next.js 16 (App Router, Turbopack) browser game, plain TypeScript. NO Convex, NO backend, NO DB.
 - Remote: `https://github.com/TeacherEvan/Worm-ranch.git`
-- Branch: **`main`**, in sync with `origin/main` (0 ahead / 0 behind).
+- Branch: **`main`**, **6 commits AHEAD of `origin/main`** — the hardening slice is committed locally but NOT pushed (push needs user authorization, see §8). Verify with `git status` before acting.
 - AGENTS.md rule: this is NOT the Next.js you know — read `node_modules/next/dist/docs/` before writing code. Live-context pointer: `docs/plans/worm-ranch-plan.md` + `docs/jobcard.md`.
 - Hard user rule: "Don't fuck around in other repos" — scope work to THIS repo only.
 
@@ -23,7 +23,10 @@ Ran the full gate (`npm run verify`) on the live tree → **GREEN**:
 - `eslint`: **0 errors, 0 warnings**
 - `tsc --noEmit`: clean
 - `next build`: compiled successfully, static + dynamic routes generated
-HEAD at handover: `5c40d91`, committed and in sync with `origin/main`.
+HEAD at handover: the hardening slice — 6 commits `5b5b748`..`aa49ac2` plus
+review follow-ups (E2E probe + split), all committed locally, NOT yet pushed.
+Run `git log --oneline -10` for the exact current HEAD rather than trusting a
+sha copied from this file.
 
 Latest slice (committed): review-follow-up hardening — E2E launch-flow waits
 raised to 5s, target automation contract asserted, real-browser canvas input
@@ -44,7 +47,8 @@ Added `playwright.config.ts` and `e2e/launch-flow.spec.ts` — `npm run test:e2e
 16 tests across `desktop-chromium` and `mobile-chromium` covering welcome hero →
 gate → mode menu → standard game → endless target color, plus a reduced-motion
 pass. `GameStageOverlay` gained `data-target-callout` / `data-target-color` /
-`data-target-progress` as the automation contract; read those instead of
+`data-target-progress` / `data-target-goal` / `data-target-game-over` as the
+automation contract; read those instead of
 parsing copy.
 
 **The E2E immediately caught a real bug no unit test could:** the welcome launch
@@ -112,7 +116,9 @@ act on them:
 - "public/art and public/fonts are UNTRACKED" → they are **tracked and committed**.
 - `stash@{0}` (`wip-audit-unrelated-allowScripts-docs`) → **no stash exists**.
 - `.prune/` directory → **does not exist**.
-- "branch is 1 commit ahead of origin/main" → **0/0, in sync**.
+- "branch is 1 commit ahead of origin/main" → **STILL STALE AS OF THIS
+  HANDOVER**: the branch is now 6+ commits ahead of `origin/main`; the slice is
+  committed locally and awaiting user authorization to push (§8).
 
 ## 8. OPEN DECISIONS FOR NEXT AGENT (user authorization required)
 - **PUSH + PR?** Push the local slice and open a PR when authorized.
