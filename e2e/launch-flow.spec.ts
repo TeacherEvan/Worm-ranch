@@ -1,9 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
 
-/* The shell funnels every display hand-off through a timed transition screen.
-   Asserting on the destination directly would race that timer, so the helpers
-   below always start from a named screen and wait on the shell's own state. */
-const TRANSITION_MS = 400;
+/* The shell funnels every display hand-off through a timed transition screen
+   (220ms, 0 under reduced motion — WormRanchApp.tsx). Asserting on the
+   destination directly would race that timer, so the helpers below wait on the
+   shell's own state with a generous timeout instead of a fixed sleep. */
+const NAV_TIMEOUT_MS = 5_000;
 
 async function openShell(page: Page) {
   await page.goto("/");
@@ -13,7 +14,7 @@ async function openShell(page: Page) {
 async function openGateToHome(page: Page) {
   await openShell(page);
   await page.getByRole("button", { name: "Open the gate" }).click();
-  await expect(page.locator('[data-layout="compact-launch"]')).toBeVisible({ timeout: TRANSITION_MS });
+  await expect(page.locator('[data-layout="compact-launch"]')).toBeVisible({ timeout: NAV_TIMEOUT_MS });
 }
 
 async function startMode(page: Page, modeName: RegExp) {
@@ -21,12 +22,12 @@ async function startMode(page: Page, modeName: RegExp) {
   await page.getByRole("button", { name: "Start roundup" }).click();
 
   const modeDialog = page.getByRole("dialog", { name: "Choose Game Mode" });
-  await expect(modeDialog).toBeVisible({ timeout: TRANSITION_MS });
+  await expect(modeDialog).toBeVisible({ timeout: NAV_TIMEOUT_MS });
 
   await modeDialog.getByRole("button", { name: modeName }).click();
   await modeDialog.getByRole("button", { name: "Start Roundup" }).click();
 
-  await expect(page.getByLabel("Worm Ranch game field")).toBeVisible({ timeout: TRANSITION_MS + 2000 });
+  await expect(page.getByLabel("Worm Ranch game field")).toBeVisible({ timeout: NAV_TIMEOUT_MS });
 }
 
 test.describe("launch surface", () => {
@@ -65,12 +66,14 @@ test.describe("launch surface", () => {
 
     /* The HUD must teach the current objective through live feedback rather
        than a static rules block. The callout only mounts once the engine
-       publishes a target, so this waits on the engine, not on a fixed delay. */
+       publishes a target, so this waits on the engine, not on a fixed delay.
+       Read the automation contract (data-target-*) instead of parsing copy. */
     const callout = page.locator("[data-target-callout]");
     await expect(callout).toBeVisible({ timeout: 10_000 });
     await expect(callout).toContainText(/TAP (YELLOW|RED|BLUE|GREEN|ORANGE|PURPLE)/);
-    await expect(callout).toContainText(/\d+\/\d+/);
     await expect(callout).toHaveAttribute("data-target-color", /sun-yellow|fence-red|pond-blue|clover-green|blaze-orange|shock-purple/);
+    await expect(callout).toHaveAttribute("data-target-progress", /^\d+$/);
+    await expect(callout).toHaveAttribute("data-target-goal", /^\d+$/);
     await expect(callout).toHaveAttribute("data-target-game-over", "false");
   });
 
