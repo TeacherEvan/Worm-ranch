@@ -101,7 +101,15 @@ test.describe("canvas pointer input", () => {
 
     const status = page.locator('[data-phase] [aria-live="polite"]');
     await expect(status).toContainText(/Target worm \d+\./);
-    const initialTarget = await status.textContent();
+
+    const readTargetNumber = async () => {
+      const text = (await status.textContent()) ?? "";
+      const match = text.match(/Target worm (\d+)/);
+      return match ? Number(match[1]) : null;
+    };
+
+    const initialTarget = await readTargetNumber();
+    expect(initialTarget).not.toBeNull();
 
     const box = await field.boundingBox();
     if (!box) throw new Error("game field has no layout box");
@@ -117,7 +125,8 @@ test.describe("canvas pointer input", () => {
     });
     await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
 
-    await expect(status).not.toHaveText(initialTarget ?? "");
+    /* The swipe must ADVANCE the target, not merely change the status line. */
+    await expect.poll(readTargetNumber).not.toBe(initialTarget);
     await expect(status).toContainText(/Target worm \d+\./);
   });
 
@@ -131,12 +140,24 @@ test.describe("canvas pointer input", () => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
 
+    /* Delivery probe: the press assertions below would still pass if real
+       pointerdown events stopped reaching the canvas, so count them. */
+    const probe = await page.evaluateHandle(() => {
+      const canvas = document.querySelector<HTMLCanvasElement>('canvas[aria-label="Worm Ranch game field"]');
+      const counter = { pointerdowns: 0 };
+      canvas?.addEventListener("pointerdown", () => {
+        counter.pointerdowns += 1;
+      });
+      return counter;
+    });
+
     const box = await field.boundingBox();
     if (!box) throw new Error("game field has no layout box");
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
     await page.mouse.up();
 
+    expect((await probe.jsonValue()).pointerdowns).toBe(1);
     await expect(page.locator("[data-phase]")).toHaveAttribute(
       "data-phase",
       /activeChase|blinkBand|ghostFinale|gameOver/,
