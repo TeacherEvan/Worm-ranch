@@ -19,14 +19,16 @@ _Last state verified: 2026-10-16. All facts below re-checked against the live tr
 
 ## 2. CURRENT STATE (VERIFIED THIS SESSION)
 Ran the full gate (`npm run verify`) on the live tree → **GREEN**:
-- `vitest run`: **35 suites / 185 tests PASS**
+- `vitest run`: **36 suites / 192 tests PASS**
 - `eslint`: **0 errors, 0 warnings**
 - `tsc --noEmit`: clean
 - `next build`: compiled successfully, static + dynamic routes generated
-HEAD at handover: `416a4f3`, committed and in sync with `origin/main`.
+HEAD at handover: `5c40d91`, committed and in sync with `origin/main`.
 
-Latest slice (committed): canvas pointer-listener consolidation, the Playwright
-E2E that exposed the launch-plate stall, and the stall fix — see §3.
+Latest slice (committed): review-follow-up hardening — E2E launch-flow waits
+raised to 5s, target automation contract asserted, real-browser canvas input
+E2E added (CDP touch swipe + mouse press), pen-routing unit test, and
+`handleStageKeyDown` extracted from `GameStage.tsx` (477 -> 456 lines) — see §3.
 
 ## 3. WHAT THE LATEST SLICES CHANGED
 ### 3a. Canvas pointer listeners
@@ -39,7 +41,7 @@ mouse/pen → direct press).
 
 ### 3b. Playwright E2E + the launch-plate stall it exposed
 Added `playwright.config.ts` and `e2e/launch-flow.spec.ts` — `npm run test:e2e`.
-12 tests across `desktop-chromium` and `mobile-chromium` covering welcome hero →
+16 tests across `desktop-chromium` and `mobile-chromium` covering welcome hero →
 gate → mode menu → standard game → endless target color, plus a reduced-motion
 pass. `GameStageOverlay` gained `data-target-callout` / `data-target-color` /
 `data-target-progress` as the automation contract; read those instead of
@@ -54,6 +56,22 @@ the theory that mobile escapes the race is plausible but unverified. `canplay` i
 HAVE_METADATA`, so it now also records metadata readiness. Fixed in
 `welcomeLaunchLoader.ts` and `WelcomeScreen.tsx`; guarded by
 `welcomeLaunchLoader.test.ts`.
+
+### 3c. Review follow-ups (committed)
+- E2E nav waits use `NAV_TIMEOUT_MS = 5_000` (the shell transition is 220ms);
+  the endless callout test reads `data-target-goal` / `data-target-progress`
+  instead of parsing copy.
+- `e2e/launch-flow.spec.ts` "canvas pointer input" describe drives REAL browser
+  events: a CDP touch swipe advances the keyboard target (read it from the
+  sr-only `[data-phase] [aria-live="polite"]` status), and a mouse press runs
+  without page errors. jsdom cannot cover real pointer capture/ordering.
+- Pen input (`pointerType === "pen"`) routes like mouse (direct press, no
+  gesture tracking) — covered in `gameStageGestures.test.ts`.
+- `handleStageKeyDown` (arrow/Home/End/Enter/Space routing) now lives in
+  `gameStageKeyboard.ts` with its own unit suite; `GameStage.tsx` is back to
+  456 lines. The interaction-test keyboard mock is shared via
+  `createKeyboardModuleMock` in `gameStageTestHelpers.ts` — keep stub-based
+  target resolution (`worm-1`) intact when editing those doMocks.
 
 ## 4. E2E GOTCHAS
 - **E2E must run against a production build, not the dev server.**
