@@ -68,6 +68,24 @@ describe("GameStage.interaction", () => {
     harness.cleanup();
   });
 
+  it("binds exactly one canvas listener per pointer event", async () => {
+    const harness = await createInteractionHarness({ pointerWormId: "worm-1" });
+
+    const doubled = ["pointerdown", "pointermove", "pointerup", "pointercancel"].map((name) => ({
+      name,
+      count: harness.canvasListeners.listenerCount(name),
+    }));
+
+    harness.cleanup();
+
+    expect(doubled).toEqual([
+      { name: "pointerdown", count: 1 },
+      { name: "pointermove", count: 1 },
+      { name: "pointerup", count: 1 },
+      { name: "pointercancel", count: 1 },
+    ]);
+  });
+
   it("replaces the visible hint with a follow-up cue after a successful action", async () => {
     vi.resetModules();
 

@@ -28,7 +28,7 @@ import { createStageFeedbackItem, getActionParticleBurst } from "@/components/ga
 import { isActionableResult } from "@/components/gameStageActionHelpers";
 import { getStagePresentation, type DensityPreference } from "@/components/gameStagePhasePresentation";
 import { getActionHaptic, triggerHaptic } from "@/lib/microInteractions";
-import { attachTouchControls, createTouchHandlers } from "@/components/gameStageGestures";
+import { bindPointerControls, createTouchHandlers } from "@/components/gameStageGestures";
 import { getFairyLifecycleEvents, getRoundEndedDetails, getRoundTransitionEvents } from "@/lib/analytics";
 import {
   applyAccuratePress,
@@ -288,20 +288,7 @@ export function GameStage({
       }
     };
 
-    const clearTouchPointer = (event: PointerEvent) => {
-      if (event.pointerType !== "touch") return;
-      if (canvas.hasPointerCapture(event.pointerId)) {
-        canvas.releasePointerCapture(event.pointerId);
-      }
-      setPointer(worldRef.current, null);
-    };
-
     const handlePointerDown = (event: PointerEvent) => {
-      // Touch input is gesture-disambiguated (tap/swipe/hold) via attachTouchControls.
-      if (event.pointerType === "touch") {
-        return;
-      }
-
       const point = toCanvasPoint(event);
       setPointer(worldRef.current, point);
 
@@ -415,28 +402,27 @@ export function GameStage({
     const handleScroll = () => updateCanvasBounds(canvas, canvasBoundsRef);
     window.addEventListener("resize", resize);
     window.addEventListener("scroll", handleScroll, true);
-    canvas.addEventListener("pointermove", handlePointerMove);
-    canvas.addEventListener("pointerleave", handlePointerLeave);
-    canvas.addEventListener("pointerdown", handlePointerDown);
-    canvas.addEventListener("pointerup", clearTouchPointer);
-    canvas.addEventListener("pointercancel", clearTouchPointer);
     canvas.addEventListener("keydown", handleKeyDown);
 
-    const disposeTouchControls = attachTouchControls(
-      canvas,
-      (clientX, clientY) => toCanvasPoint({ clientX, clientY }),
-      createTouchHandlers({ worldRef, reducedMotionRef, setKeyboardTargetId, moveKeyboardTarget, handleAction }),
-    );
+    const disposePointerControls = bindPointerControls(canvas, {
+      toLocalPoint: toCanvasPoint,
+      handlers: createTouchHandlers({
+        worldRef,
+        reducedMotionRef,
+        setKeyboardTargetId,
+        moveKeyboardTarget,
+        handleAction,
+      }),
+      onHover: handlePointerMove,
+      onHoverEnd: handlePointerLeave,
+      onDirectPress: handlePointerDown,
+      onGestureEnd: () => setPointer(worldRef.current, null),
+    });
 
     return () => {
-      disposeTouchControls();
+      disposePointerControls();
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", handleScroll, true);
-      canvas.removeEventListener("pointermove", handlePointerMove);
-      canvas.removeEventListener("pointerleave", handlePointerLeave);
-      canvas.removeEventListener("pointerdown", handlePointerDown);
-      canvas.removeEventListener("pointerup", clearTouchPointer);
-      canvas.removeEventListener("pointercancel", clearTouchPointer);
       canvas.removeEventListener("keydown", handleKeyDown);
       if (frameRef.current !== null) {
         window.cancelAnimationFrame(frameRef.current);

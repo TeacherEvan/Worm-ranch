@@ -28,6 +28,7 @@ export type CanvasListenerRegistry = {
   removeEventListener: (name: string, listener: CanvasListener) => void;
   dispatch: (name: string, event: StageInteractionEvent) => void;
   hasListener: (name: string) => boolean;
+  listenerCount: (name: string) => number;
 };
 
 /* Several listeners may share one event name and all fire, in registration
@@ -60,6 +61,7 @@ export function createCanvasListenerRegistry(): CanvasListenerRegistry {
       }
     },
     hasListener: (name) => (listeners.get(name) ?? []).length > 0,
+    listenerCount: (name) => (listeners.get(name) ?? []).length,
   };
 }
 

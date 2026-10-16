@@ -133,11 +133,21 @@ export function createTouchHandlers(deps: TouchHandlerDeps): TouchControlHandler
   };
 }
 
-/* Binds pointer listeners for touch only; mouse/pen keep the direct path. */
-export function attachTouchControls(
+/* Every canvas pointer event is bound exactly once. The listener inspects
+   `pointerType` and routes to either the touch gesture tracker or the
+   direct mouse/pen path, so no event ever runs through two handlers. */
+export type PointerControlsDeps = {
+  toLocalPoint: (point: Pick<PointerEvent, "clientX" | "clientY">) => TapPoint;
+  handlers: TouchControlHandlers;
+  onHover: (event: PointerEvent) => void;
+  onHoverEnd: (event: PointerEvent) => void;
+  onDirectPress: (event: PointerEvent) => void;
+  onGestureEnd: (event: PointerEvent) => void;
+};
+
+export function bindPointerControls(
   canvas: HTMLCanvasElement,
-  toLocalPoint: (clientX: number, clientY: number) => TapPoint,
-  handlers: TouchControlHandlers,
+  deps: PointerControlsDeps,
 ): () => void {
   const tracker = new TouchGestureTracker();
   let holdTimer: ReturnType<typeof setTimeout> | null = null;
@@ -149,8 +159,47 @@ export function attachTouchControls(
     }
   };
 
+  const releaseCapture = (pointerId: number) => {
+    try {
+      if (canvas.hasPointerCapture(pointerId)) {
+        canvas.releasePointerCapture(pointerId);
+      }
+    } catch {
+      // Capture release is best-effort; the gesture already resolved.
+    }
+  };
+
+  const startHoldWatch = (point: TapPoint, now: number) => {
+    tracker.onDown(point, now);
+    clearHoldTimer();
+    holdTimer = setTimeout(() => {
+      holdTimer = null;
+      const candidate = tracker.holdCandidate();
+      if (candidate) {
+        deps.handlers.onHold(candidate);
+      }
+    }, HOLD_MS);
+  };
+
+  const resolveGesture = (event: PointerEvent) => {
+    clearHoldTimer();
+    releaseCapture(event.pointerId);
+    const wasTracking = tracker.active;
+    const outcome = tracker.onUp(deps.toLocalPoint(event), event.timeStamp);
+    if (outcome.gesture === "tap") {
+      deps.handlers.onTap(outcome.point);
+    } else if (outcome.gesture === "swipe") {
+      deps.handlers.onSwipe(outcome.direction);
+    }
+    /* A pointerup that trails a cancelled gesture has nothing left to end. */
+    if (wasTracking) {
+      deps.onGestureEnd(event);
+    }
+  };
+
   const onPointerDown = (event: PointerEvent) => {
     if (event.pointerType !== "touch") {
+      deps.onDirectPress(event);
       return;
     }
 
@@ -160,36 +209,20 @@ export function attachTouchControls(
       // Capture is best-effort; pointercancel covers the escape path.
     }
 
-    tracker.onDown(toLocalPoint(event.clientX, event.clientY), event.timeStamp);
-    clearHoldTimer();
-    holdTimer = setTimeout(() => {
-      holdTimer = null;
-      const point = tracker.holdCandidate();
-      if (point) {
-        handlers.onHold(point);
-      }
-    }, HOLD_MS);
+    startHoldWatch(deps.toLocalPoint(event), event.timeStamp);
   };
 
   const onPointerMove = (event: PointerEvent) => {
-    if (event.pointerType !== "touch") {
-      return;
-    }
+    deps.onHover(event);
 
-    tracker.onMove(toLocalPoint(event.clientX, event.clientY), event.timeStamp);
+    if (event.pointerType === "touch") {
+      tracker.onMove(deps.toLocalPoint(event), event.timeStamp);
+    }
   };
 
-  const finish = (event: PointerEvent) => {
-    if (event.pointerType !== "touch") {
-      return;
-    }
-
-    clearHoldTimer();
-    const outcome = tracker.onUp(toLocalPoint(event.clientX, event.clientY), event.timeStamp);
-    if (outcome.gesture === "tap") {
-      handlers.onTap(outcome.point);
-    } else if (outcome.gesture === "swipe") {
-      handlers.onSwipe(outcome.direction);
+  const onPointerUp = (event: PointerEvent) => {
+    if (event.pointerType === "touch") {
+      resolveGesture(event);
     }
   };
 
@@ -199,20 +232,24 @@ export function attachTouchControls(
     }
 
     clearHoldTimer();
+    releaseCapture(event.pointerId);
     tracker.reset();
+    deps.onGestureEnd(event);
   };
 
   canvas.addEventListener("pointerdown", onPointerDown);
   canvas.addEventListener("pointermove", onPointerMove);
-  canvas.addEventListener("pointerup", finish);
+  canvas.addEventListener("pointerup", onPointerUp);
   canvas.addEventListener("pointercancel", onPointerCancel);
+  canvas.addEventListener("pointerleave", deps.onHoverEnd);
 
   return () => {
     clearHoldTimer();
     tracker.reset();
     canvas.removeEventListener("pointerdown", onPointerDown);
     canvas.removeEventListener("pointermove", onPointerMove);
-    canvas.removeEventListener("pointerup", finish);
+    canvas.removeEventListener("pointerup", onPointerUp);
     canvas.removeEventListener("pointercancel", onPointerCancel);
+    canvas.removeEventListener("pointerleave", deps.onHoverEnd);
   };
 }
