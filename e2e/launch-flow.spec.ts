@@ -85,6 +85,66 @@ test.describe("launch surface", () => {
   });
 });
 
+test.describe("canvas pointer input", () => {
+  /* jsdom doubles cannot exercise real browser pointer capture or ordering,
+     and the binder routes by pointerType. Touch emulation drives the swipe
+     path end to end; the mouse check guards the direct-press path (the
+     setPointerCapture NotFoundError class the binder had to defend against). */
+  test.use({ hasTouch: true });
+
+  test("advances the keyboard target from a real touch swipe on the game field", async ({ page }) => {
+    await startMode(page, /Standard Run/);
+
+    const field = page.getByLabel("Worm Ranch game field");
+    await expect(field).toBeVisible({ timeout: NAV_TIMEOUT_MS });
+    await expect(page.locator("[data-phase]")).toHaveAttribute("data-phase", "activeChase");
+
+    const status = page.locator('[data-phase] [aria-live="polite"]');
+    await expect(status).toContainText(/Target worm \d+\./);
+    const initialTarget = await status.textContent();
+
+    const box = await field.boundingBox();
+    if (!box) throw new Error("game field has no layout box");
+    const y = box.y + box.height / 2;
+    const client = await page.context().newCDPSession(page);
+    await client.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: [{ x: box.x + 50, y, id: 1 }],
+    });
+    await client.send("Input.dispatchTouchEvent", {
+      type: "touchMove",
+      touchPoints: [{ x: box.x + 150, y, id: 1 }],
+    });
+    await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+
+    await expect(status).not.toHaveText(initialTarget ?? "");
+    await expect(status).toContainText(/Target worm \d+\./);
+  });
+
+  test("survives a real mouse press on the game field", async ({ page }) => {
+    await startMode(page, /Standard Run/);
+
+    const field = page.getByLabel("Worm Ranch game field");
+    await expect(field).toBeVisible({ timeout: NAV_TIMEOUT_MS });
+    await expect(page.locator("[data-phase]")).toHaveAttribute("data-phase", "activeChase");
+
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+
+    const box = await field.boundingBox();
+    if (!box) throw new Error("game field has no layout box");
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.up();
+
+    await expect(page.locator("[data-phase]")).toHaveAttribute(
+      "data-phase",
+      /activeChase|blinkBand|ghostFinale|gameOver/,
+    );
+    expect(errors).toEqual([]);
+  });
+});
+
 test.describe("reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
 
