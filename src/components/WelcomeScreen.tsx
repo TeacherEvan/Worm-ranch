@@ -114,6 +114,10 @@ function WelcomeHeroMedia({ ambientMotionEnabled, heroVariant, reducedMotion }: 
   const showLaunchLoader = shouldShowWelcomeLaunchLoader(loaderSnapshot);
 
   const handleIntroVideoCanPlay = () => {
+    /* canplay implies readyState >= HAVE_METADATA. If the loadedmetadata event
+       fired before React attached its listener, this is the only signal left,
+       so record both or the launch plate stalls at 78%. */
+    setIntroVideoMetadataLoaded(true);
     setIntroVideoCanPlay(true);
     setLaunchMediaState((currentState) => getNextWelcomeLaunchMediaState(currentState, "video-ready"));
   };

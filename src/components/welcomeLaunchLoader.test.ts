@@ -98,4 +98,33 @@ describe("welcomeLaunchLoader", () => {
     expect(getNextWelcomeLaunchLoaderDisplayProgress({ current: 18, target: 52, reducedMotion: true })).toBe(52);
     expect(getNextWelcomeLaunchLoaderDisplayProgress({ current: 63, target: 52, reducedMotion: false })).toBe(52);
   });
+
+  it("does not stall the launch plate when a loadedmetadata event is missed", () => {
+    /* canplay implies readyState >= HAVE_METADATA, so a loadedmetadata event
+       lost before React attached its listener must not wedge the loader at
+       ~78% while the reel is already playable. */
+    const missedMetadata = createSnapshot({
+      posterLoaded: true,
+      introVideoMetadataLoaded: false,
+      introVideoCanPlay: true,
+      launchMediaState: "video",
+    });
+
+    expect(getWelcomeLaunchLoaderProgress(missedMetadata)).toBe(100);
+    expect(shouldShowWelcomeLaunchLoader(missedMetadata)).toBe(false);
+    expect(getWelcomeLaunchLoaderPhase(missedMetadata).title).toBe("Gate ready");
+  });
+
+  it("still reports the reel as spooling before it can play", () => {
+    const spooling = createSnapshot({
+      posterLoaded: true,
+      introVideoMetadataLoaded: false,
+      introVideoCanPlay: false,
+      launchMediaState: "video",
+    });
+
+    expect(getWelcomeLaunchLoaderProgress(spooling)).toBe(52);
+    expect(shouldShowWelcomeLaunchLoader(spooling)).toBe(true);
+    expect(getWelcomeLaunchLoaderPhase(spooling).title).toBe("Indexing the intro reel");
+  });
 });

@@ -27,12 +27,13 @@ export function getWelcomeLaunchLoaderProgress(snapshot: WelcomeLaunchLoaderSnap
     progress += 34;
   }
 
-  if (snapshot.introVideoMetadataLoaded) {
-    progress += 22;
-  }
-
+  /* canplay implies readyState >= HAVE_METADATA, so a loadedmetadata event
+     lost before React attached its listener must not wedge the plate at 78%
+     while the reel is already playable. */
   if (snapshot.introVideoCanPlay) {
-    progress += 26;
+    progress += 48;
+  } else if (snapshot.introVideoMetadataLoaded) {
+    progress += 22;
   }
 
   return Math.min(100, progress);
@@ -67,14 +68,16 @@ export function getWelcomeLaunchLoaderPhase(snapshot: WelcomeLaunchLoaderSnapsho
     };
   }
 
-  if (!snapshot.introVideoMetadataLoaded) {
-    return {
-      title: "Indexing the intro reel",
-      detail: "Reading the blast tape and syncing the salvage frame.",
-    };
-  }
-
+  /* canplay already proves the metadata arrived, so a missed loadedmetadata
+     event must not pin the plate to the "indexing" copy. */
   if (!snapshot.introVideoCanPlay) {
+    if (!snapshot.introVideoMetadataLoaded) {
+      return {
+        title: "Indexing the intro reel",
+        detail: "Reading the blast tape and syncing the salvage frame.",
+      };
+    }
+
     return {
       title: "Pressurizing the launch bay",
       detail: "Giving the reel enough charge to run clean on first fire.",
