@@ -177,6 +177,33 @@ describe("bindPointerControls", () => {
     expect(onDirectPress).toHaveBeenCalledTimes(1);
   });
 
+  it("routes pen input to the direct press path without starting gesture tracking", async () => {
+    const { bindPointerControls } = await import("./gameStageGestures");
+    const canvas = createFakeCanvas();
+    const onDirectPress = vi.fn();
+    const onTap = vi.fn();
+    const onSwipe = vi.fn();
+    const onGestureEnd = vi.fn();
+
+    bindPointerControls(
+      canvas as unknown as HTMLCanvasElement,
+      createDeps({
+        onDirectPress,
+        onGestureEnd,
+        handlers: { onTap, onSwipe, onHold: vi.fn() },
+      }),
+    );
+
+    canvas.dispatch("pointerdown", { ...TOUCH_EVENT, pointerType: "pen" });
+    canvas.dispatch("pointermove", { ...TOUCH_EVENT, clientX: 160, timeStamp: 1150, pointerType: "pen" });
+    canvas.dispatch("pointerup", { ...TOUCH_EVENT, clientX: 160, timeStamp: 1300, pointerType: "pen" });
+
+    expect(onDirectPress).toHaveBeenCalledTimes(1);
+    expect(onTap).not.toHaveBeenCalled();
+    expect(onSwipe).not.toHaveBeenCalled();
+    expect(onGestureEnd).not.toHaveBeenCalled();
+  });
+
   it("classifies a touch drag as a swipe instead of a tap", async () => {
     const { bindPointerControls } = await import("./gameStageGestures");
     const canvas = createFakeCanvas();
