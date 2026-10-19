@@ -7,13 +7,13 @@ import type {
 } from "./baseDefenseTypes";
 import {
   BASE_TENT_INITIAL_HP,
-  CRYSTAL_SPAWN_COUNT,
   getBaseUpgradeCost,
   INITIAL_WORM_HP,
   POWERUP_COSTS,
   SHOTGUN_BASE_DAMAGE,
   SHOTGUN_BASE_RADIUS_PX,
   SHOTGUN_RADIUS_PER_UNIT_PX,
+  SHOTGUN_BLAST_TTL_MS,
   TOWER_HP,
   TOWER_RANGE_PX,
   WALL_HP,
@@ -25,11 +25,13 @@ import {
 } from "./baseDefenseConstants";
 import {
   createMiner,
-  generateRandomCrystal,
+  handleWormDeath,
   initWormBaseDefenseState,
   stepArrows,
   stepBaseWormSpawning,
+  stepBlastsAndTexts,
   stepMiners,
+  stepSplats,
   stepTowers,
   stepWormCombat,
 } from "./baseDefenseSimulation";
@@ -39,10 +41,8 @@ export function initBaseDefenseMode(world: GameWorld) {
   const tentX = world.width / 2;
   const tentY = world.height / 2;
 
+  // Mode starts with 0 crystals; worms killed drop crystals for miners to pick up
   const crystals: CrystalNode[] = [];
-  for (let i = 0; i < CRYSTAL_SPAWN_COUNT; i++) {
-    crystals.push(generateRandomCrystal(world, tentX, tentY, `crystal-${i + 1}`));
-  }
 
   const miners: MinerUnit[] = [
     createMiner("miner-1", tentX - 15, tentY),
@@ -65,6 +65,9 @@ export function initBaseDefenseMode(world: GameWorld) {
     crystals,
     constructions: [],
     arrows: [],
+    splats: [],
+    blasts: [],
+    floatingTexts: [],
     playerDamage: SHOTGUN_BASE_DAMAGE,
     minerSpeedMultiplier: 1,
     minerCarryBonus: 0,
@@ -86,6 +89,8 @@ export function stepBaseDefenseMode(world: GameWorld, deltaMs: number) {
   stepMiners(world, deltaMs);
   stepTowers(world, deltaMs);
   stepArrows(world, deltaMs);
+  stepSplats(world);
+  stepBlastsAndTexts(world, deltaMs);
   stepBaseWormSpawning(world, deltaMs);
   stepWormCombat(world, deltaMs);
 
@@ -191,6 +196,17 @@ export function applyBaseDefensePress(world: GameWorld, point: Point): ActionRes
   const radius = SHOTGUN_BASE_RADIUS_PX + (bd.aoeUnits - 1) * SHOTGUN_RADIUS_PER_UNIT_PX;
   let hitAny = false;
 
+  // Add shockwave blast visual
+  if (!bd.blasts) bd.blasts = [];
+  bd.blasts.push({
+    id: `blast-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    x: point.x,
+    y: point.y,
+    radius,
+    lifeMs: 0,
+    ttlMs: SHOTGUN_BLAST_TTL_MS,
+  });
+
   for (const worm of world.worms) {
     if (!isWormActive(worm)) continue;
     const dist = Math.hypot(worm.x - point.x, worm.y - point.y);
@@ -200,8 +216,7 @@ export function applyBaseDefensePress(world: GameWorld, point: Point): ActionRes
       worm.baseDefense!.hp -= bd.playerDamage;
 
       if (worm.baseDefense!.hp <= 0) {
-        worm.state = "captured";
-        world.collected += 1;
+        handleWormDeath(world, worm);
       }
     }
   }

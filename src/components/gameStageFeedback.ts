@@ -42,7 +42,8 @@ export function getActionParticleBurst(
   worm: Worm | { x: number; y: number; radius: number },
 ): Particle[] {
   if (result.kind === "collect") {
-    return createBurstFromTone("collect", worm.x, worm.y - worm.radius * 1.8);
+    const tone: ParticleTone = result.wormId === "aoe-shotgun" ? "shotgun" : "collect";
+    return createBurstFromTone(tone, worm.x, worm.y - worm.radius * 1.8);
   }
   if (result.kind === "tag") {
     return createBurstFromTone("tag", worm.x, worm.y);

@@ -118,4 +118,32 @@ describe("handleStageKeyDown", () => {
     expect(handleStageKeyDown(ignored.event, deps)).toBe(false);
     expect(ignored.preventDefault).not.toHaveBeenCalled();
   });
+
+  it("handles Base Defense upgrade shortcuts 1-9 and 0", () => {
+    const onBaseDefensePurchase = vi.fn();
+    const world = createWorldStub();
+    world.baseDefense = { active: true } as unknown as NonNullable<GameWorld["baseDefense"]>;
+
+    const deps: StageKeyDeps = {
+      worldRef: { current: world },
+      keyboardTargetRef: { current: null },
+      moveKeyboardTarget: vi.fn(),
+      selectKeyboardTarget: vi.fn(),
+      applyToTarget: vi.fn(),
+      onBaseDefensePurchase,
+    };
+
+    const key1 = createKeyEvent("1");
+    expect(handleStageKeyDown(key1.event, deps)).toBe(true);
+    expect(onBaseDefensePurchase).toHaveBeenCalledWith("damage");
+    expect(key1.preventDefault).toHaveBeenCalled();
+
+    const key9 = createKeyEvent("9");
+    expect(handleStageKeyDown(key9.event, deps)).toBe(true);
+    expect(onBaseDefensePurchase).toHaveBeenCalledWith("wall");
+
+    const key0 = createKeyEvent("0");
+    expect(handleStageKeyDown(key0.event, deps)).toBe(true);
+    expect(onBaseDefensePurchase).toHaveBeenCalledWith("baseUpgrade");
+  });
 });

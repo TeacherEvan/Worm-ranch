@@ -139,6 +139,23 @@
   gap: 2px;
 }
 
+.itemLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.shortcutBadge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #00f5ff;
+  background: rgba(0, 245, 255, 0.12);
+  border: 1px solid rgba(0, 245, 255, 0.35);
+  border-radius: 4px;
+  padding: 1px 5px;
+  line-height: 1.2;
+}
+
 .itemLabel {
   font-size: 12px;
   font-weight: 600;
@@ -159,4 +176,18 @@
   padding: 3px 8px;
   border-radius: 6px;
   white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .bankTabButton {
+    padding: 5px 10px;
+    gap: 6px;
+  }
+  .bankCredits {
+    font-size: 12px;
+  }
+  .tentHpBadge {
+    font-size: 10px;
+    padding: 1px 5px;
+  }
 }

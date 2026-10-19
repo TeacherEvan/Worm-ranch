@@ -15,6 +15,18 @@ export type BaseDefensePowerupId =
 export type CrystalNode = Point & {
   id: string;
   remainingCredits: number;
+  createdAtMs?: number;
+  isDrop?: boolean;
+};
+
+export type SplatDecal = Point & {
+  id: string;
+  radius: number;
+  color: string;
+  alpha: number;
+  rotation: number;
+  droplets: Array<{ dx: number; dy: number; r: number }>;
+  createdAtMs: number;
 };
 
 export type MinerUnit = Point & {
@@ -29,6 +41,21 @@ export type MinerUnit = Point & {
   direction: number;
 };
 
+export type ShotgunBlastVisual = Point & {
+  id: string;
+  radius: number;
+  lifeMs: number;
+  ttlMs: number;
+};
+
+export type FloatingCreditText = Point & {
+  id: string;
+  text: string;
+  color: string;
+  lifeMs: number;
+  ttlMs: number;
+};
+
 export type ConstructionUnit = Point & {
   id: string;
   kind: "tower" | "wall";
@@ -37,6 +64,8 @@ export type ConstructionUnit = Point & {
   attackCooldownMs: number;
   rangePx: number;
   targetWormId: string | null;
+  turretAngle?: number;
+  recoilOffset?: number;
 };
 
 export type ArrowProjectile = Point & {
@@ -74,6 +103,9 @@ export type BaseDefenseWorldState = {
   crystals: CrystalNode[];
   constructions: ConstructionUnit[];
   arrows: ArrowProjectile[];
+  splats: SplatDecal[];
+  blasts?: ShotgunBlastVisual[];
+  floatingTexts?: FloatingCreditText[];
   playerDamage: number;
   minerSpeedMultiplier: number;
   minerCarryBonus: number;

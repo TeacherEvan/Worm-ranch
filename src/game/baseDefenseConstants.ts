@@ -9,6 +9,12 @@ export const MINER_MINE_DURATION_MS = 600;
 export const CRYSTAL_SPAWN_COUNT = 6;
 export const CRYSTAL_MARGIN_PX = 60;
 export const CRYSTAL_MIN_DIST_FROM_BASE_PX = 130;
+export const MAX_DROPPED_CRYSTALS = 24;
+export const CRYSTAL_DROP_CREDITS = 10;
+export const SPLAT_LIFETIME_MS = 1800;
+export const MAX_ACTIVE_SPLATS = 32;
+export const SHOTGUN_BLAST_TTL_MS = 380;
+export const FLOATING_TEXT_TTL_MS = 800;
 
 export const WALL_HP = 200;
 

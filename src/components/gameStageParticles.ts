@@ -38,9 +38,21 @@ export type ParticleBurstConfig = {
   shapes: Particle["shape"][];
 };
 
-export type ParticleTone = "collect" | "teleport" | "tag" | "outlaw" | "fairy" | "rush" | "countdown";
+export type ParticleTone = "collect" | "teleport" | "tag" | "outlaw" | "fairy" | "rush" | "countdown" | "shotgun";
 
 const TONE_CONFIGS: Record<ParticleTone, Omit<ParticleBurstConfig, "x" | "y" | "count">> = {
+  shotgun: {
+    // Explosive cyan + white kinetic shockwave burst
+    baseColor: "#00F5FF",
+    colorVariance: 0.18,
+    speedRange: [0.22, 0.52],
+    sizeRange: [2.5, 5],
+    lifeRange: [180, 320],
+    gravity: 0.0001,
+    spread: Math.PI * 2,
+    direction: 0,
+    shapes: ["circle", "triangle"],
+  },
   collect: {
     // Neon lime burst — sharp, upward bias
     baseColor: "#C7F36B",

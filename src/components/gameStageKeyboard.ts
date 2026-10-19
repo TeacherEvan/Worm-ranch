@@ -1,4 +1,5 @@
 import { isWormActive, type GameSummary, type GameWorld } from "@/game/types";
+import type { BaseDefensePowerupId } from "@/game/baseDefenseTypes";
 
 export type KeyboardTargetMode = "first" | "last" | "next" | "previous" | "preserve";
 
@@ -44,6 +45,7 @@ export type StageKeyDeps = {
   moveKeyboardTarget: (mode: Exclude<KeyboardTargetMode, "preserve">) => void;
   selectKeyboardTarget: (id: string | null) => void;
   applyToTarget: (targetId: string) => void;
+  onBaseDefensePurchase?: (type: BaseDefensePowerupId) => void;
 };
 
 const ARROW_DIRECTIONS: Record<string, "next" | "previous"> = {
@@ -53,9 +55,32 @@ const ARROW_DIRECTIONS: Record<string, "next" | "previous"> = {
   ArrowUp: "previous",
 };
 
+const POWERUP_SHORTCUTS: Record<string, BaseDefensePowerupId> = {
+  "1": "damage",
+  "2": "minerSpeed",
+  "3": "health",
+  "4": "armor",
+  "5": "minerCarry",
+  "6": "extraMiner",
+  "7": "aoeRadius",
+  "8": "tower",
+  "9": "wall",
+  "0": "baseUpgrade",
+};
+
 /* Canvas keyboard controls, kept out of GameStage.tsx (500-line rule). Returns
    true when the key was consumed; unhandled keys fall through untouched. */
 export function handleStageKeyDown(event: KeyboardEvent, deps: StageKeyDeps): boolean {
+  // Handle Base Defense upgrade hotkeys (1-9, 0)
+  if (deps.worldRef.current.baseDefense?.active && deps.onBaseDefensePurchase) {
+    const powerupId = POWERUP_SHORTCUTS[event.key];
+    if (powerupId) {
+      event.preventDefault();
+      deps.onBaseDefensePurchase(powerupId);
+      return true;
+    }
+  }
+
   const direction = ARROW_DIRECTIONS[event.key];
   if (direction) {
     event.preventDefault();

@@ -46,6 +46,10 @@ describe("Base Defense Canvas Renderer", () => {
     });
 
     const mockCtx = {
+      ellipse: vi.fn(),
+      createRadialGradient: vi.fn(() => ({
+        addColorStop: vi.fn(),
+      })),
       save: vi.fn(),
       restore: vi.fn(),
       beginPath: vi.fn(),

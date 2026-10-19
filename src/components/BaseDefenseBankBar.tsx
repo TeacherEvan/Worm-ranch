@@ -14,6 +14,7 @@ interface ShopOption {
   type: BaseDefensePowerupId;
   label: string;
   description: string;
+  shortcutKey: string;
   getCost: (summary: BaseDefenseSummary) => number | null;
   isMaxed?: (summary: BaseDefenseSummary) => boolean;
 }
@@ -23,60 +24,70 @@ const SHOP_OPTIONS: ShopOption[] = [
     type: "damage",
     label: "Player Damage",
     description: "+5 Click/Shotgun Damage",
+    shortcutKey: "1",
     getCost: () => POWERUP_COSTS.damage,
   },
   {
     type: "minerSpeed",
     label: "Miner Speed",
     description: "+25% Miner Movement Speed",
+    shortcutKey: "2",
     getCost: () => POWERUP_COSTS.minerSpeed,
   },
   {
     type: "health",
     label: "Base Health",
     description: "+100 Max HP & +150 Heal",
+    shortcutKey: "3",
     getCost: () => POWERUP_COSTS.health,
   },
   {
     type: "armor",
     label: "Armor Plating",
     description: "+1 Base Armor (-1 Dmg taken)",
+    shortcutKey: "4",
     getCost: () => POWERUP_COSTS.armor,
   },
   {
     type: "minerCarry",
     label: "Miner Carry Capacity",
     description: "+5 Credits per Crystal Trip",
+    shortcutKey: "5",
     getCost: () => POWERUP_COSTS.minerCarry,
   },
   {
     type: "extraMiner",
     label: "+1 Miner",
     description: "Hire an extra Crystal Mining NPC",
+    shortcutKey: "6",
     getCost: () => POWERUP_COSTS.extraMiner,
   },
   {
     type: "aoeRadius",
     label: "Shotgun AOE Radius",
     description: "+1 Area of Effect unit radius",
+    shortcutKey: "7",
     getCost: () => POWERUP_COSTS.aoeRadius,
   },
   {
     type: "tower",
     label: "Attack Tower",
     description: "200 HP / 10 DMG Arrow Tower",
+    shortcutKey: "8",
     getCost: () => POWERUP_COSTS.tower,
   },
   {
     type: "wall",
     label: "Defense Wall",
     description: "200 HP Barrier to distract worms",
+    shortcutKey: "9",
     getCost: () => POWERUP_COSTS.wall,
   },
   {
     type: "baseUpgrade",
     label: "Upgrade Tent",
     description: "Upgrade base tier + unlocks 1 extra miner",
+    shortcutKey: "0",
     getCost: (s) => getBaseUpgradeCost(s.tentUpgradeCount),
     isMaxed: (s) => s.tentUpgradeCount >= 10,
   },
@@ -141,6 +152,7 @@ function BaseDefenseBankBar({ summary, onPurchase }: BaseDefenseBankBarProps) {
                 className={styles.shopItemButton}
                 disabled={!canAfford}
                 data-testid={`buy-${opt.type}`}
+                aria-keyshortcuts={opt.shortcutKey}
                 onClick={() => {
                   if (canAfford) {
                     onPurchase(opt.type);
@@ -148,7 +160,10 @@ function BaseDefenseBankBar({ summary, onPurchase }: BaseDefenseBankBarProps) {
                 }}
               >
                 <div className={styles.itemInfo}>
-                  <span className={styles.itemLabel}>{opt.label}</span>
+                  <div className={styles.itemLabelRow}>
+                    <span className={styles.shortcutBadge}>[{opt.shortcutKey}]</span>
+                    <span className={styles.itemLabel}>{opt.label}</span>
+                  </div>
                   <span className={styles.itemDesc}>
                     {isMaxed ? "MAX LEVEL REACHED" : opt.description}
                   </span>

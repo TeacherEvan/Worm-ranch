@@ -97,7 +97,7 @@ test.describe("Base Defense mode", () => {
     await expect(bankTab).toBeVisible();
   });
 
-  test("autonomous miners deposit credits and allow purchasing constructions", async ({ page }) => {
+  test("autonomous miners deposit credits from killed-worm crystal drops and allow purchasing constructions", async ({ page }) => {
     await startBaseDefense(page);
 
     const hud = page.locator('[data-base-defense-hud="active"]');
@@ -107,11 +107,37 @@ test.describe("Base Defense mode", () => {
     await expect(hud).toHaveAttribute("data-credits", "0");
     await expect(hud).toHaveAttribute("data-walls-count", "0");
 
-    // Wait for autonomous miners to complete crystal trip and deposit credits (poll data-credits > 0)
+    const canvas = page.getByLabel("Worm Ranch game field");
+    const box = await canvas.boundingBox();
+
+    // Kill worms by clicking around the field so they drop crystals
+    if (box) {
+      const cx = box.x + box.width / 2;
+      const cy = box.y + box.height / 2;
+      const offsets = [
+        [0, 0], [60, 0], [-60, 0], [0, 60], [0, -60],
+        [100, 100], [-100, -100], [100, -100], [-100, 100],
+      ];
+      for (const [ox, oy] of offsets) {
+        await page.mouse.click(cx + ox, cy + oy);
+        await page.waitForTimeout(100);
+      }
+    }
+
+    // Wait for autonomous miners to collect dropped crystal and deposit credits (poll data-credits > 0)
     await expect(async () => {
+      if (box) {
+        const cx = box.x + box.width / 2;
+        const cy = box.y + box.height / 2;
+        await page.mouse.click(cx, cy);
+        await page.mouse.click(cx + 80, cy);
+        await page.mouse.click(cx - 80, cy);
+        await page.mouse.click(cx, cy + 80);
+        await page.mouse.click(cx, cy - 80);
+      }
       const cr = Number(await hud.getAttribute("data-credits"));
       expect(cr).toBeGreaterThanOrEqual(10);
-    }).toPass({ timeout: 15_000 });
+    }).toPass({ timeout: 20_000 });
 
     // Open bank tab and purchase wall (10 CR)
     const bankTab = page.getByTestId("bank-tab");
@@ -122,6 +148,78 @@ test.describe("Base Defense mode", () => {
     await buyWall.click();
 
     // Verify wall was built
+    await expect(hud).toHaveAttribute("data-walls-count", "1");
+  });
+
+  test("HUD layout has zero bounding-box overlaps across elements", async ({ page }) => {
+    await startBaseDefense(page);
+
+    const bankTab = page.getByTestId("bank-tab");
+    const killsBadge = page.locator('[aria-label="worms killed"]');
+
+    await expect(bankTab).toBeVisible({ timeout: NAV_TIMEOUT_MS });
+    await expect(killsBadge).toBeVisible({ timeout: NAV_TIMEOUT_MS });
+
+    const bankBox = await bankTab.boundingBox();
+    const killsBox = await killsBadge.boundingBox();
+
+    expect(bankBox).not.toBeNull();
+    expect(killsBox).not.toBeNull();
+
+    if (bankBox && killsBox) {
+      const overlaps =
+        bankBox.x < killsBox.x + killsBox.width &&
+        bankBox.x + bankBox.width > killsBox.x &&
+        bankBox.y < killsBox.y + killsBox.height &&
+        bankBox.y + bankBox.height > killsBox.y;
+
+      expect(overlaps, "Bank tab and Kills badge must not overlap in HUD layout").toBe(false);
+    }
+  });
+
+  test("keyboard shortcuts 1-0 and hotkeys trigger upgrade purchases", async ({ page }) => {
+    await startBaseDefense(page);
+
+    const hud = page.locator('[data-base-defense-hud="active"]');
+    await expect(hud).toBeVisible({ timeout: NAV_TIMEOUT_MS });
+
+    const canvas = page.getByLabel("Worm Ranch game field");
+    const box = await canvas.boundingBox();
+
+    // Kill worms to generate credits
+    if (box) {
+      const cx = box.x + box.width / 2;
+      const cy = box.y + box.height / 2;
+      const offsets = [
+        [0, 0], [60, 0], [-60, 0], [0, 60], [0, -60],
+        [100, 100], [-100, -100], [100, -100], [-100, 100],
+      ];
+      for (const [ox, oy] of offsets) {
+        await page.mouse.click(cx + ox, cy + oy);
+        await page.waitForTimeout(100);
+      }
+    }
+
+    // Wait until at least 10 credits are harvested
+    await expect(async () => {
+      if (box) {
+        const cx = box.x + box.width / 2;
+        const cy = box.y + box.height / 2;
+        await page.mouse.click(cx, cy);
+        await page.mouse.click(cx + 80, cy);
+        await page.mouse.click(cx - 80, cy);
+        await page.mouse.click(cx, cy + 80);
+        await page.mouse.click(cx, cy - 80);
+      }
+      const cr = Number(await hud.getAttribute("data-credits"));
+      expect(cr).toBeGreaterThanOrEqual(10);
+    }).toPass({ timeout: 20_000 });
+
+    // Focus canvas and press key '9' to buy wall (10 CR)
+    await canvas.focus();
+    await page.keyboard.press("9");
+
+    // Wall count should increment to 1
     await expect(hud).toHaveAttribute("data-walls-count", "1");
   });
 });

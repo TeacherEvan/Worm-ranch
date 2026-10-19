@@ -42,3 +42,10 @@
 .timeBadge .hudValue {
   color: var(--neon-cyan, #00f5ff);
 }
+
+@media (max-width: 640px) {
+  .killsBadge {
+    top: 56px;
+    right: 10px;
+  }
+}

@@ -152,6 +152,10 @@ export function startRound(world: GameWorld) {
 export function resizeWorld(world: GameWorld, width: number, height: number) {
   world.width = width;
   world.height = height;
+  if (world.baseDefense?.active) {
+    world.baseDefense.tent.x = width / 2;
+    world.baseDefense.tent.y = height / 2;
+  }
 }
 
 export function setPointer(world: GameWorld, point: Point | null) {

@@ -149,6 +149,8 @@ export function GameStage({
     }
   };
 
+  const handleBaseDefensePurchaseRef = useLatestValue(handleBaseDefensePurchase);
+
   // Motion cue effect
   useEffect(() => {
     const motionFeedback = getMotionFeedback(previousSummaryRef.current, stageSummary);
@@ -334,6 +336,7 @@ export function GameStage({
         moveKeyboardTarget,
         selectKeyboardTarget: setKeyboardTargetId,
         applyToTarget: (targetId) => handleAction(applyAccuratePress(worldRef.current, targetId)),
+        onBaseDefensePurchase: (type) => handleBaseDefensePurchaseRef.current(type),
       });
     };
 
@@ -438,7 +441,7 @@ export function GameStage({
       stopContinuousMode(worldRef.current);
       audioController.dispose();
     };
-  }, [initialWorld, level, levelRules, profile, reducedMotionRef, keyboardTargetRef, showActionEchoRef, onSummaryChangeRef, onRoundEndRef, onEventRef, mode]);
+  }, [initialWorld, level, levelRules, profile, reducedMotionRef, keyboardTargetRef, showActionEchoRef, onSummaryChangeRef, onRoundEndRef, onEventRef, handleBaseDefensePurchaseRef, mode]);
 
   const targetCallout = getTargetCallout(stageSummary);
 

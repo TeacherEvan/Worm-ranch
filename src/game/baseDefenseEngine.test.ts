@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createWorld } from "./engine";
+import { createWorld, resizeWorld } from "./engine";
 import { createStandardWorm } from "./specialWorms";
 import {
   initBaseDefenseMode,
@@ -11,7 +11,6 @@ import {
 import {
   BASE_TENT_INITIAL_HP,
   BASE_MINER_HP,
-  CRYSTAL_SPAWN_COUNT,
   WALL_HP,
   TOWER_HP,
   INITIAL_WORM_HP,
@@ -20,7 +19,7 @@ import {
 } from "./baseDefenseConstants";
 
 describe("Base Defense Engine", () => {
-  it("initializes base defense world with central tent, 2 miners, and 6 crystals", () => {
+  it("initializes base defense world with central tent, 2 miners, and 0 start crystals", () => {
     const world = createWorld("desktop", 800, 600);
     initBaseDefenseMode(world);
 
@@ -34,10 +33,10 @@ describe("Base Defense Engine", () => {
 
     expect(world.baseDefense?.miners.length).toBe(2);
     expect(world.baseDefense?.miners[0].hp).toBe(BASE_MINER_HP);
-    expect(world.baseDefense?.crystals.length).toBe(CRYSTAL_SPAWN_COUNT);
+    expect(world.baseDefense?.crystals.length).toBe(0);
   });
 
-  it("miners move between crystal and tent, adding credits on return", () => {
+  it("killed worms drop crystals which miners pick up, adding credits on return", () => {
     const world = createWorld("desktop", 800, 600);
     initBaseDefenseMode(world);
 
@@ -45,8 +44,20 @@ describe("Base Defense Engine", () => {
     world.baseDefense!.tent.hp = 999999;
     world.baseDefense!.tent.maxHp = 999999;
 
+    // Spawn a worm and kill it to drop a crystal
+    const worm = createStandardWorm(0, world.rules, world.width, world.height, world.runtime);
+    worm.x = 420;
+    worm.y = 300;
+    worm.state = "roaming";
+    world.worms.push(worm);
+
+    // Kill the worm via shotgun click
+    applyBaseDefensePress(world, { x: 420, y: 300 });
+    expect(world.baseDefense?.crystals.length).toBe(1);
+    expect(world.baseDefense?.splats.length).toBe(1);
+
     const initialCredits = world.baseDefense!.bankCredits;
-    // Step world enough for miner to make trips
+    // Step world enough for miner to make trip to the dropped crystal and return
     for (let i = 0; i < 150; i++) {
       stepBaseDefenseMode(world, 50);
     }
@@ -136,5 +147,18 @@ describe("Base Defense Engine", () => {
     const pressResult = applyBaseDefensePress(world, { x: 400, y: 300 });
     expect(pressResult.kind).toBe("collect");
     expect(worm.state).toBe("captured");
+  });
+
+  it("locks base tent to exact center on world resize", () => {
+    const world = createWorld("desktop", 800, 600);
+    initBaseDefenseMode(world);
+    expect(world.baseDefense?.tent.x).toBe(400);
+    expect(world.baseDefense?.tent.y).toBe(300);
+
+    // Resize to arbitrary resolution
+    resizeWorld(world, 1200, 900);
+
+    expect(world.baseDefense?.tent.x).toBe(600);
+    expect(world.baseDefense?.tent.y).toBe(450);
   });
 });

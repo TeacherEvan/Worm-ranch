@@ -8,8 +8,12 @@ import {
   BASE_WORM_DPS,
   CRYSTAL_MARGIN_PX,
   CRYSTAL_MIN_DIST_FROM_BASE_PX,
+  CRYSTAL_DROP_CREDITS,
+  MAX_DROPPED_CRYSTALS,
+  MAX_ACTIVE_SPLATS,
   MINER_CARRY_BASE,
   MINER_MINE_DURATION_MS,
+  SPLAT_LIFETIME_MS,
   TOWER_COOLDOWN_MS,
   TOWER_DAMAGE,
   WORM_DPS_STEP_AMOUNT,
@@ -97,10 +101,12 @@ export function stepMiners(world: GameWorld, deltaMs: number) {
           miner.y = target.y;
           miner.state = "mining";
           miner.stateTimerMs = 0;
-        } else {
+        } else if (dist > 1e-4) {
           miner.x += (dx / dist) * speed;
           miner.y += (dy / dist) * speed;
         }
+      } else {
+        miner.targetCrystalId = null;
       }
     } else if (miner.state === "mining") {
       miner.stateTimerMs += deltaMs;
@@ -108,6 +114,12 @@ export function stepMiners(world: GameWorld, deltaMs: number) {
         miner.carriedCredits = MINER_CARRY_BASE + bd.minerCarryBonus;
         miner.state = "returningToBase";
         miner.stateTimerMs = 0;
+        // Consume dropped crystal if mined
+        const crystalIdx = bd.crystals.findIndex((c) => c.id === miner.targetCrystalId);
+        if (crystalIdx >= 0) {
+          bd.crystals.splice(crystalIdx, 1);
+        }
+        miner.targetCrystalId = null;
       }
     } else if (miner.state === "returningToBase") {
       const dx = bd.tent.x - miner.x;
@@ -119,12 +131,108 @@ export function stepMiners(world: GameWorld, deltaMs: number) {
         miner.x = bd.tent.x;
         miner.y = bd.tent.y;
         bd.bankCredits += miner.carriedCredits;
+        if (!bd.floatingTexts) bd.floatingTexts = [];
+        bd.floatingTexts.push({
+          id: `ft-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          x: bd.tent.x + (Math.random() - 0.5) * 20,
+          y: bd.tent.y - 20,
+          text: `+${miner.carriedCredits} CR`,
+          color: "#ffd166",
+          lifeMs: 0,
+          ttlMs: 900,
+        });
         miner.carriedCredits = 0;
         miner.state = "movingToCrystal";
         miner.stateTimerMs = 0;
-      } else {
+      } else if (dist > 1e-4) {
         miner.x += (dx / dist) * speed;
         miner.y += (dy / dist) * speed;
+      }
+    }
+  }
+}
+
+export function handleWormDeath(world: GameWorld, worm: Worm) {
+  const bd = world.baseDefense;
+  if (!bd) return;
+
+  worm.state = "captured";
+  world.collected += 1;
+
+  // Drop crystal for miners
+  if (bd.crystals.length < MAX_DROPPED_CRYSTALS) {
+    bd.crystals.push({
+      id: `crystal-drop-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      x: worm.x,
+      y: worm.y,
+      remainingCredits: CRYSTAL_DROP_CREDITS,
+      createdAtMs: bd.elapsedMs,
+      isDrop: true,
+    });
+  }
+
+  // Splat decal
+  if (!bd.splats) bd.splats = [];
+  if (bd.splats.length >= MAX_ACTIVE_SPLATS) {
+    bd.splats.shift();
+  }
+  const droplets: Array<{ dx: number; dy: number; r: number }> = [];
+  for (let d = 0; d < 5; d++) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 6 + Math.random() * 15;
+    droplets.push({
+      dx: Math.cos(angle) * dist,
+      dy: Math.sin(angle) * dist,
+      r: 1.5 + Math.random() * 2,
+    });
+  }
+
+  bd.splats.push({
+    id: `splat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    x: worm.x,
+    y: worm.y,
+    radius: 12 + Math.random() * 6,
+    color: "#c7f36b",
+    alpha: 0.95,
+    rotation: Math.random() * Math.PI * 2,
+    droplets,
+    createdAtMs: bd.elapsedMs,
+  });
+}
+
+export function stepSplats(world: GameWorld) {
+  const bd = world.baseDefense;
+  if (!bd || !bd.splats) return;
+
+  for (let i = bd.splats.length - 1; i >= 0; i--) {
+    const age = bd.elapsedMs - bd.splats[i].createdAtMs;
+    if (age >= SPLAT_LIFETIME_MS) {
+      bd.splats.splice(i, 1);
+    } else {
+      bd.splats[i].alpha = Math.max(0, 1 - age / SPLAT_LIFETIME_MS);
+    }
+  }
+}
+
+export function stepBlastsAndTexts(world: GameWorld, deltaMs: number) {
+  const bd = world.baseDefense;
+  if (!bd) return;
+
+  if (bd.blasts) {
+    for (let i = bd.blasts.length - 1; i >= 0; i--) {
+      bd.blasts[i].lifeMs += deltaMs;
+      if (bd.blasts[i].lifeMs >= bd.blasts[i].ttlMs) {
+        bd.blasts.splice(i, 1);
+      }
+    }
+  }
+
+  if (bd.floatingTexts) {
+    for (let i = bd.floatingTexts.length - 1; i >= 0; i--) {
+      bd.floatingTexts[i].lifeMs += deltaMs;
+      bd.floatingTexts[i].y -= (25 * deltaMs) / 1000;
+      if (bd.floatingTexts[i].lifeMs >= bd.floatingTexts[i].ttlMs) {
+        bd.floatingTexts.splice(i, 1);
       }
     }
   }
@@ -137,35 +245,44 @@ export function stepTowers(world: GameWorld, deltaMs: number) {
   for (const construction of bd.constructions) {
     if (construction.kind !== "tower" || construction.hp <= 0) continue;
 
+    // Decay recoil offset
+    if (construction.recoilOffset && construction.recoilOffset > 0) {
+      construction.recoilOffset = Math.max(0, construction.recoilOffset - (deltaMs * 0.02));
+    }
+
+    // Orient towards nearest worm
+    let nearestWorm: Worm | null = null;
+    let nearestDist = Infinity;
+
+    for (const worm of activeWorms) {
+      const dist = Math.hypot(worm.x - construction.x, worm.y - construction.y);
+      if (dist <= construction.rangePx && dist < nearestDist) {
+        nearestDist = dist;
+        nearestWorm = worm;
+      }
+    }
+
+    if (nearestWorm) {
+      construction.turretAngle = Math.atan2(nearestWorm.y - construction.y, nearestWorm.x - construction.x);
+    }
+
     construction.attackCooldownMs = Math.max(0, construction.attackCooldownMs - deltaMs);
-    if (construction.attackCooldownMs <= 0) {
-      let nearestWorm: Worm | null = null;
-      let nearestDist = Infinity;
-
-      for (const worm of activeWorms) {
-        const dist = Math.hypot(worm.x - construction.x, worm.y - construction.y);
-        if (dist <= construction.rangePx && dist < nearestDist) {
-          nearestDist = dist;
-          nearestWorm = worm;
-        }
-      }
-
-      if (nearestWorm) {
-        construction.attackCooldownMs = TOWER_COOLDOWN_MS;
-        const angle = Math.atan2(nearestWorm.y - construction.y, nearestWorm.x - construction.x);
-        bd.arrows.push({
-          id: `arrow-${Date.now()}-${Math.random()}`,
-          x: construction.x,
-          y: construction.y,
-          targetX: nearestWorm.x,
-          targetY: nearestWorm.y,
-          vx: Math.cos(angle) * ARROW_SPEED_PX,
-          vy: Math.sin(angle) * ARROW_SPEED_PX,
-          damage: TOWER_DAMAGE,
-          lifeMs: 0,
-          ttlMs: ARROW_TTL_MS,
-        });
-      }
+    if (construction.attackCooldownMs <= 0 && nearestWorm) {
+      construction.attackCooldownMs = TOWER_COOLDOWN_MS;
+      construction.recoilOffset = 4;
+      const angle = construction.turretAngle ?? Math.atan2(nearestWorm.y - construction.y, nearestWorm.x - construction.x);
+      bd.arrows.push({
+        id: `arrow-${Date.now()}-${Math.random()}`,
+        x: construction.x,
+        y: construction.y,
+        targetX: nearestWorm.x,
+        targetY: nearestWorm.y,
+        vx: Math.cos(angle) * ARROW_SPEED_PX,
+        vy: Math.sin(angle) * ARROW_SPEED_PX,
+        damage: TOWER_DAMAGE,
+        lifeMs: 0,
+        ttlMs: ARROW_TTL_MS,
+      });
     }
   }
 }
@@ -189,8 +306,7 @@ export function stepArrows(world: GameWorld, deltaMs: number) {
         if (!worm.baseDefense) initWormBaseDefenseState(worm, bd.elapsedMs);
         worm.baseDefense!.hp -= arrow.damage;
         if (worm.baseDefense!.hp <= 0) {
-          worm.state = "captured";
-          world.collected += 1;
+          handleWormDeath(world, worm);
         }
         break;
       }
@@ -293,7 +409,7 @@ export function stepWormCombat(world: GameWorld, deltaMs: number) {
         bd.tent.hp -= netDamage;
       }
     } else {
-      const speed = 40 * frameSec;
+      const speed = 65 * frameSec;
       worm.x += (dx / dist) * speed;
       worm.y += (dy / dist) * speed;
       worm.direction = Math.atan2(dy, dx);
