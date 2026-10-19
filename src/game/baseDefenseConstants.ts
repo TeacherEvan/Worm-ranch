@@ -11,10 +11,8 @@ export const CRYSTAL_MARGIN_PX = 60;
 export const CRYSTAL_MIN_DIST_FROM_BASE_PX = 130;
 
 export const WALL_HP = 200;
-export const WALL_COST = 10;
 
 export const TOWER_HP = 200;
-export const TOWER_COST = 100;
 export const TOWER_DAMAGE = 10;
 export const TOWER_RANGE_PX = 220;
 export const TOWER_COOLDOWN_MS = 1000;

@@ -6,7 +6,7 @@ import type { StageCopy, StatusItem } from "@/components/gameStagePresentation";
 import type { StageMotionCue } from "@/components/gameStageMotion";
 import type { StageTargetCallout } from "./gameStageTargetCallout";
 
-import BaseDefenseBankBar from "./BaseDefenseBankBar";
+import { BaseDefenseBankBar } from "./BaseDefenseBankBar";
 import type { BaseDefenseSummary, BaseDefensePowerupId } from "@/game/baseDefenseTypes";
 
 type GameStageOverlayProps = {

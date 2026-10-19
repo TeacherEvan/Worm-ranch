@@ -98,7 +98,7 @@
 
 | Item | Impact | Recommended Action |
 |------|--------|-------------------|
-| ~~`public/art` backdrops untracked~~ | **RESOLVED (2026-10-16)** | Tracked + audited: 6 of 7 backdrop files referenced by `gameStageBackdropRotation.ts`; launch poster/intro referenced by `welcomeHeroPresentation.ts`. Only `Gameplay backdrops/243-2436830_evil-clipart-baby-devil-sexy-devil-cartoon.jpeg` is unreferenced (quarantine, do not silently delete) |
+| ~~`public/art` backdrops untracked~~ | **RESOLVED (2026-10-16)** | Tracked + audited: 6 of 7 backdrop files referenced by `gameStageBackdropRotation.ts`; launch poster/intro referenced by `welcomeHeroPresentation.ts`. The stray `Gameplay backdrops/243-2436830_evil-clipart-baby-devil-sexy-devil-cartoon.jpeg` was deleted on `feat/surgical-pruning-dead-code` (surgical-pruning sign-off obtained). |
 | ~~Duplicate canvas pointer listeners~~ | **RESOLVED (2026-10-16)** | Consolidated via `bindPointerControls`; one listener per pointer event |
 | Neon-token CSS aliases (`--bg-soft`, `--panel`, `--panel-strong`, `--line`, `--muted`, `--accent-strong`) kept "for backward compat" | Dual token system rots | Set deletion deadline (e.g., next slice) |
 | `HANDOVER.md` at repo root | Stale as of 2026-08-19 (says 32 suites/159 tests, HEAD `28d5b46`, wrong absolute path, claims untracked art) | Reconcile or remove; supersedes-message now wrong in several places |

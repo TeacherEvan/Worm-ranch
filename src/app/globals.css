@@ -14,8 +14,6 @@
   --text: #F5F4E9;
   --text-dim: #9AA3AC;
 
-  /* Semantic Aliases for compatibility */
-  --muted: var(--text-dim);
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
 }
 
