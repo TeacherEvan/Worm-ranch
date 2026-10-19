@@ -73,9 +73,8 @@ export function initBaseDefenseMode(world: GameWorld) {
     elapsedMs: 0,
   };
 
-  for (const worm of world.worms) {
-    initWormBaseDefenseState(worm, 0);
-  }
+  // Base defense spawns worms dynamically from screen borders according to wave progression
+  world.worms = [];
 }
 
 export function stepBaseDefenseMode(world: GameWorld, deltaMs: number) {

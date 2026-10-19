@@ -30,7 +30,12 @@ test.describe("Base Defense mode", () => {
   test("starts Base Defense and renders the Bank tab and Tent HUD", async ({ page }) => {
     await startBaseDefense(page);
 
-    // Bank tab should be visible at top
+    // Bank tab and HUD contract should be visible at top
+    const hud = page.locator('[data-base-defense-hud="active"]');
+    await expect(hud).toBeVisible({ timeout: NAV_TIMEOUT_MS });
+    await expect(hud).toHaveAttribute("data-miners-count", "2");
+    await expect(hud).toHaveAttribute("data-base-level", "0");
+
     const bankTab = page.getByTestId("bank-tab");
     await expect(bankTab).toBeVisible({ timeout: NAV_TIMEOUT_MS });
     await expect(bankTab).toContainText("BANK:");
@@ -90,5 +95,33 @@ test.describe("Base Defense mode", () => {
     // Bank tab should still be alive and responsive
     const bankTab = page.getByTestId("bank-tab");
     await expect(bankTab).toBeVisible();
+  });
+
+  test("autonomous miners deposit credits and allow purchasing constructions", async ({ page }) => {
+    await startBaseDefense(page);
+
+    const hud = page.locator('[data-base-defense-hud="active"]');
+    await expect(hud).toBeVisible({ timeout: NAV_TIMEOUT_MS });
+
+    // Initial credits start at 0
+    await expect(hud).toHaveAttribute("data-credits", "0");
+    await expect(hud).toHaveAttribute("data-walls-count", "0");
+
+    // Wait for autonomous miners to complete crystal trip and deposit credits (poll data-credits > 0)
+    await expect(async () => {
+      const cr = Number(await hud.getAttribute("data-credits"));
+      expect(cr).toBeGreaterThanOrEqual(10);
+    }).toPass({ timeout: 15_000 });
+
+    // Open bank tab and purchase wall (10 CR)
+    const bankTab = page.getByTestId("bank-tab");
+    await bankTab.click();
+
+    const buyWall = page.getByTestId("buy-wall");
+    await expect(buyWall).toBeEnabled();
+    await buyWall.click();
+
+    // Verify wall was built
+    await expect(hud).toHaveAttribute("data-walls-count", "1");
   });
 });

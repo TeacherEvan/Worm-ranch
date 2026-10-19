@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createWorld } from "./engine";
+import { createStandardWorm } from "./specialWorms";
 import {
   initBaseDefenseMode,
   stepBaseDefenseMode,
@@ -119,7 +120,7 @@ describe("Base Defense Engine", () => {
     initBaseDefenseMode(world);
 
     // Manually spawn a worm near center
-    const worm = world.worms[0];
+    const worm = createStandardWorm(0, world.rules, world.width, world.height, world.runtime);
     worm.x = 410;
     worm.y = 310;
     worm.state = "roaming";
@@ -130,6 +131,7 @@ describe("Base Defense Engine", () => {
       targetKind: "tent",
       targetId: null,
     };
+    world.worms.push(worm);
 
     const pressResult = applyBaseDefensePress(world, { x: 400, y: 300 });
     expect(pressResult.kind).toBe("collect");

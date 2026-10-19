@@ -15,6 +15,10 @@ export function advanceWormTimers(world: GameWorld, deltaMs: number) {
 }
 
 export function syncWormStates(world: GameWorld) {
+  if (world.baseDefense?.active) {
+    return;
+  }
+
   const remaining = world.worms.filter(isWormActive);
   const finalWormId =
     world.profile === "desktop" && !world.continuousMode?.active && remaining.length === 1
@@ -49,12 +53,20 @@ export function syncWormStates(world: GameWorld) {
 
 export function updateRoundPhase(world: GameWorld) {
   if (world.roundResult) {
-    world.phase = world.roundResult.reason === "wrongColor" ? "gameOver" : "resolved";
+    world.phase =
+      world.roundResult.reason === "wrongColor" || world.roundResult.reason === "baseDestroyed"
+        ? "gameOver"
+        : "resolved";
     return;
   }
 
   if (world.countdownMs > 0) {
     world.phase = "introCountdown";
+    return;
+  }
+
+  if (world.baseDefense?.active) {
+    world.phase = "activeChase";
     return;
   }
 

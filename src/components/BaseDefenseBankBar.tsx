@@ -90,7 +90,19 @@ export function BaseDefenseBankBar({ summary, onPurchase }: BaseDefenseBankBarPr
   const isCritical = hpRatio < 0.3;
 
   return (
-    <div className={styles.bankBarContainer}>
+    <div
+      className={styles.bankBarContainer}
+      data-base-defense-hud="active"
+      data-credits={summary.bankCredits}
+      data-miners-count={summary.minersCount}
+      data-base-level={summary.tentUpgradeCount}
+      data-base-hp={summary.tentHp}
+      data-towers-count={summary.towersCount}
+      data-walls-count={summary.wallsCount}
+      data-aoe-units={summary.aoeUnits}
+      data-worm-hp={summary.currentWormHp}
+      data-worm-dps={summary.currentWormDps}
+    >
       <button
         type="button"
         className={styles.bankTabButton}

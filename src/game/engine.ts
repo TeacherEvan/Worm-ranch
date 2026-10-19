@@ -220,7 +220,7 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
     return;
   }
 
-  if (!world.continuousMode?.active) {
+  if (!world.continuousMode?.active && !world.baseDefense?.active) {
     world.timerMs = Math.max(0, world.timerMs - deltaMs);
 
     if (world.timerMs === 0) {
@@ -244,7 +244,7 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
 
   const remaining = getRemainingWorms(world);
 
-  if (!world.continuousMode?.active && world.profile === "desktop" && remaining.length === 1) {
+  if (!world.continuousMode?.active && !world.baseDefense?.active && world.profile === "desktop" && remaining.length === 1) {
     if (world.finaleStartedAt === null) {
       world.finaleStartedAt = world.elapsedMs;
     }
@@ -257,7 +257,7 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
     world.finaleStartedAt = null;
   }
 
-  if (!world.continuousMode?.active && world.profile === "mobile" && remaining.length === 0) {
+  if (!world.continuousMode?.active && !world.baseDefense?.active && world.profile === "mobile" && remaining.length === 0) {
     finishWorld(world, "captured");
     return;
   }
