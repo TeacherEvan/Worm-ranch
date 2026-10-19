@@ -82,7 +82,7 @@ const SHOP_OPTIONS: ShopOption[] = [
   },
 ];
 
-export function BaseDefenseBankBar({ summary, onPurchase }: BaseDefenseBankBarProps) {
+function BaseDefenseBankBar({ summary, onPurchase }: BaseDefenseBankBarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
@@ -164,4 +164,5 @@ export function BaseDefenseBankBar({ summary, onPurchase }: BaseDefenseBankBarPr
     </div>
   );
 }
-export default BaseDefenseBankBar;
+
+export { BaseDefenseBankBar };

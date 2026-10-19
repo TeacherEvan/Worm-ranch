@@ -1,10 +1,8 @@
-import type { DisplayProfile } from "@/game/detection";
 import { drawFairyMorph } from "@/components/gameStageFairyPresentation";
 import { getStagePresentation } from "@/components/gameStagePhasePresentation";
 import { drawWorm } from "@/components/gameStageWormCanvas";
 import { drawStaticStageBackdrop, drawPointerCorral } from "@/components/gameStageBackdropCanvas";
-import { createWorld, getSummary } from "@/game/engine";
-import { getGameplayLevelRules } from "@/game/levels";
+import { getSummary } from "@/game/engine";
 import { isWormActive, type GameSummary, type GameWorld } from "@/game/types";
 import { drawBaseDefenseLayer } from "@/components/gameStageBaseDefenseCanvas";
 
@@ -140,19 +138,6 @@ export function areSummariesEqual(left: GameSummary, right: GameSummary) {
     areBaseDefenseSummariesEqual(left.baseDefense, right.baseDefense)
   );
 }
-
-export function createInitialSummary(profile: DisplayProfile, level = 1) {
-  return getSummary(createWorld(profile, 800, 540, { rules: getGameplayLevelRules(profile, level) }));
-}
-
-export function buildStatusItems(profile: DisplayProfile, summary: GameSummary, level = 1): StatusItem[] {
-  return getStagePresentation(summary, profile, level).statusItems;
-}
-
-export function getStageCopy(profile: DisplayProfile, summary: GameSummary, level = 1): StageCopy {
-  return getStagePresentation(summary, profile, level).copy;
-}
-
 
 function areTargetColorsEqual(left: GameSummary["targetColor"], right: GameSummary["targetColor"]) {
   if (!left && !right) {
