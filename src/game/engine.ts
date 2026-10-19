@@ -30,6 +30,15 @@ import { createFairy, advanceFairies } from "./engineFairies";
 import { spawnContinuousWorm, refillContinuousWorms, getTargetColorSummary } from "./engineContinuous";
 import { advanceWormTimers, syncWormStates, updateRoundPhase } from "./enginePhase";
 import { randomBetween, clamp, getWormSpeed } from "./engineUtils";
+import { getBaseDefenseSummary, stepBaseDefenseMode } from "./baseDefenseEngine";
+
+export {
+  initBaseDefenseMode,
+  stepBaseDefenseMode,
+  purchaseBaseDefenseItem,
+  applyBaseDefensePress,
+  getBaseDefenseSummary,
+} from "./baseDefenseEngine";
 
 export { PROFILE_RULES } from "./rules";
 export type {
@@ -170,6 +179,10 @@ export function stepWorld(world: GameWorld, deltaMs: number) {
 
   world.elapsedMs += deltaMs;
   advanceWormTimers(world, deltaMs);
+
+  if (world.baseDefense?.active) {
+    stepBaseDefenseMode(world, deltaMs);
+  }
 
   // Continuous mode: ramp speed and spawn worms up to cap
   if (world.continuousMode?.active) {
@@ -387,6 +400,7 @@ export function getSummary(world: GameWorld): GameSummary {
     finalWormActive: world.profile === "desktop" && !world.continuousMode?.active && remaining === 1,
     rushTriggered: world.rushTriggered,
     targetColor: getTargetColorSummary(world.targetColor, world.continuousMode?.active ?? false, world.runtime.now()),
+    baseDefense: getBaseDefenseSummary(world),
   };
 }
 

@@ -32,10 +32,13 @@ import { bindPointerControls, createTouchHandlers } from "@/components/gameStage
 import { getFairyLifecycleEvents, getRoundEndedDetails, getRoundTransitionEvents } from "@/lib/analytics";
 import {
   applyAccuratePress,
+  applyBaseDefensePress,
   applyMiss,
   createWorld,
   findWormIdAtPoint,
   getSummary,
+  initBaseDefenseMode,
+  purchaseBaseDefenseItem,
   resizeWorld,
   setPointer,
   startContinuousMode,
@@ -43,6 +46,7 @@ import {
   stepWorld,
   stopContinuousMode,
 } from "@/game/engine";
+import type { BaseDefensePowerupId } from "@/game/baseDefenseTypes";
 import type { DisplayProfile } from "@/game/detection";
 import { getGameplayLevelRules } from "@/game/levels";
 import type { ActionResult, FairyState, GameSummary, RoundResult } from "@/game/types";
@@ -78,7 +82,10 @@ export function GameStage({
   const levelRules = useMemo(() => getGameplayLevelRules(profile, level), [level, profile]);
   const [initialWorld] = useState(() => {
     const world = createWorld(profile, 800, 540, { rules: levelRules });
-    if (mode === "targetEndless") {
+    if (mode === "baseDefense") {
+      startRound(world);
+      initBaseDefenseMode(world);
+    } else if (mode === "targetEndless") {
       startContinuousMode(world);
     } else {
       startRound(world);
@@ -132,6 +139,16 @@ export function GameStage({
   );
   const keyboardStatus = getKeyboardStatus(stagePresentation.copy.title, stageSummary, keyboardTargetId);
 
+  const handleBaseDefensePurchase = (type: BaseDefensePowerupId) => {
+    const success = purchaseBaseDefenseItem(worldRef.current, type);
+    if (success) {
+      const nextRaw = getSummary(worldRef.current);
+      const nextVisible = getVisibleSummary(nextRaw);
+      setStageSummary(nextVisible);
+      onSummaryChangeRef.current(nextVisible);
+    }
+  };
+
   // Motion cue effect
   useEffect(() => {
     const motionFeedback = getMotionFeedback(previousSummaryRef.current, stageSummary);
@@ -159,7 +176,10 @@ export function GameStage({
     hasMountedRef.current = true;
     worldRef.current = nextWorld;
     if (nextWorld !== initialWorld) {
-      if (mode === "targetEndless") {
+      if (mode === "baseDefense") {
+        startRound(nextWorld);
+        initBaseDefenseMode(nextWorld);
+      } else if (mode === "targetEndless") {
         startContinuousMode(nextWorld);
       } else {
         startRound(nextWorld);
@@ -291,6 +311,11 @@ export function GameStage({
     const handlePointerDown = (event: PointerEvent) => {
       const point = toCanvasPoint(event);
       setPointer(worldRef.current, point);
+
+      if (worldRef.current.baseDefense?.active) {
+        handleAction(applyBaseDefensePress(worldRef.current, point));
+        return;
+      }
 
       const wormId = findWormIdAtPoint(worldRef.current, point);
       if (!wormId) {
@@ -448,7 +473,9 @@ export function GameStage({
         reducedMotion={reducedMotion}
         statusItems={statusItems}
         targetCallout={targetCallout}
-        time={stageSummary.continuousActive ? null : formatStageTime(stageSummary.timerMs)}
+        time={stageSummary.continuousActive || stageSummary.baseDefense?.active ? null : formatStageTime(stageSummary.timerMs)}
+        baseDefenseSummary={stageSummary.baseDefense}
+        onBaseDefensePurchase={handleBaseDefensePurchase}
       />
     </div>
   );

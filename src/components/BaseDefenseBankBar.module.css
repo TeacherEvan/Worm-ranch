@@ -1,0 +1,162 @@
+.bankBarContainer {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-mono, monospace);
+  pointer-events: auto;
+  user-select: none;
+}
+
+.bankTabButton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(14, 18, 24, 0.92);
+  border: 1px solid rgba(100, 240, 160, 0.45);
+  box-shadow: 0 0 16px rgba(100, 240, 160, 0.22), inset 0 0 8px rgba(100, 240, 160, 0.08);
+  border-radius: 9999px;
+  padding: 8px 18px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease-out;
+}
+
+.bankTabButton:hover {
+  border-color: rgba(100, 240, 160, 0.85);
+  box-shadow: 0 0 22px rgba(100, 240, 160, 0.4);
+  transform: scale(1.02);
+}
+
+.bankCredits {
+  font-size: 14px;
+  font-weight: 700;
+  color: #64f0a0;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 8px rgba(100, 240, 160, 0.5);
+}
+
+.tentHpBadge {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f5f4e9;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.tentHpCritical {
+  background: rgba(255, 82, 82, 0.25);
+  border-color: rgba(255, 82, 82, 0.6);
+  color: #ff8585;
+}
+
+.dropdownArrow {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  transition: transform 0.2s ease;
+}
+
+.dropdownArrowOpen {
+  transform: rotate(180deg);
+}
+
+.dropdownMenu {
+  margin-top: 8px;
+  width: 320px;
+  max-width: 90vw;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: rgba(10, 14, 20, 0.96);
+  border: 1px solid rgba(100, 240, 160, 0.35);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.75), 0 0 20px rgba(100, 240, 160, 0.15);
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  backdrop-filter: blur(12px);
+  animation: slideDown 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menuHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.shopItemButton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f5f4e9;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.12s ease;
+}
+
+.shopItemButton:hover:not(:disabled) {
+  background: rgba(100, 240, 160, 0.12);
+  border-color: rgba(100, 240, 160, 0.45);
+  box-shadow: 0 0 12px rgba(100, 240, 160, 0.2);
+}
+
+.shopItemButton:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  filter: grayscale(0.8);
+}
+
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.itemLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.itemDesc {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.itemCostBadge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffd166;
+  background: rgba(255, 209, 102, 0.1);
+  border: 1px solid rgba(255, 209, 102, 0.25);
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}

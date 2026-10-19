@@ -7,17 +7,19 @@ import { createBurstFromTone, type Particle, type ParticleTone } from "@/compone
 
 export function createStageFeedbackItem(
   result: Exclude<ActionResult, { kind: "ignored" } | { kind: "miss" }>,
-  worm: Worm,
+  worm: Worm | { x: number; y: number; radius: number },
   id: number,
 ): StageFeedback {
+  const isShotgun = result.wormId === "aoe-shotgun";
   return {
     id,
     x: worm.x,
     y: worm.y - worm.radius * 1.8,
     lifeMs: 0,
     ttlMs: result.kind === "collect" ? 920 : result.kind === "tag" ? 840 : 880,
-    label:
-      result.kind === "collect"
+    label: isShotgun
+      ? "BLAST"
+      : result.kind === "collect"
         ? "BAGGED"
         : result.kind === "tag"
           ? "TAGGED"
@@ -37,7 +39,7 @@ export function createStageFeedbackItem(
 
 export function getActionParticleBurst(
   result: ActionResult,
-  worm: Worm,
+  worm: Worm | { x: number; y: number; radius: number },
 ): Particle[] {
   if (result.kind === "collect") {
     return createBurstFromTone("collect", worm.x, worm.y - worm.radius * 1.8);

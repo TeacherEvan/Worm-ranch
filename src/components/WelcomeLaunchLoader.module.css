@@ -36,7 +36,7 @@
 
 .kicker,
 .checkpointLabel {
-  color: color-mix(in srgb, var(--muted) 82%, var(--neon-lime) 18%);
+  color: color-mix(in srgb, var(--text-dim) 82%, var(--neon-lime) 18%);
   font-family: var(--font-mono), monospace;
   font-size: 0.74rem;
   letter-spacing: 0.08em;

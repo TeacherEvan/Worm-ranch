@@ -1,0 +1,44 @@
+.hudBadge {
+  position: absolute;
+  top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: rgba(10, 18, 26, 0.78);
+  border: 1px solid rgba(199, 243, 107, 0.22);
+  color: var(--text, #f5f4e9);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.timeBadge {
+  left: 10px;
+  border-color: rgba(0, 245, 255, 0.28);
+}
+
+.killsBadge {
+  right: 10px;
+  border-color: rgba(199, 243, 107, 0.28);
+}
+
+.hudLabel {
+  font-size: 0.68rem;
+  color: var(--text-dim, #9aa3ac);
+  text-transform: uppercase;
+}
+
+.hudValue {
+  font-weight: 700;
+  color: var(--neon-lime, #c7f36b);
+}
+
+.timeBadge .hudValue {
+  color: var(--neon-cyan, #00f5ff);
+}

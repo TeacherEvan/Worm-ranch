@@ -6,6 +6,9 @@ import type { StageCopy, StatusItem } from "@/components/gameStagePresentation";
 import type { StageMotionCue } from "@/components/gameStageMotion";
 import type { StageTargetCallout } from "./gameStageTargetCallout";
 
+import BaseDefenseBankBar from "./BaseDefenseBankBar";
+import type { BaseDefenseSummary, BaseDefensePowerupId } from "@/game/baseDefenseTypes";
+
 type GameStageOverlayProps = {
   kills: number;
   motionCue: StageMotionCue;
@@ -16,6 +19,8 @@ type GameStageOverlayProps = {
   statusItems: StatusItem[];
   targetCallout: StageTargetCallout;
   time: string | null;
+  baseDefenseSummary?: BaseDefenseSummary | null;
+  onBaseDefensePurchase?: (type: BaseDefensePowerupId) => void;
 };
 
 export function GameStageOverlay({
@@ -28,6 +33,8 @@ export function GameStageOverlay({
   statusItems,
   targetCallout,
   time,
+  baseDefenseSummary,
+  onBaseDefensePurchase,
 }: GameStageOverlayProps) {
   const targetTitle = targetCallout.gameOver ? targetCallout.label.toUpperCase() : `TAP ${targetCallout.label.toUpperCase()}`;
   const targetProgress = `${targetCallout.progress}/${targetCallout.goal}`;
@@ -35,6 +42,12 @@ export function GameStageOverlay({
   return (
     <>
       <GameHUD time={time} kills={kills} />
+      {baseDefenseSummary && onBaseDefensePurchase && (
+        <BaseDefenseBankBar
+          summary={baseDefenseSummary}
+          onPurchase={onBaseDefensePurchase}
+        />
+      )}
       {targetCallout.visible ? (
         <div
           className={`${styles.targetCallout} ${targetCallout.gameOver ? styles.targetCalloutGameOver : ""}`.trim()}

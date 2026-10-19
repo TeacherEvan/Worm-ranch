@@ -1,6 +1,7 @@
 import type { DisplayProfile } from "./detection";
 import type { ProfileRules } from "./rules";
 import type { WormColorId } from "./wormColors";
+import type { BaseDefenseSummary, BaseDefenseWorldState } from "./baseDefenseTypes";
 
 export type RoundPhase =
   | "introCountdown"
@@ -38,6 +39,13 @@ type WormBase = {
   touchBursts: number;
   state: WormState;
   stateTimerMs: number;
+  baseDefense?: {
+    hp: number;
+    maxHp: number;
+    dps: number;
+    targetKind: "construction" | "tent" | "roam";
+    targetId: string | null;
+  };
 };
 
 export type StandardWorm = WormBase & {
@@ -103,10 +111,11 @@ export type GameSummary = {
   finalWormActive: boolean;
   rushTriggered: boolean;
   targetColor: GameSummaryTargetColor | null;
+  baseDefense?: BaseDefenseSummary | null;
 };
 
 export type RoundResult = {
-  reason: "ghostEscape" | "time" | "captured" | "wrongColor";
+  reason: "ghostEscape" | "time" | "captured" | "wrongColor" | "baseDestroyed";
   collected: number;
   remaining: number;
   wrongColorId?: WormColorId;
@@ -157,6 +166,7 @@ export type GameWorld = {
     // desired spawn interval in ms
     spawnIntervalMs: number;
   };
+  baseDefense?: BaseDefenseWorldState | null;
 };
 
 export function isWormActive(worm: Worm) {

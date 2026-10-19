@@ -3,15 +3,17 @@
 import React from "react";
 import styles from "./GameModeScreen.module.css";
 
+import type { GameplayMode } from "@/game/gameModes";
+
 export type GameModeScreenProps = {
-  selectedMode: "standard" | "targetEndless";
-  onModeChange: (mode: "standard" | "targetEndless") => void;
+  selectedMode: GameplayMode;
+  onModeChange: (mode: GameplayMode) => void;
   onBack: () => void;
   onStart: () => void;
 };
 
 const MODES: ReadonlyArray<{
-  id: "standard" | "targetEndless";
+  id: GameplayMode;
   title: string;
   description: string;
 }> = [
@@ -24,6 +26,11 @@ const MODES: ReadonlyArray<{
     id: "targetEndless",
     title: "Endless Target Color",
     description: "Continuous play. Bag the target color twice, then a new target appears. Miss the target color and it's game over.",
+  },
+  {
+    id: "baseDefense",
+    title: "Base Defense",
+    description: "Protect your central tent. Mine crystals, deploy attack towers, erect walls, and survive escalating worm waves.",
   },
 ];
 

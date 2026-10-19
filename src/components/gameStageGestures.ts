@@ -2,7 +2,7 @@
    tap acts, 300ms hold triggers touch rush. Timing is injected so the
    classifier is unit-testable without a DOM. */
 
-import { applyAccuratePress, applyMiss, findWormIdAtPoint, triggerTouchRush } from "@/game/engine";
+import { applyAccuratePress, applyBaseDefensePress, applyMiss, findWormIdAtPoint, triggerTouchRush } from "@/game/engine";
 import type { ActionResult, GameWorld } from "@/game/types";
 import { triggerHaptic } from "@/lib/microInteractions";
 import type { KeyboardTargetMode } from "@/components/gameStageKeyboard";
@@ -114,6 +114,11 @@ export type TouchHandlerDeps = {
 export function createTouchHandlers(deps: TouchHandlerDeps): TouchControlHandlers {
   return {
     onTap: (point) => {
+      if (deps.worldRef.current.baseDefense?.active) {
+        deps.handleAction(applyBaseDefensePress(deps.worldRef.current, point));
+        return;
+      }
+
       const wormId = findWormIdAtPoint(deps.worldRef.current, point);
       if (!wormId) {
         deps.handleAction(applyMiss(deps.worldRef.current));

@@ -130,6 +130,54 @@ export function drawWorm(
     getWormStateChip(world, worm, isGhostWorm, isBlinkCharged, isTagged),
   );
 
+  // Animated crawling legs / cilia for character walk motion
+  if (!reducedMotion) {
+    const legCount = 4;
+    const walkPhase = frameNow * 0.015 + worm.wave;
+    context.save();
+    context.strokeStyle = isGhostWorm ? "rgba(240, 126, 67, 0.6)" : "rgba(100, 240, 160, 0.55)";
+    context.lineWidth = 1.8;
+    context.lineCap = "round";
+    for (let i = 0; i < legCount; i++) {
+      const legX = -bodyLength * 0.35 + (i / (legCount - 1)) * (bodyLength * 0.7);
+      const legWave = Math.sin(walkPhase + i * 1.2);
+      const legReach = worm.radius * 1.1 + legWave * 2.5;
+
+      // Top leg
+      context.beginPath();
+      context.moveTo(legX, -worm.radius * 0.6);
+      context.lineTo(legX - legWave * 2, -legReach);
+      context.stroke();
+
+      // Bottom leg
+      context.beginPath();
+      context.moveTo(legX, worm.radius * 0.6);
+      context.lineTo(legX + legWave * 2, legReach);
+      context.stroke();
+    }
+    context.restore();
+  }
+
+  // Base defense worm HP bar
+  if (world.baseDefense?.active && worm.baseDefense && worm.baseDefense.maxHp > 0) {
+    context.save();
+    // Counter-rotate so HP bar stays horizontally upright above the worm
+    context.rotate(-direction);
+    const barWidth = 24;
+    const barHeight = 4;
+    const barY = -worm.radius - 10;
+    const ratio = Math.max(0, Math.min(1, worm.baseDefense.hp / worm.baseDefense.maxHp));
+
+    context.fillStyle = "rgba(10, 15, 20, 0.8)";
+    context.fillRect(-barWidth / 2, barY, barWidth, barHeight);
+    context.fillStyle = ratio > 0.5 ? "#5fe288" : ratio > 0.25 ? "#f0a040" : "#ff5252";
+    context.fillRect(-barWidth / 2, barY, barWidth * ratio, barHeight);
+    context.strokeStyle = "rgba(255, 255, 255, 0.4)";
+    context.lineWidth = 0.8;
+    context.strokeRect(-barWidth / 2, barY, barWidth, barHeight);
+    context.restore();
+  }
+
   context.restore();
 }
 

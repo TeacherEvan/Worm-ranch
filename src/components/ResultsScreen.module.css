@@ -3,10 +3,10 @@
   gap: 16px;
   padding: clamp(18px, 2.5vw, 24px);
   border-radius: 24px;
-  background: color-mix(in srgb, var(--panel-strong) 90%, transparent);
+  background: rgba(10, 18, 26, 0.88);
   border: 1px solid rgba(199, 243, 107, 0.14);
   backdrop-filter: blur(16px);
-  box-shadow: var(--shadow);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.52);
   container-type: inline-size;
 }
 
@@ -90,7 +90,7 @@
 }
 
 .tallyLabel {
-  color: color-mix(in srgb, var(--muted) 88%, var(--neon-lime) 12%);
+  color: color-mix(in srgb, var(--text-dim) 88%, var(--neon-lime) 12%);
   font-family: var(--font-mono), monospace;
   font-size: 0.68rem;
   letter-spacing: 0.08em;
@@ -104,7 +104,7 @@
 }
 
 .note {
-  color: var(--muted);
+  color: var(--text-dim);
   font-size: 0.9rem;
   line-height: 1.48;
   max-width: 56rem;

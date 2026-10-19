@@ -233,7 +233,7 @@
   border-radius: 14px;
   background: rgba(8, 15, 24, 0.62);
   border: 1px solid rgba(199, 243, 107, 0.1);
-  color: var(--muted);
+  color: var(--text-dim);
   backdrop-filter: blur(10px);
   transform: translate3d(0, 0, 0);
   transition:
@@ -407,7 +407,7 @@
   border-radius: 14px;
   background: rgba(8, 15, 24, 0.68);
   border: 1px solid rgba(199, 243, 107, 0.12);
-  color: var(--muted);
+  color: var(--text-dim);
   font-size: 0.9rem;
   line-height: 1.35;
   backdrop-filter: blur(10px);
@@ -441,7 +441,7 @@
   border-radius: 999px;
   background: rgba(8, 15, 24, 0.58);
   border: 1px solid rgba(199, 243, 107, 0.12);
-  color: var(--muted);
+  color: var(--text-dim);
   font-size: 0.8rem;
   align-self: flex-start;
   max-width: none;

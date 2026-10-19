@@ -110,6 +110,13 @@ function getPhaseLabelText(summary: GameSummary) {
 }
 
 function getPhaseChipText(summary: GameSummary, rules: ReturnType<typeof getGameplayLevelRules>) {
+  if (summary.baseDefense?.active) {
+    if (summary.phase === "gameOver") {
+      return "BASE DESTROYED";
+    }
+    return `TENT T${summary.baseDefense.tentLevel}`;
+  }
+
   if (summary.phase === "introCountdown") {
     return "Countdown";
   }
@@ -156,7 +163,37 @@ function buildStatusItemsForSummary(
   const isCountdown = summary.phase === "introCountdown";
   const isResolved = summary.phase === "resolved";
   const isGameOver = summary.phase === "gameOver";
-  const showClock = !summary.continuousActive;
+  const showClock = !summary.continuousActive && !summary.baseDefense?.active;
+
+  if (summary.baseDefense?.active) {
+    const bd = summary.baseDefense;
+    return [
+      {
+        id: "bank",
+        label: "Bank",
+        value: `${bd.bankCredits} CR`,
+        active: bd.bankCredits > 0,
+      },
+      {
+        id: "tentHp",
+        label: "Tent HP",
+        value: `${Math.ceil(bd.tentHp)}/${bd.tentMaxHp}`,
+        active: bd.tentHp < bd.tentMaxHp * 0.4,
+      },
+      {
+        id: "miners",
+        label: "Miners",
+        value: `${bd.minersCount}`,
+        active: true,
+      },
+      {
+        id: "defenses",
+        label: "Defenses",
+        value: `W:${bd.wallsCount} T:${bd.towersCount}`,
+        active: bd.wallsCount > 0 || bd.towersCount > 0,
+      },
+    ];
+  }
 
   if (summary.continuousActive) {
     return [
@@ -254,6 +291,21 @@ function getStageCopyData(
       title,
       body: "Round closed.",
       hint: "Check the tally.",
+    };
+  }
+
+  if (summary.baseDefense?.active) {
+    if (summary.phase === "gameOver") {
+      return {
+        title: "BASE DESTROYED",
+        body: "The central tent was overwhelmed by the swarm.",
+        hint: "Upgrade your defenses and miners next round.",
+      };
+    }
+    return {
+      title: `Base Defense · Tier ${summary.baseDefense.tentLevel}`,
+      body: "Protect your tent! Click worms with your shotgun blast.",
+      hint: "Use BANK menu at top to purchase towers, walls, and upgrades.",
     };
   }
 

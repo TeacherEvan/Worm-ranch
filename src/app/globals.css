@@ -14,13 +14,8 @@
   --text: #F5F4E9;
   --text-dim: #9AA3AC;
 
-  /* Legacies (kept: still referenced by ~10 component stylesheets; remove only in a dedicated token-migration slice) */
-  --bg-soft: rgba(13, 28, 43, 0.8);
-  --panel: var(--bg-glass);
-  --panel-strong: rgba(10, 19, 31, 0.92);
-  --line: rgba(199, 243, 107, 0.15);
+  /* Semantic Aliases for compatibility */
   --muted: var(--text-dim);
-  --accent-strong: var(--neon-orange);
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
 }
 

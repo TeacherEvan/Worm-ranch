@@ -10,6 +10,7 @@ export type EndlessGameOverWindowProps = {
 };
 
 export function EndlessGameOverWindow({ result, onReplay, onReturnHome }: EndlessGameOverWindowProps) {
+  const isBaseDestroyed = result.reason === "baseDestroyed";
   const targetColor = result.targetColorId || "unknown";
 
   return (
@@ -17,8 +18,17 @@ export function EndlessGameOverWindow({ result, onReplay, onReturnHome }: Endles
       <header>
         <h2 id="over-title">Game Over</h2>
       </header>
-      <p>Wrong color bagged. Target was {targetColor.toUpperCase()}.</p>
-      <p>{result.collected} worms secured before the miss.</p>
+      {isBaseDestroyed ? (
+        <>
+          <p>The Central Tent has fallen to the worm horde!</p>
+          <p>{result.collected} worms vanquished during defense.</p>
+        </>
+      ) : (
+        <>
+          <p>Wrong color bagged. Target was {targetColor.toUpperCase()}.</p>
+          <p>{result.collected} worms secured before the miss.</p>
+        </>
+      )}
       <div className={styles.overActions}>
         <button className={styles.replay} onClick={onReplay} autoFocus>
           Ride Again

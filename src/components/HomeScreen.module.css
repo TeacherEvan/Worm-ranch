@@ -22,7 +22,7 @@
 }
 
 .kicker {
-  color: color-mix(in srgb, var(--muted) 80%, var(--neon-lime) 20%);
+  color: color-mix(in srgb, var(--text-dim) 80%, var(--neon-lime) 20%);
   font-family: var(--font-mono), monospace;
   font-size: 0.74rem;
   font-weight: 700;

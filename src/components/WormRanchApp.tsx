@@ -133,7 +133,10 @@ export function WormRanchApp() {
 
   const handleRoundEnd = useCallback(
     (result: RoundResult) => {
-      if (selectedModeRef.current === "targetEndless" && result.reason === "wrongColor") {
+      if (
+        (selectedModeRef.current === "targetEndless" && result.reason === "wrongColor") ||
+        (selectedModeRef.current === "baseDefense" && result.reason === "baseDestroyed")
+      ) {
         setPendingRoundResult(result);
         return;
       }

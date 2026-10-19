@@ -6,6 +6,7 @@ import { drawStaticStageBackdrop, drawPointerCorral } from "@/components/gameSta
 import { createWorld, getSummary } from "@/game/engine";
 import { getGameplayLevelRules } from "@/game/levels";
 import { isWormActive, type GameSummary, type GameWorld } from "@/game/types";
+import { drawBaseDefenseLayer } from "@/components/gameStageBaseDefenseCanvas";
 
 export type StageFeedback = {
   id: number;
@@ -67,6 +68,9 @@ export function renderStage(
   for (const fairy of world.fairies) {
     drawFairyMorph(context, fairy, reducedMotion);
   }
+
+  // Draw Base Defense entities (tent, crystals, walls, towers, miners, arrows)
+  drawBaseDefenseLayer(context, world, reducedMotion, frameNow);
 
   for (const worm of activeWorms) {
     drawWorm(context, world, worm, reducedMotion, worm.id === ghostWormId, worm.id === selectedWormId, frameNow);
@@ -132,7 +136,8 @@ export function areSummariesEqual(left: GameSummary, right: GameSummary) {
     left.countdownMs === right.countdownMs &&
     left.finalWormActive === right.finalWormActive &&
     left.rushTriggered === right.rushTriggered &&
-    areTargetColorsEqual(left.targetColor, right.targetColor)
+    areTargetColorsEqual(left.targetColor, right.targetColor) &&
+    areBaseDefenseSummariesEqual(left.baseDefense, right.baseDefense)
   );
 }
 
@@ -164,6 +169,28 @@ function areTargetColorsEqual(left: GameSummary["targetColor"], right: GameSumma
     left.progress === right.progress &&
     left.goal === right.goal &&
     left.visible === right.visible
+  );
+}
+
+function areBaseDefenseSummariesEqual(
+  left: GameSummary["baseDefense"],
+  right: GameSummary["baseDefense"],
+) {
+  if (!left && !right) return true;
+  if (!left || !right) return false;
+  return (
+    left.bankCredits === right.bankCredits &&
+    left.tentHp === right.tentHp &&
+    left.tentMaxHp === right.tentMaxHp &&
+    left.tentUpgradeCount === right.tentUpgradeCount &&
+    left.minersCount === right.minersCount &&
+    left.wallsCount === right.wallsCount &&
+    left.towersCount === right.towersCount &&
+    left.aoeUnits === right.aoeUnits &&
+    left.playerDamage === right.playerDamage &&
+    left.armor === right.armor &&
+    left.currentWormHp === right.currentWormHp &&
+    left.currentWormDps === right.currentWormDps
   );
 }
 

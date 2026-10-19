@@ -33,7 +33,7 @@
 }
 
 .copy {
-  color: var(--muted);
+  color: var(--text-dim);
   font-size: 0.92rem;
   line-height: 1.45;
 }
